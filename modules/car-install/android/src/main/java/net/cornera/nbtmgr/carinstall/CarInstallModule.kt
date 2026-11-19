@@ -29,7 +29,7 @@ class ConnectSettings : Record {
 
 /**
  * Installs NBT Manager from the phone, over a Wi-Fi ENET adapter: the Rust
- * installer core (desktop/mobile in the manager repository) through its
+ * installer core (NBTFoundry/installer: mobile/) through its
  * UniFFI binding. One session at a time; its events reach JavaScript as
  * "onEvent". Errors are fixed codes; nothing here logs.
  */

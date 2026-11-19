@@ -25,7 +25,8 @@ import threading
 import time
 
 APP_ROOT = Path(__file__).resolve().parents[1]
-MANAGER = APP_ROOT / 'third_party/nbt-apps-manager'
+# The NBTFoundry/manager checkout (NBT_MANAGER_DIR, default ../manager).
+MANAGER = Path(os.environ.get('NBT_MANAGER_DIR', APP_ROOT.parent / 'manager'))
 
 
 def elf(content: bytes) -> bytes:
@@ -81,7 +82,7 @@ class HostCar:
         logs = None if verbose else subprocess.DEVNULL
         self.workdir = workdir
         self.root = workdir / 'managed'
-        # The layout setup creates (desktop/src/ssh.rs); a first install needs trust/keys.
+        # The layout setup creates (NBTFoundry/installer: core/src/ssh.rs); a first install needs trust/keys.
         for part in ('apps', 'data', 'state/manager', 'trust/apps', 'trust/keys', 'manager'):
             (self.root / part).mkdir(parents=True, exist_ok=True, mode=0o700)
         for path in [self.root, *self.root.rglob('*')]:

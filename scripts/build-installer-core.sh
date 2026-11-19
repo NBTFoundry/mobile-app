@@ -5,8 +5,8 @@
 #
 #   scripts/build-installer-core.sh [--release]
 #
-# Source: the manager repository's desktop/ workspace, from $NBT_INSTALLER_SOURCE
-# (the kit build sets it to the repository it runs from) or the submodule.
+# Source: the NBTFoundry/installer workspace, from $NBT_INSTALLER_SOURCE (the
+# manager's kit build sets it) or the sibling checkout ../installer.
 # --release embeds the signed manager release and needs NBT_MANAGER_RELEASE and
 # NBT_MANAGER_PUBLIC_KEY, plus optionally NBT_TEST_APP_PACKAGE, NBT_TEST_APP_KEY
 # and NBT_TEST_APP_COMPAT, exactly as the Windows installer's build does.
@@ -17,14 +17,14 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-source_dir="${NBT_INSTALLER_SOURCE:-$root/third_party/nbt-apps-manager}"
+source_dir="${NBT_INSTALLER_SOURCE:-$root/../installer}"
 target="$root/build/installer-core"
 out="$root/modules/car-install/android/generated"
 
 fail() { echo "build-installer-core: $*" >&2; exit 1; }
 
-[[ -f "$source_dir/desktop/mobile/Cargo.toml" ]] \
-  || fail "no installer core in $source_dir (git submodule update --init, or set NBT_INSTALLER_SOURCE)"
+[[ -f "$source_dir/mobile/Cargo.toml" ]] \
+  || fail "no installer core in $source_dir (check out NBTFoundry/installer next to this app, or set NBT_INSTALLER_SOURCE)"
 command -v cargo-ndk >/dev/null || fail "install cargo-ndk: cargo install cargo-ndk"
 rustup target list --installed | grep -qx aarch64-linux-android \
   || fail "install the Rust target: rustup target add aarch64-linux-android"
@@ -52,7 +52,7 @@ done
 rm -rf "$out"
 mkdir -p "$out/jniLibs" "$out/kotlin"
 # cargo-ndk reads the workspace from the current directory.
-cd "$source_dir/desktop"
+cd "$source_dir"
 # API 29 is the app's minimum. A development build drops debug information,
 # which would make the library hundreds of megabytes.
 CARGO_PROFILE_DEV_DEBUG=false CARGO_PROFILE_DEV_STRIP=symbols \

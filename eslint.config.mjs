@@ -3,5 +3,5 @@ import expo from 'eslint-config-expo/flat.js';
 
 export default defineConfig([
   expo,
-  { ignores: ['android/**', 'ios/**', 'build/**', 'dist/**', 'third_party/**'] },
+  { ignores: ['android/**', 'ios/**', 'build/**', 'dist/**'] },
 ]);

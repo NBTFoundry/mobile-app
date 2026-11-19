@@ -6,7 +6,8 @@ import { sha256 } from '../src/protocol/sha256';
 import { bodyDigest, canonicalText, cleanPhoneName, isHostPort, keyId, pairBody, pairingCode,
   type Method, type Route } from '../src/protocol/signing';
 
-const VECTORS = path.join(__dirname, '../third_party/nbt-apps-manager/tests/phone-signing-vectors.tsv');
+/* The manager's own signing vectors (NBTFoundry/manager: tests/phone-signing-vectors.tsv). */
+const VECTORS = path.join(__dirname, 'fixtures/phone-signing-vectors.tsv');
 const SPKI_P256 = Buffer.from('3059301306072a8648ce3d020106082a8648ce3d030107034200', 'hex');
 
 const rows = readFileSync(VECTORS, 'ascii').split('\n')
