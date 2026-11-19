@@ -7,8 +7,14 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   platforms: ['android'],
+  icon: './assets/icon.png',
   android: {
     package: 'net.cornera.nbtmgr',
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      monochromeImage: './assets/adaptive-icon-monochrome.png',
+      backgroundColor: '#1d5fa8',
+    },
     versionCode: Number(process.env.NBT_VERSION_CODE || 41),
     permissions: ['INTERNET', 'ACCESS_NETWORK_STATE', 'CHANGE_NETWORK_STATE',
       'ACCESS_WIFI_STATE', 'CHANGE_WIFI_STATE', 'CAMERA'],
@@ -20,6 +26,10 @@ const config: ExpoConfig = {
       'android.permission.USE_BIOMETRIC', 'android.permission.USE_FINGERPRINT'],
   },
   plugins: [
+    ['expo-splash-screen', {
+      image: './assets/splash-light.png', imageWidth: 160, backgroundColor: '#f6f7fa',
+      dark: { image: './assets/splash-dark.png', backgroundColor: '#111318' },
+    }],
     ['expo-camera', { cameraPermission: 'Scan the Wi-Fi code on your car.', recordAudioAndroid: false }],
     'expo-secure-store',
     // Target 36, not 37: Android 17 puts local addresses behind ACCESS_LOCAL_NETWORK.
