@@ -1,4 +1,24 @@
-# NBT Manager — Android app
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+    <img src="docs/assets/logo-light.svg" alt="NBTFoundry" height="44">
+  </picture>
+</p>
+
+<h1 align="center">
+  <img src="assets/icon.png" alt="" width="72"><br>
+  NBT Manager for Android
+</h1>
+
+<p align="center">
+  <b>Your car's applications, from your phone.</b><br>
+  Pair once, then install, update and configure; the driver approves on the car.
+</p>
+
+<p align="center">
+  <img src="docs/assets/mobile-car.png" width="600"
+       alt="The Car tab in light and dark: the paired car and its installed applications, one with an update available">
+</p>
 
 The phone side of NBT Manager. Pair once per car, then install, update and
 uninstall applications on the car's head unit and change their settings from
@@ -9,13 +29,35 @@ Manager on a car** installs it over a Wi-Fi ENET adapter.
 Expo SDK 58, React Native 0.88, Android 10 and later, application id
 `net.cornera.nbtmgr`.
 
+**Supported head units:** BMW NBT Evo (iDrive 6). Support for the earlier NBT
+may come later.
+
 Part of [NBTFoundry](https://github.com/NBTFoundry):
-[manager](https://github.com/NBTFoundry/manager) ·
-[installer](https://github.com/NBTFoundry/installer) ·
-[sdk](https://github.com/NBTFoundry/sdk) · [doom](https://github.com/NBTFoundry/doom)
+[manager](https://github.com/NBTFoundry/manager) (runs on the car) ·
+[installer](https://github.com/NBTFoundry/installer) (desktop installer, shares its core) ·
+[sdk](https://github.com/NBTFoundry/sdk) (application SDK) ·
+[doom](https://github.com/NBTFoundry/doom) (example application)
 
 Not affiliated with or endorsed by BMW AG. BMW, iDrive and NBT are trademarks of
 BMW AG.
+
+## In use
+
+<table>
+  <tr>
+    <td width="25%" align="center"><img src="docs/assets/mobile-install.webp" alt="Installing media-player: the request, the car's approval, then the Car tab lists it"><br>
+      <sub>Install: requested on the phone, approved on the car</sub></td>
+    <td width="25%" align="center"><img src="docs/assets/mobile-library.png" alt="Library: signed packages kept on the phone"><br>
+      <sub>Library: packages kept on the phone for any car</sub></td>
+    <td width="25%" align="center"><img src="docs/assets/mobile-app.png" alt="doom's page: installed version, the update, and its settings"><br>
+      <sub>An application: update and live settings</sub></td>
+    <td width="25%" align="center"><img src="docs/assets/mobile-pairing.png" alt="Pairing: the six digits to compare with the car"><br>
+      <sub>Pairing: the same six digits on phone and car</sub></td>
+  </tr>
+</table>
+
+Captured from the debug build on an emulator against the desk car (below), with
+synthetic packages: `python3 scripts/capture_screens.py`.
 
 ## How it works
 
@@ -165,4 +207,4 @@ cars; uninstalling the app deletes its keys, so each car must be paired again.
 | `modules/car-link/` | Wi-Fi join, allow-listed HTTP on the car network, file hashing (Kotlin) |
 | `modules/car-install/` | The installer core through UniFFI; holds the adapter's Wi-Fi and mobile data (Kotlin) |
 | `plugins/withCarApp.ts` | Backup off, network security config, Wi-Fi permissions |
-| `scripts/` | Desk car, contract test, installer core, release build |
+| `scripts/` | Desk car, contract test, installer core, release build, README captures |
