@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * The installer screen's state, built from the installer core's events. The
  * core's messages go to the log only; the screen shows `result`, a short

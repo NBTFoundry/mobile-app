@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The phone's Link over Node sockets, writing the same bytes as the native module (HttpWire.kt). */
 import { createReadStream, mkdirSync, writeFileSync } from 'node:fs';
 import { connect } from 'node:net';

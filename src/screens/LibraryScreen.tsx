@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Package files stored on this phone and shared by all cars. */
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from 'react';

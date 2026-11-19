@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Actions in progress and their results, kept for this app session only. */
 import { useSyncExternalStore } from 'react';
 

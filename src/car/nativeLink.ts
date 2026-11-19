@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The protocol's Link and Signer over the native modules. Native errors become fixed codes. */
 import { CarLink } from '../../modules/car-link';
 import { DeviceKey } from '../../modules/device-key';

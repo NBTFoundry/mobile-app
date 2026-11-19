@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
 import type { Messages } from './index';
 
 /** Italiano. */
 export const it: Messages = {
+  'legal.risk': "Questo può rendere inutilizzabile la tua unità multimediale. Il ripristino può richiedere assistenza o sostituzione a tue spese. Fornito COSÌ COM’È; uso a tuo rischio nei limiti di legge. Avvertenza completa in Licenze.",
+  'legal.licenses': 'Licenze',
+  'legal.all': 'Tutti i componenti',
   'common.back': '‹ Indietro',
   'common.close': 'Chiudi',
   'common.cancel': 'Annulla',

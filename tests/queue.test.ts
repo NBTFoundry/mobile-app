@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { busy, serialized } from '../src/car/queue';
 
 function gate() {

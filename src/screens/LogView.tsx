@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** A log read from the car: its end, scrolled to the newest line, and Share for the whole file. */
 import { StyleSheet, View } from 'react-native';
 import * as Sharing from 'expo-sharing';

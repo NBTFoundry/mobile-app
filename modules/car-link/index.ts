@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { requireNativeModule, type EventSubscription } from 'expo-modules-core';
 
 export type NativeLinkRequest = {

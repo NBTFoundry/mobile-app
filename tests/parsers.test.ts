@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { createHash } from 'node:crypto';
 import { parseApps, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
 import { parseWifiCode } from '../src/protocol/wifiCode';

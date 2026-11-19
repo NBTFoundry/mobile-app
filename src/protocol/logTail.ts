@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * The end of a saved log as printable text, which the phone shows while the whole file is
  * shared as it came. The native link computes the same (CarLog.kt).

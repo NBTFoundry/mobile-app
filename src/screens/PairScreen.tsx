@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Scan the car's Wi-Fi code, join, propose this phone; the driver confirms the code on the car. */
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';

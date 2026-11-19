@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
 import type { Messages } from './index';
 
 /** 简体中文. */
 export const zh: Messages = {
+  'legal.risk': "这可能使你的车载主机无法使用（变砖）。恢复可能需要由你承担费用的专业维修或更换。本软件按原样提供，在适用法律允许的范围内，使用风险由你承担。完整免责声明见“许可证”。",
+  'legal.licenses': '许可证',
+  'legal.all': '所有组件',
   'common.back': '‹ 返回',
   'common.close': '关闭',
   'common.cancel': '取消',

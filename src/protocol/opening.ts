@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Reaching the manager's worker: directly, through a wake request to the door, or by hand. */
 import { wake, StoppedFollowing, type Cancel, type Wait } from './actions';
 import type { WakeState } from './replies';

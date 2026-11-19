@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The phone's own check of an `.nbt` file: header, lengths and manifest fields.
  * The car verifies the signature; until it has, these values are unverified. */
 import { ProtocolError, fromAscii, isHex, isU64 } from './bytes';

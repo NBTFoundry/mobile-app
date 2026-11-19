@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The car's Wi-Fi as this app holds it, for the screens: one car at a time. */
 import { useSyncExternalStore } from 'react';
 import { CarLink } from '../../modules/car-link';

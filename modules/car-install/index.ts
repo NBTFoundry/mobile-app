@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { requireNativeModule, type EventSubscription } from 'expo-modules-core';
 
 /** What the installer core reports, one event at a time (see `src/installer/state.ts`). */

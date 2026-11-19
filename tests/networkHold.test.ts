@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { BACKGROUND_RELEASE_MS, IDLE_RELEASE_MS, releaseDelay } from '../src/car/networkHold';
 
 describe('releaseDelay', () => {

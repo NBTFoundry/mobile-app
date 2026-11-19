@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * A log in a scrolling box, oldest line first, kept scrolled to the newest line as lines
  * arrive, unless the reader has scrolled up. The text is not selectable: on Android a

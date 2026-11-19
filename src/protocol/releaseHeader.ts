@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The phone's own check of a manager release (`NBTRLS1` or `NBTRLS2`), as the kit
  * ships it for the manager: header, lengths and manifest fields. The car verifies
  * the signature against its installed manager key; until then these are unverified. */

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 plugins {
   id 'com.android.library'
   id 'expo-module-gradle-plugin'

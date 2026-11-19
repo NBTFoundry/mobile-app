@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** NBT-REQ-1 request signing text, key ids and the pairing code (PROTOCOL.md, paired-phone HTTP). */
 import { ProtocolError, ascii, concat, fromHex, isHex, toHex } from './bytes';
 import { sha256 } from './sha256';

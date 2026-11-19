@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 package net.cornera.nbtmgr.carlink
 
 /** Where a request may go: the car's two addresses, its two ports and the /v1/ routes. */

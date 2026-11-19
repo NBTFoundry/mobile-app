@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MPL-2.0
 # Starts an Android emulator for the dev client and waits until it has booted.
 #
 #   scripts/emulator.sh [avd-name]      (default: $NBT_AVD, else the first AVD listed)

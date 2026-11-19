@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Parsers for the car's reply bodies. Every reply is untrusted and bounded. */
 import { ProtocolError, isU64 } from './bytes';
 import { isHostPort } from './signing';

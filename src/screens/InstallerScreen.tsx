@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * Installs NBT Manager on a car from the phone, over a Wi-Fi ENET adapter. The
  * phone connects to the head unit over SSH as root, with the NBT-EVO's
@@ -5,7 +6,7 @@
  * service, only after the user confirms here.
  */
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   answerActivation, askRestart, bundled, connect, defaults, disconnect, dismissRestart, install, runTool, update, useInstaller,
 } from '../installer/session';
@@ -35,6 +36,7 @@ function Field({ label, value, onChange, numeric, secret, placeholder }: {
 
 export function InstallerScreen() {
   const styles = useStyles(makeStyles);
+  const colors = useColors();
   const state = useInstaller();
   const release = useMemo(() => bundled(), []);
   const initial = useMemo(() => defaults(), []);
@@ -57,6 +59,7 @@ export function InstallerScreen() {
   return (
     <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       <Title>{t('installer.title')}</Title>
+      <Text style={{ color: colors.warn, fontSize: 15, lineHeight: 22 }}>{t('legal.risk')}</Text>
 
       {state.running ? null : (
         <View style={styles.steps}>{STEPS.map(step => <Body key={step}>{t(step)}</Body>)}</View>

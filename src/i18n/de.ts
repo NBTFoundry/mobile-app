@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
 import type { Messages } from './index';
 
 /** Deutsch. */
 export const de: Messages = {
+  'legal.risk': "Dies kann Ihr Infotainment-Steuergerät unbrauchbar machen. Eine Reparatur oder ein Austausch kann auf Ihre Kosten erforderlich sein. Bereitstellung OHNE GEWÄHR; Nutzung auf eigenes Risiko, soweit gesetzlich zulässig. Vollständiger Hinweis unter Lizenzen.",
+  'legal.licenses': 'Lizenzen',
+  'legal.all': 'Alle Komponenten',
   'common.back': '‹ Zurück',
   'common.close': 'Schließen',
   'common.cancel': 'Abbrechen',

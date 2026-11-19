@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MPL-2.0
 """A stand-in car on the workstation: the manager's host worker and door, no head unit.
 
 Starts `managerd-test` with a temporary managed root and a temporary apps key, opens a

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The app's own preferences, in its storage: the language chosen (i18n). */
 import { File, Paths } from 'expo-file-system';
 import { isChoice, setChoice, type Choice } from '../i18n';

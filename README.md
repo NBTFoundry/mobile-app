@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
@@ -9,6 +10,8 @@
   <img src="assets/icon.png" alt="" width="72"><br>
   NBT Manager for Android
 </h1>
+
+> **Warning: installing or modifying this software can brick your head unit. Recovery may require professional service or replacement, at your expense. Provided AS IS; use at your own risk, subject to applicable law.** [Read the risk and liability disclaimer](DISCLAIMER.md).
 
 <p align="center">
   <b>Your car's applications, from your phone.</b><br>
@@ -211,3 +214,11 @@ cars; uninstalling the app deletes its keys, so each car must be paired again.
 | `modules/car-install/` | The installer core through UniFFI; holds the adapter's Wi-Fi and mobile data (Kotlin) |
 | `plugins/withCarApp.ts` | Backup off, network security config, Wi-Fi permissions |
 | `scripts/` | Desk car, contract test, installer core, release build, README captures |
+
+## License
+
+Copyright (c) 2026 Fabien Poussin. Original code, tests, build scripts and documentation are licensed under **MPL-2.0**; see [LICENSE](LICENSE).
+
+Original NBTFoundry logos, artwork and screenshots are under **MPL-2.0**, including copies in other NBTFoundry repositories. Third-party code, fonts, game data and their notices retain their own terms. Copyright permission for artwork does not grant trademark rights or imply endorsement by BMW AG or id Software.
+
+See [legal/README.md](legal/README.md) for third-party license notices.

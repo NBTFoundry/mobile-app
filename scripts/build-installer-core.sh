@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MPL-2.0
 # Builds the installer core for the car-install module: libnbt_installer.so for
 # arm64 Android and its UniFFI Kotlin binding, into
 # modules/car-install/android/generated/ (ignored by git).

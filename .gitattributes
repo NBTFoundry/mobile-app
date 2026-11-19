@@ -1,0 +1,4 @@
+
+# Keep embedded license notices consistent across platforms.
+legal/NOTICE.txt text eol=lf
+legal/notices.json text eol=lf

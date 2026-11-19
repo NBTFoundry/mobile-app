@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The installer's log, and sharing of it and of logs fetched from the car. */
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';

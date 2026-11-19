@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Every phone action: join the car's Wi-Fi (or reuse it), act, record the outcome. */
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';

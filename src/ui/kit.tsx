@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Shared typography, surfaces and large touch targets in either system theme. */
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';

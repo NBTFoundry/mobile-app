@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Cached applications on the selected car. Connections begin with a user action. */
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -54,6 +55,7 @@ export function CarScreen({ state }: { state: AppState }) {
         onPress={() => state.go({ tab: 'car', installer: true })} />
       <LanguageRow />
       {__DEV__ ? <Row title={t('car.development')} onPress={() => state.go({ tab: 'car', cars: true })} /> : null}
+      <Row title={t('legal.licenses')} onPress={() => state.go({ tab: 'car', licenses: true })} />
     </ScrollView>
   );
   const apps = car.apps ?? [];
@@ -98,6 +100,7 @@ export function CarScreen({ state }: { state: AppState }) {
         <Row title={t('car.managerLog')} onPress={() => void readLog(fetchManagerLog)} />
         <Row title={t('common.installNbt')} onPress={() => { setMenu(false); state.go({ tab: 'car', installer: true }); }} />
       </Dialog> : null}
+      <Row title={t('legal.licenses')} onPress={() => state.go({ tab: 'car', licenses: true })} />
     </ScrollView>
   );
 }

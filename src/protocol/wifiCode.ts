@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The Wi-Fi code shown by Pair a phone: `WIFI:T:WPA;S:<ssid>;P:<passphrase>;;`. */
 import { ProtocolError } from './bytes';
 

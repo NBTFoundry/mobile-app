@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { requireNativeModule } from 'expo-modules-core';
 
 export type Protection = 'strongbox' | 'tee' | 'software';

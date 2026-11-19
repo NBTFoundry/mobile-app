@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { randomBytes } from 'node:crypto';
 import { clearAppLog, readAppLog, readSystemLog } from '../src/protocol/actions';
 import { ProtocolError } from '../src/protocol/bytes';

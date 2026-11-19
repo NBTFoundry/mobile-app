@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { forgetCar, loadCars, rememberApps, renameCar, saveCar, type CarRecord } from '../src/store/cars';
 /** Delayed car reads must preserve edits and respect a forgotten pairing. */
 const storage = new Map<string, string>();

@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
 import type { Messages } from './index';
 
 /** 日本語. */
 export const ja: Messages = {
+  'legal.risk': "この操作によりヘッドユニットが使用不能になることがあります。復旧には、お客様負担での専門修理や交換が必要になる場合があります。現状のまま提供され、適用法令の範囲内で自己責任でご利用ください。免責事項の全文は「ライセンス」をご覧ください。",
+  'legal.licenses': 'ライセンス',
+  'legal.all': 'すべてのコンポーネント',
   'common.back': '‹ 戻る',
   'common.close': '閉じる',
   'common.cancel': 'キャンセル',

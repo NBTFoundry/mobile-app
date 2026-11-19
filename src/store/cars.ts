@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Paired cars, one SecureStore entry each, plus an index. Stored data is checked when read. */
 import * as SecureStore from 'expo-secure-store';
 import { parseApps, type CarApp } from '../protocol/replies';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * The installer session for the whole app: one at a time, kept while the user
  * moves between screens. Events from the native core are reduced into one

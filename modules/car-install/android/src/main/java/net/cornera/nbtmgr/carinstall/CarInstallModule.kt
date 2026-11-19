@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 package net.cornera.nbtmgr.carinstall
 
 import expo.modules.kotlin.exception.CodedException

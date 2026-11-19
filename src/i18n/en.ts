@@ -1,9 +1,13 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * English: the keys every language has (index.ts). `{name}` is filled in at run
  * time; keys ending in `.one` and `.other` are a count's two forms (tn).
  * Names stay as they are: NBT Manager, App Manager, iDrive, SSH, Wi-Fi.
  */
 export const en = {
+  'legal.risk': "This can brick your head unit. Recovery may require professional service or replacement at your expense. Provided AS IS; use at your own risk, subject to applicable law. See Licenses for the full disclaimer.",
+  'legal.licenses': 'Licenses',
+  'legal.all': 'All components',
   'common.back': '‹ Back',
   'common.close': 'Close',
   'common.cancel': 'Cancel',

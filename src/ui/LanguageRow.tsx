@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The Language row and its choices: Automatic (the phone's), then each language by its own name. */
 import { useState } from 'react';
 import { currentChoice, LANGUAGE_NAMES, LANGUAGES, systemLanguage, t, useLanguage, type Choice } from '../i18n';

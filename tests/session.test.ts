@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { randomBytes } from 'node:crypto';
 import { changeSetting, installPackage, listApps, pairPhone, removeApp, StoppedFollowing,
   type Follow } from '../src/protocol/actions';

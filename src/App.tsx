@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** NBT Manager: cars, their applications, the package library and activity. No router. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
@@ -16,9 +17,10 @@ import { CarsScreen } from './screens/CarsScreen';
 import { InstallerScreen } from './screens/InstallerScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { PairScreen } from './screens/PairScreen';
+import { LicensesScreen } from './screens/LicensesScreen';
 
 export type Tab = 'car' | 'library' | 'activity';
-export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; carId?: string };
+export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; licenses?: boolean; carId?: string };
 
 export type AppState = {
   cars: CarRecord[];
@@ -75,7 +77,7 @@ export default function App() {
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (route.pairing || route.app || route.installer || route.cars) {
+      if (route.pairing || route.app || route.installer || route.cars || route.licenses) {
         setRoute({ tab: route.tab });
         return true;
       }
@@ -96,7 +98,8 @@ export default function App() {
   };
 
   let screen;
-  if (route.pairing) screen = <PairScreen state={state} />;
+  if (route.licenses) screen = <LicensesScreen />;
+  else if (route.pairing) screen = <PairScreen state={state} />;
   else if (route.installer) screen = <InstallerScreen />;
   else if (route.cars) screen = <CarsScreen state={state} />;
   else if (route.app && cars.some(c => c.id === route.carId)) {
@@ -112,11 +115,11 @@ export default function App() {
     <SafeAreaProvider>
     <SafeAreaView style={styles.page} edges={['top', 'bottom', 'left', 'right']}>
       <StatusBar barStyle={colors.isDark ? 'light-content' : 'dark-content'} />
-      {route.pairing || route.installer || route.app || route.cars ? (
+      {route.pairing || route.installer || route.app || route.cars || route.licenses ? (
         <View style={styles.back}><Button label={t('common.back')} kind="plain" onPress={() => setRoute({ tab: route.tab })} /></View>
       ) : null}
       <View style={styles.content}>{screen}</View>
-      {!(route.pairing || route.installer || route.app || route.cars) ? <View style={styles.tabs} accessibilityRole="tablist">
+      {!(route.pairing || route.installer || route.app || route.cars || route.licenses) ? <View style={styles.tabs} accessibilityRole="tablist">
         {TABS.map(item => (
           <Pressable key={item.tab} accessibilityRole="tab" accessibilityState={{ selected: route.tab === item.tab }}
             onPress={() => setRoute({ tab: item.tab })} style={[styles.tab, route.tab === item.tab && { borderTopColor: colors.accent }]}>

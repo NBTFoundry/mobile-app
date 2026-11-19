@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Byte helpers shared by the protocol code. Inputs are untrusted and checked. */
 export class ProtocolError extends Error {
   constructor(readonly code: string) {

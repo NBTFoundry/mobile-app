@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MPL-2.0
 """Captures the phone app for the README: the debug build on an Android emulator,
 paired with the desk car (scripts/host_car.py), driven through uiautomator.
 

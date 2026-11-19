@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** An application's packages, settings and maintenance on a specific car. */
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';

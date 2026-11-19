@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 package net.cornera.nbtmgr.carlink
 
 import org.junit.Assert.assertEquals

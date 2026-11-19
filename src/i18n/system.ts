@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** The phone's language, from React Native (its first locale, as Android reports it). */
 import { I18nManager } from 'react-native';
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Actions in progress and their results. Results come from the car's state, never from the phone. */
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { stopFollowing } from '../car/operations';

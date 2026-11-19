@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # User interface
 
 Three labelled tabs: **Car**, **Library** and **Activity**. Car combines the paired

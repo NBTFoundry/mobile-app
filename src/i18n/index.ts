@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * The app's languages. Automatic follows the phone's language and shows English
  * for one the app does not have (Dutch, Korean, ...); the Language row chooses one

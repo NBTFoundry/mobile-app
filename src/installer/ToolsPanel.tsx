@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Maintenance tools for a connected head unit, folded away by default. */
 import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';

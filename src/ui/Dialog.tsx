@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Accessible modal surface with Android Back and keyboard handling. */
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from 'react-native';

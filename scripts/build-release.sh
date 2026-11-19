@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MPL-2.0
 # Builds the signed release APK locally with the dedicated keystore, then checks its
 # certificate against the committed fingerprint. Never signs with the debug key.
 #

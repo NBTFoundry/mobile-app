@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 package net.cornera.nbtmgr.devicekey
 
 import android.content.pm.PackageManager

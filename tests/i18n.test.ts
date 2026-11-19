@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 const files = new Map<string, string>();
 jest.mock('expo-file-system', () => ({
   Paths: { document: 'doc' },

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Package files copied into the app's storage, indexed by their manifest. Shared by all cars. */
 import { Directory, File, Paths } from 'expo-file-system';
 import { CarLink } from '../../modules/car-link';

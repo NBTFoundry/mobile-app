@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { withAndroidManifest, withAppBuildGradle, withDangerousMod, type ConfigPlugin } from 'expo/config-plugins';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';

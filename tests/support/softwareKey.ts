@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** A P-256 software key for tests: the phone's Keystore key, without hardware. */
 import { createPublicKey, generateKeyPairSync, sign, verify, type KeyObject } from 'node:crypto';
 import { keyId } from '../../src/protocol/signing';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Semantic colors shared by every screen. */
 import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';

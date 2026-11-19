@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Logs read from the car (PROTOCOL.md, Logs): an application's own log, NBT Manager's
  * debug log and the iDrive system log. */
 import { clearAppLog, readAppLog, readManagerLog, readSystemLog } from '../protocol/actions';

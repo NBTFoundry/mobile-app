@@ -49,5 +49,6 @@
     "tsx": "4.23.15",
     "typescript": "6.0.3"
   },
-  "packageManager": "yarn@4.1.0"
+  "packageManager": "yarn@4.1.0",
+  "license": "MPL-2.0"
 }

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import {
   LOG_LINES, addLine, connectError, initialState, logText, overall, reduce, started, working,
   type InstallerState,

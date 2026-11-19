@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** A signed-request session with one car listener. Requests are serialized: nonces are single use. */
 import { ProtocolError, ascii, isHex } from './bytes';
 import { errorCode, MAX_REPLY } from './replies';

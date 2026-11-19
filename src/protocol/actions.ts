@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** One flow per action. The car confirms pairing, installs and uninstalls; the phone only follows. */
 import { ProtocolError, fromAscii } from './bytes';
 import { parseApps, parseOk, parsePair, parseSettings, parseStatus, parseWake,

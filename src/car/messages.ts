@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** Fixed user-facing text for every failure code. Raw native or car text is never shown. */
 import { t, type Key } from '../i18n';
 import { StoppedFollowing } from '../protocol/actions';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * One car action at a time: the phone holds one car network, and nonces are single use.
  *

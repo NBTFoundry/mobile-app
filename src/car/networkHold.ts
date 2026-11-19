@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /** How long the car's network is kept when nothing uses it.
  *
  * Android drops the car's network as soon as no request holds it, so the app holds it between

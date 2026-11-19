@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 # JNA, which UniFFI's Kotlin binding calls the Rust library through: it finds
 # its classes and the binding's structures by reflection, and refers to desktop
 # Java (java.awt) that Android does not have.

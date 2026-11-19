@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /**
  * Contract test: the app's TypeScript protocol, with a software key, against the real host
  * worker and door (scripts/host_car.py). Car-side confirmations come from the harness, as
