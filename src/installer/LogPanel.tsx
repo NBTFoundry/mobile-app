@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { LOG_NAMES, logText, type InstallerState } from './state';
+import { logName, logText, type InstallerState } from './state';
+import { t } from '../i18n';
 import { Button, Panel } from '../ui/kit';
 import { LogText } from '../ui/LogText';
 
@@ -23,8 +24,8 @@ export function LogPanel({ state }: { state: InstallerState }) {
     <Panel>
       <LogText text={logText(state, details)} />
       <View style={styles.buttons}>
-        <Button label={details ? 'Fewer details' : 'More details'} kind="plain" onPress={() => setDetails(!details)} />
-        <Button label="Share" kind="plain" onPress={() => void shareLog(logText(state, true))} />
+        <Button label={t(details ? 'log.fewer' : 'log.more')} kind="plain" onPress={() => setDetails(!details)} />
+        <Button label={t('common.share')} kind="plain" onPress={() => void shareLog(logText(state, true))} />
       </View>
     </Panel>
   );
@@ -40,7 +41,7 @@ export function FetchedLogs({ state }: { state: InstallerState }) {
     <View style={styles.buttons}>
       {newest.map(log => (
         <Button key={log.uri} kind="plain" onPress={() => void share(log.uri)}
-          label={`Share ${LOG_NAMES[log.kind]}`} />
+          label={t('log.shareKind', { what: logName(log.kind) ?? '' })} />
       ))}
     </View>
   );

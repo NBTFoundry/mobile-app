@@ -43,6 +43,16 @@ flowchart TD
   action.
 - Touch targets are at least 48 dp. Labels wrap, dialogs scroll, inputs stay
   reachable with the keyboard open, and status always includes text.
+- English, French, German, Italian, Spanish, Chinese (Simplified) and Japanese
+  (`src/i18n/`). Automatic follows the phone's language (React Native's
+  `I18nManager` locale): Traditional Chinese shows Simplified, a language the
+  app lacks (Dutch, Korean, ...) English. The Language row, on the Car tab
+  before a car is paired and on Your cars, chooses one, kept in
+  `preferences.json` in the app's storage. Each language is typed against the
+  English keys; texts take `{name}` placeholders and counts a `.one` and an
+  `.other` form (`tn`). Dates use the language shown. Activity entries keep the
+  language they were written in. Application names, their settings and the
+  car's own messages are shown as sent; the installer core's log stays English.
 
 ## State
 

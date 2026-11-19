@@ -4,14 +4,20 @@
  * outcome written here. Pure, so it is tested without a phone.
  */
 import type { InstallerEvent, LogKind } from '../../modules/car-install';
+import { t, type Key } from '../i18n';
 
 export type LogLine = { at: number; detail: boolean; text: string };
 export type FetchedLog = { kind: LogKind; uri: string; size: number };
 
-/** What each kind is called on the screen. */
-export const LOG_NAMES: Record<LogKind, string> = {
-  collection: 'collected logs', system: 'iDrive log', debug: 'manager log',
+const LOG_KEYS: Record<LogKind, Key> = {
+  collection: 'installer.logCollection', system: 'installer.logSystem', debug: 'installer.logDebug',
 };
+
+/** What a kind is called on the screen; undefined for one this app does not know. */
+export function logName(kind: LogKind): string | undefined {
+  const key = LOG_KEYS[kind];
+  return key ? t(key) : undefined;
+}
 
 export type InstallerState = {
   /** A session exists: connecting, waiting for an answer or connected. */
@@ -74,31 +80,30 @@ export function reduce(state: InstallerState, event: InstallerEvent, at: number)
       return { ...state, phase: { index: event.index, count: event.count, label: event.label },
         progress: { sent: 0, total: event.bytes } };
     case 'connected':
-      return { ...said('Connected.'), connected: true, ask: undefined };
+      return { ...said(t('installer.connected')), connected: true, ask: undefined };
     case 'target':
       return { ...state, target: event.ok, phase: undefined };
     case 'progress':
       return { ...state, progress: { sent: event.sent, total: event.total } };
     case 'installFinished':
-      return { ...said(event.ok ? 'Installed.' : 'Install failed.'),
+      return { ...said(t(event.ok ? 'installer.installed' : 'installer.installFailed')),
         busy: false, phase: undefined };
     case 'restartNeeded':
       return { ...state, restart: true };
     case 'updateFinished':
-      return { ...said(event.ok ? 'Updated. Open NBT Manager on the car for 10 seconds to finish.'
-        : 'Update failed.'), busy: false, phase: undefined };
+      return { ...said(t(event.ok ? 'installer.updated' : 'installer.updateFailed')), busy: false, phase: undefined };
     case 'toolFinished':
-      return { ...outcome(line(event.text), event.ok ? 'Done.' : 'Failed.', at),
+      return { ...outcome(line(event.text), t(event.ok ? 'installer.done' : 'installer.failed'), at),
         busy: false, phase: undefined };
     case 'log': {
-      const what = LOG_NAMES[event.kind];
-      if (!what) return said('Could not save the file.');
-      if (!event.uri) return said(`Could not save the ${what}.`);
-      return { ...said(`Got the ${what}.`),
+      const what = logName(event.kind);
+      if (!what) return said(t('installer.saveFileFailed'));
+      if (!event.uri) return said(t('installer.saveLogFailed', { what }));
+      return { ...said(t('installer.gotLog', { what })),
         fetched: [{ kind: event.kind, uri: event.uri, size: event.size }, ...state.fetched].slice(0, 10) };
     }
     case 'finished':
-      return { ...outcome(line(event.text), state.connected ? 'Disconnected.' : 'Could not connect.', at),
+      return { ...outcome(line(event.text), t(state.connected ? 'installer.disconnected' : 'installer.couldNotConnect'), at),
         running: false, connected: false, target: false, busy: false, ask: undefined, phase: undefined,
         restart: false };
   }
@@ -111,7 +116,8 @@ export function overall(state: InstallerState): { value: number; text: string } 
   const share = progress.total > 0 ? Math.min(1, progress.sent / progress.total) : 0;
   return {
     value: Math.min(1, (phase.index + share) / Math.max(1, phase.count)),
-    text: `Step ${phase.index + 1} of ${phase.count}: ${phase.label}`,
+    // The core's step names are English, as its log.
+    text: t('installer.step', { index: phase.index + 1, count: phase.count, label: phase.label }),
   };
 }
 
@@ -126,15 +132,15 @@ export function logText(state: InstallerState, details: boolean, newestFirst = f
 export function connectError(code: string): string {
   switch (code) {
     case 'no-wifi':
-      return 'Join the adapter’s Wi-Fi first.';
+      return t('installer.noWifi');
     case 'no-address':
-      return 'The Wi-Fi is not ready yet. Try again in a moment.';
+      return t('installer.noAddress');
     case 'invalid':
-      return 'Check the settings.';
+      return t('installer.invalid');
     case 'busy':
-      return 'Already connected.';
+      return t('installer.busy');
     default:
-      return 'Could not start.';
+      return t('installer.couldNotStart');
   }
 }
 

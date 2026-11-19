@@ -9,6 +9,8 @@ import type { CarRecord } from '../store/cars';
 import { appLabel, newestFor, updateAvailable } from '../store/library';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, useColors, useStyles } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { LanguageRow } from '../ui/LanguageRow';
+import { formatDateTime, t } from '../i18n';
 import { LogView } from './LogView';
 
 export function CarScreen({ state }: { state: AppState }) {
@@ -42,15 +44,16 @@ export function CarScreen({ state }: { state: AppState }) {
   };
   if (!car) return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Title>Car</Title>
+      <Title>{t('car.title')}</Title>
       <Panel>
-        <Heading>Your car, connected</Heading>
-        <Body muted>Pair this phone to manage your car’s applications.</Body>
-        <Button label="Pair a car" onPress={() => state.go({ tab: 'car', pairing: true })} />
+        <Heading>{t('car.welcome')}</Heading>
+        <Body muted>{t('car.welcomeBody')}</Body>
+        <Button label={t('common.pairCar')} onPress={() => state.go({ tab: 'car', pairing: true })} />
       </Panel>
-      <Row title="Install NBT Manager on a car" detail="Set up a car using a Wi-Fi ENET adapter"
+      <Row title={t('common.installNbt')} detail={t('car.installDetail')}
         onPress={() => state.go({ tab: 'car', installer: true })} />
-      {__DEV__ ? <Row title="Development" onPress={() => state.go({ tab: 'car', cars: true })} /> : null}
+      <LanguageRow />
+      {__DEV__ ? <Row title={t('car.development')} onPress={() => state.go({ tab: 'car', cars: true })} /> : null}
     </ScrollView>
   );
   const apps = car.apps ?? [];
@@ -60,40 +63,40 @@ export function CarScreen({ state }: { state: AppState }) {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.header}>
-        <View style={{ flex: 1, minWidth: 200 }}><Label>Car</Label><Title>{car.name}</Title></View>
-        <Button label="Manage" kind="plain" onPress={() => setMenu(true)} />
+        <View style={{ flex: 1, minWidth: 200 }}><Label>{t('car.title')}</Label><Title>{car.name}</Title></View>
+        <Button label={t('car.manage')} kind="plain" onPress={() => setMenu(true)} />
       </View>
       <Panel>
-        {ours && connection.state === 'joining' ? <Busy text="Connecting…" /> : (
-          <Body muted>{car.desk ? 'Desk connection' : ours && connection.state === 'connected'
-            ? 'Connected' : ours && connection.problem ? connection.problem : 'Not connected'}</Body>
+        {ours && connection.state === 'joining' ? <Busy text={t('common.connecting')} /> : (
+          <Body muted>{car.desk ? t('car.desk') : ours && connection.state === 'connected'
+            ? t('car.connected') : ours && connection.problem ? connection.problem : t('car.notConnected')}</Body>
         )}
-        {car.appsSeenAt ? <Body muted>{`Last read ${new Date(car.appsSeenAt).toLocaleString()}`}</Body> : null}
-        <Button label={car.apps === undefined ? 'Read applications' : 'Refresh applications'} disabled={refreshing}
+        {car.appsSeenAt ? <Body muted>{t('car.lastRead', { time: formatDateTime(car.appsSeenAt) })}</Body> : null}
+        <Button label={t(car.apps === undefined ? 'car.readApps' : 'car.refreshApps')} disabled={refreshing}
           onPress={() => void refresh()} />
-        {refreshing ? <Busy text="Reading applications…" /> : null}
+        {refreshing ? <Busy text={t('car.readingApps')} /> : null}
       </Panel>
-      {refreshProblem ? <Row title="Couldn’t read applications" detail="View Activity for details"
+      {refreshProblem ? <Row title={t('car.readFailed')} detail={t('car.readFailedDetail')}
         onPress={() => state.go({ tab: 'activity' })} /> : null}
-      <Label>Installed</Label>
-      {car.apps === undefined ? <Body muted>Read the applications to see what’s installed.</Body>
-        : !apps.length ? <Body muted>No applications installed.</Body> : null}
+      <Label>{t('car.installed')}</Label>
+      {car.apps === undefined ? <Body muted>{t('car.readToSee')}</Body>
+        : !apps.length ? <Body muted>{t('car.noApps')}</Body> : null}
       <View>{apps.map(app => <Row key={app.id} title={appLabel(app.id)} detail={app.version}
-        tag={updateAvailable(library, app) ? 'Update available' : undefined} tagColor={colors.accent}
+        tag={updateAvailable(library, app) ? t('car.updateAvailable') : undefined} tagColor={colors.accent}
         onPress={() => state.go({ tab: 'car', app: app.id })} />)}</View>
-      {available.length ? <><Label>From your library</Label><View>{available.map(entry => (
+      {available.length ? <><Label>{t('car.fromLibrary')}</Label><View>{available.map(entry => (
         <Row key={entry.info.app} title={appLabel(entry.info.app)} detail={entry.info.version}
           onPress={() => state.go({ tab: 'car', app: entry.info.app })} />
       ))}</View></> : null}
-      {readingLog ? <Busy text="Getting the log…" /> : null}
+      {readingLog ? <Busy text={t('common.gettingLog')} /> : null}
       {log ? <LogView log={log} onClose={() => setLog(undefined)} /> : null}
       {logProblem && !log ? <Body>{logProblem}</Body> : null}
       {menu ? <Dialog title={car.name} onClose={() => setMenu(false)}>
-        <Row title="Switch or manage cars" onPress={() => { setMenu(false); state.go({ tab: 'car', cars: true }); }} />
-        {!car.desk ? <Row title="Connect" onPress={() => { setMenu(false); void connectCar(car); }} /> : null}
-        <Row title="iDrive log" onPress={() => void readLog(fetchSystemLog)} />
-        <Row title="Manager log" onPress={() => void readLog(fetchManagerLog)} />
-        <Row title="Install NBT Manager on a car" onPress={() => { setMenu(false); state.go({ tab: 'car', installer: true }); }} />
+        <Row title={t('car.switch')} onPress={() => { setMenu(false); state.go({ tab: 'car', cars: true }); }} />
+        {!car.desk ? <Row title={t('car.connect')} onPress={() => { setMenu(false); void connectCar(car); }} /> : null}
+        <Row title={t('car.idriveLog')} onPress={() => void readLog(fetchSystemLog)} />
+        <Row title={t('car.managerLog')} onPress={() => void readLog(fetchManagerLog)} />
+        <Row title={t('common.installNbt')} onPress={() => { setMenu(false); state.go({ tab: 'car', installer: true }); }} />
       </Dialog> : null}
     </ScrollView>
   );

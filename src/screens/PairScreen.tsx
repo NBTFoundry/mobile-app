@@ -7,6 +7,7 @@ import { pairCar, stopFollowing } from '../car/operations';
 import { parseWifiCode } from '../protocol/wifiCode';
 import { useActivities } from '../store/activity';
 import { Body, Busy, Button, Panel, Title, useColors, useStyles } from '../ui/kit';
+import { t } from '../i18n';
 
 export function PairScreen({ state }: { state: AppState }) {
   const styles = useStyles(makeStyles);
@@ -23,7 +24,7 @@ export function PairScreen({ state }: { state: AppState }) {
     try {
       wifi = parseWifiCode(data);
     } catch {
-      setProblem('That is not the car’s code.');
+      setProblem(t('pair.notCode'));
       return;
     }
     scanned.current = true;
@@ -34,22 +35,22 @@ export function PairScreen({ state }: { state: AppState }) {
   if (activity) {
     return (
       <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-        <Title>Pair this phone</Title>
+        <Title>{t('pair.title')}</Title>
         {activity.digits && activity.phase === 'running' ? (
           <Panel>
-            <Body>Confirm on the car if it shows:</Body>
-            <Text style={styles.digits} accessibilityLabel={`Code ${activity.digits.split('').join(' ')}`}>
+            <Body>{t('pair.confirmIf')}</Body>
+            <Text style={styles.digits} accessibilityLabel={t('pair.code', { digits: activity.digits.split('').join(' ') })}>
               {`${activity.digits.slice(0, 3)} ${activity.digits.slice(3)}`}
             </Text>
           </Panel>
         ) : null}
         {activity.phase === 'running' ? <Busy text={activity.detail} /> : <Body>{activity.detail}</Body>}
         {activity.phase === 'running' && activity.digits
-          ? <Button label="Stop waiting" kind="plain" onPress={() => stopFollowing(activity.id)} /> : null}
+          ? <Button label={t('pair.stopWaiting')} kind="plain" onPress={() => stopFollowing(activity.id)} /> : null}
         {activity.phase === 'done'
-          ? <Button label="Show apps" onPress={() => state.go({ tab: 'car' })} /> : null}
+          ? <Button label={t('pair.showApps')} onPress={() => state.go({ tab: 'car' })} /> : null}
         {activity.phase !== 'running' && activity.phase !== 'done'
-          ? <Button label="Scan again" onPress={() => {
+          ? <Button label={t('pair.scanAgain')} onPress={() => {
             scanned.current = false;
             setActivityId(undefined);
           }} /> : null}
@@ -60,14 +61,14 @@ export function PairScreen({ state }: { state: AppState }) {
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Title>Pair a car</Title>
-      <Body muted>On the car: App Manager › Settings › Pair a phone. Then scan the code.</Body>
+      <Title>{t('common.pairCar')}</Title>
+      <Body muted>{t('pair.howTo')}</Body>
       {!permission?.granted ? (
         <Panel>
-          <Body muted>Camera access lets you scan the car’s Wi-Fi code.</Body>
+          <Body muted>{t('pair.cameraWhy')}</Body>
           {permission?.canAskAgain === false
-            ? <Button label="Open app settings" onPress={() => void Linking.openSettings()} />
-            : <Button label="Allow the camera" onPress={() => void requestPermission()} />}
+            ? <Button label={t('pair.openSettings')} onPress={() => void Linking.openSettings()} />
+            : <Button label={t('pair.allowCamera')} onPress={() => void requestPermission()} />}
         </Panel>
       ) : (
         <View style={styles.camera}>

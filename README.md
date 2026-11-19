@@ -27,7 +27,9 @@ the phone never approves anything. On a car without NBT Manager, **Install NBT
 Manager on a car** installs it over a Wi-Fi ENET adapter.
 
 Expo SDK 58, React Native 0.88, Android 10 and later, application id
-`net.cornera.nbtmgr`.
+`net.cornera.nbtmgr`. In English, French, German, Italian, Spanish, Chinese and
+Japanese, following the phone's language (English for any other); Language,
+on the Car tab or Your cars, chooses one ([docs/ui.md](docs/ui.md)).
 
 **Supported head units:** BMW NBT Evo (iDrive 6). Support for the earlier NBT
 may come later.
@@ -202,6 +204,7 @@ cars; uninstalling the app deletes its keys, so each car must be paired again.
 | `src/car/` | Native link and signer, the action runner, user-facing messages |
 | `src/store/` | Cars (SecureStore), library (app storage), activity |
 | `src/screens/`, `src/ui/` | Screens and shared components ([docs/ui.md](docs/ui.md)) |
+| `src/i18n/` | The texts in each language, the language shown and its detection |
 | `src/installer/` | Manager installer session, state, tools and log panels |
 | `modules/device-key/` | P-256 keys in the Android Keystore (Kotlin) |
 | `modules/car-link/` | Wi-Fi join, allow-listed HTTP on the car network, file hashing (Kotlin) |

@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { CarInstall, type ConnectSettings, type InstallTool } from '../../modules/car-install';
 import { releaseCarNetwork } from '../car/operations';
+import { t } from '../i18n';
 import {
   addLine, connectError, initialState, outcome, reduce, started, working, type InstallerState,
 } from './state';
@@ -60,13 +61,13 @@ export async function connect(settings: ConnectSettings): Promise<void> {
   if (current().running) return;
   // The car's own Wi-Fi (App Manager's) must not be taken for the adapter's.
   releaseCarNetwork();
-  set(started(addLine(current(), 'Connecting…', now())));
+  set(started(addLine(current(), t('common.connecting'), now())));
   await activateKeepAwakeAsync(KEEP_AWAKE);
   try {
     const result = await CarInstall.connect(settings);
-    set(addLine(current(), `This phone is ${result.addresses.join(', ')} on the Wi-Fi.`, now(), true));
+    set(addLine(current(), t('installer.addresses', { addresses: result.addresses.join(', ') }), now(), true));
     if (!result.mobileData) {
-      set(outcome(current(), 'Mobile data is off. Turn it on if asked to turn on SSH.', now()));
+      set(outcome(current(), t('installer.mobileDataOff'), now()));
     }
   } catch (error) {
     const text = error instanceof Error ? error.message : '';

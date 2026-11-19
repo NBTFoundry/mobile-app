@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Title, useColors, useStyles } from './kit';
+import { t } from '../i18n';
 
 export function Dialog({ title, children, onClose }: {
   title: string; children: ReactNode; onClose: () => void;
@@ -14,7 +15,7 @@ export function Dialog({ title, children, onClose }: {
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
             <Title>{title}</Title>
             {children}
-            <Button label="Close" kind="plain" onPress={onClose} />
+            <Button label={t('common.close')} kind="plain" onPress={onClose} />
           </ScrollView>
         </View>
       </KeyboardAvoidingView>

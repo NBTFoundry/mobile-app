@@ -12,6 +12,7 @@ import type { WifiCode } from '../protocol/wifiCode';
 import { startActivity, updateActivity, type ActivityPhase } from '../store/activity';
 import { forgetCar, loadCars, newCarId, saveCar, rememberApps, type CarRecord } from '../store/cars';
 import { appLabel, packageFile, type LibraryEntry } from '../store/library';
+import { t, tn } from '../i18n';
 import { setConnection } from './connection';
 import { describeError, describeOpening, describeStatus } from './messages';
 import { createKey, deviceSigner, linkCode, nativeLink, removeKey } from './nativeLink';
@@ -132,10 +133,10 @@ export async function onCarNetwork<T>(car: Network, run: () => Promise<T>, id?: 
     if (!car.desk) {
       await wifiPermission();
       await joinCar(car, () => {
-        if (id !== undefined) updateActivity(id, { detail: 'Connecting…' });
+        if (id !== undefined) updateActivity(id, { detail: t('common.connecting') });
       });
     }
-    if (id !== undefined) updateActivity(id, { detail: 'Connected.' });
+    if (id !== undefined) updateActivity(id, { detail: t('common.connected') });
     return await run();
   } finally {
     running--;
@@ -152,11 +153,11 @@ export async function onCarNetwork<T>(car: Network, run: () => Promise<T>, id?: 
 export function act<T>(carName: string, title: string, detail: string,
   run: (id: number, cancel: Cancel) => Promise<{ value: T; phase: ActivityPhase; detail: string }>,
   onStarted?: (id: number) => void, first = false): Promise<T | undefined> {
-  const id = startActivity(carName, title, busy() ? 'Waiting for the action before it.' : detail);
+  const id = startActivity(carName, title, busy() ? t('op.waitingBefore') : detail);
   onStarted?.(id);
   const result = serialized(async turn => {
     if (!turn.stillWanted()) {
-      updateActivity(id, { phase: 'failed', detail: 'Stopped to pair a car.' });
+      updateActivity(id, { phase: 'failed', detail: t('op.stoppedForPairing') });
       return undefined;
     }
     updateActivity(id, { detail });
@@ -215,14 +216,14 @@ async function remember(car: CarRecord, session: CarSession): Promise<CarRecord>
 export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: number) => void): Promise<CarRecord | undefined> {
   const [desk, deskPort = '8080'] = deskTarget ? deskTarget.split(':') : [];
   const name = cleanPhoneName(String((Platform.constants as { Model?: string }).Model ?? 'Android phone'));
-  return act(wifi.ssid, 'Pair this phone', 'Joining the car’s Wi-Fi.', async (id, cancel) => {
+  return act(wifi.ssid, t('pair.title'), t('common.joining'), async (id, cancel) => {
     const carId = newCarId();
     const alias = `car-${carId}`;
     const key = await createKey(alias);
     let paired = false;
     try {
       return await onCarNetwork({ ...wifi, desk }, async () => {
-        updateActivity(id, { detail: 'Asking the car to pair.' });
+        updateActivity(id, { detail: t('op.asking') });
         const signer = deviceSigner(alias, keyId(key.publicKey));
         const candidates = desk ? [`127.0.0.1:${deskPort}`] : ['172.16.222.1:8080', '172.16.224.1:8080'];
         let session: CarSession | undefined;
@@ -237,7 +238,7 @@ export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: nu
           }
         }
         if (!session) throw new LinkError('refused');
-        const compare = 'Check that the car shows the same code, then confirm on the car.';
+        const compare = t('op.compare');
         const result = await pairPhone(session, name, key.publicKey, digits => updateActivity(id, { digits, detail: compare }), {
           ...follow(id, cancel),
           onStatus: status => updateActivity(id, { detail: status.state === 'waiting' ? compare : describeStatus(status) }),
@@ -257,7 +258,7 @@ export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: nu
         await saveCar(car, true);
         paired = true;
         const updated = await remember(car, session).catch(() => car);
-        return { value: updated, phase: 'done' as const, detail: 'Paired.' };
+        return { value: updated, phase: 'done' as const, detail: t('op.paired') };
       }, id);
     } finally {
       if (!paired) await removeKey(alias);
@@ -266,27 +267,26 @@ export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: nu
 }
 
 export function refreshApps(car: CarRecord): Promise<CarRecord | undefined> {
-  return act(car.name, 'Read applications', 'Joining the car’s Wi-Fi.', async id =>
+  return act(car.name, t('car.readApps'), t('common.joining'), async id =>
     onCarNetwork(car, async () => {
       const updated = await remember(car, await anyListener(car));
-      return { value: updated, phase: 'done' as const, detail: `${updated.apps?.length ?? 0} applications on the car.` };
+      return { value: updated, phase: 'done' as const, detail: tn('op.appsOnCar', updated.apps?.length ?? 0) };
     }, id));
 }
 
 export function loadSettings(car: CarRecord, app: string): Promise<Setting[] | undefined> {
-  return act(car.name, `Settings of ${app}`, 'Joining the car’s Wi-Fi.', async id =>
+  return act(car.name, t('op.settingsOf', { app }), t('common.joining'), async id =>
     onCarNetwork(car, async () => {
       const settings = await readSettings(await anyListener(car), app);
-      const count = settings.length === 1 ? '1 setting' : `${settings.length} settings`;
-      return { value: settings, phase: 'done' as const, detail: `${count} read.` };
+      return { value: settings, phase: 'done' as const, detail: tn('op.settingsRead', settings.length) };
     }, id));
 }
 
 export function applySetting(car: CarRecord, app: string, setting: Setting, value: string): Promise<boolean | undefined> {
-  return act(car.name, `${setting.label}: ${value}`, 'Joining the car’s Wi-Fi.', async id =>
+  return act(car.name, t('op.settingTitle', { label: setting.label, value }), t('common.joining'), async id =>
     onCarNetwork(car, async () => {
       await changeSetting(await anyListener(car), app, setting.key, value);
-      return { value: true, phase: 'done' as const, detail: `Applied to ${app}.` };
+      return { value: true, phase: 'done' as const, detail: t('op.applied', { app }) };
     }, id));
 }
 
@@ -302,19 +302,18 @@ async function managerAction(car: CarRecord, id: number, cancel: Cancel,
 export function install(car: CarRecord, entry: LibraryEntry): Promise<Status | undefined> {
   const installed = car.apps?.some(a => a.id === entry.info.app);
   const manager = entry.info.app === 'manager';
-  const title = `${installed || manager ? 'Update' : 'Install'} ${appLabel(entry.info.app)} ${entry.info.version}`;
-  return act(car.name, title, 'Joining the car’s Wi-Fi.', (id, cancel) => onCarNetwork(car, () =>
+  const title = t(installed || manager ? 'op.updateTitle' : 'op.installTitle',
+    { app: appLabel(entry.info.app), version: entry.info.version });
+  return act(car.name, title, t('common.joining'), (id, cancel) => onCarNetwork(car, () =>
     managerAction(car, id, cancel, worker => {
-      updateActivity(id, { detail: 'Sending the package.', progress: 0 });
+      updateActivity(id, { detail: t('op.sending'), progress: 0 });
       return installPackage(worker, { uri: packageFile(entry.sha256).uri, size: entry.size, sha256: entry.sha256 },
         (sent, total) => updateActivity(id, { progress: total ? sent / total : 0 }), follow(id, cancel));
-    }).then(result => (manager && result.phase === 'done' ? { ...result, detail: MANAGER_ACCEPTED } : result)), id));
+    // The car keeps an approved manager release and starts it at the next opening.
+    }).then(result => (manager && result.phase === 'done' ? { ...result, detail: t('op.managerAccepted') } : result)), id));
 }
 
-/** The car keeps an approved manager release and starts it at the next opening. */
-const MANAGER_ACCEPTED = 'Done. It starts next time App Manager opens.';
-
 export function uninstall(car: CarRecord, app: string): Promise<Status | undefined> {
-  return act(car.name, `Uninstall ${app}`, 'Joining the car’s Wi-Fi.', (id, cancel) => onCarNetwork(car, () =>
+  return act(car.name, t('op.uninstallTitle', { app }), t('common.joining'), (id, cancel) => onCarNetwork(car, () =>
     managerAction(car, id, cancel, worker => removeApp(worker, app, follow(id, cancel))), id));
 }

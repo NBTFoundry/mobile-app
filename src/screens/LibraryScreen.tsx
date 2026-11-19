@@ -7,6 +7,7 @@ import { describeError } from '../car/messages';
 import { addPackage, appLabel, removePackage } from '../store/library';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, formatSize } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { formatDate, t } from '../i18n';
 
 export function LibraryScreen({ state }: { state: AppState }) {
   const [message, setMessage] = useState<string>();
@@ -19,7 +20,7 @@ export function LibraryScreen({ state }: { state: AppState }) {
       if (picked.canceled || !picked.assets[0]) return;
       const asset = picked.assets[0];
       const next = await addPackage(state.library, asset.uri, asset.name);
-      setMessage(next === state.library ? 'Already in your library.' : 'Package added.');
+      setMessage(t(next === state.library ? 'library.already' : 'library.added'));
       state.setLibrary(next);
     } catch (error) { setMessage(describeError(error)); }
     finally { setBusy(false); }
@@ -32,31 +33,31 @@ export function LibraryScreen({ state }: { state: AppState }) {
     } catch (error) { setMessage(describeError(error)); }
     finally { setBusy(false); }
   };
-  if (!state.libraryReady) return <View style={styles.page}><Title>Library</Title><Busy text="Reading library…" /></View>;
+  if (!state.libraryReady) return <View style={styles.page}><Title>{t('library.title')}</Title><Busy text={t('library.reading')} /></View>;
   const entry = state.library.find(item => item.sha256 === selected);
   return <ScrollView contentContainerStyle={styles.page}>
     <View style={styles.header}>
-      <Title>Library</Title>
-      {state.library.length ? <Button label="Add file" kind="plain" disabled={busy} onPress={() => void add()} /> : null}
+      <Title>{t('library.title')}</Title>
+      {state.library.length ? <Button label={t('library.addFile')} kind="plain" disabled={busy} onPress={() => void add()} /> : null}
     </View>
-    <Body muted>Packages on this phone, ready for any of your cars.</Body>
+    <Body muted>{t('library.intro')}</Body>
     {state.library.length ? <View>{state.library.map(item => (
       <Row key={item.sha256} title={appLabel(item.info.app)} detail={`${item.info.version} · ${formatSize(item.size)}`}
         onPress={() => setSelected(item.sha256)} />
     ))}</View> : <Panel>
-      <Heading>Your library starts here</Heading>
-      <Body muted>Add an application package or an NBT Manager update.</Body>
-      <Button label="Add a file" disabled={busy} onPress={() => void add()} />
+      <Heading>{t('library.emptyHeading')}</Heading>
+      <Body muted>{t('library.emptyBody')}</Body>
+      <Button label={t('library.addAFile')} disabled={busy} onPress={() => void add()} />
     </Panel>}
-    {busy ? <Busy text="Updating library…" /> : null}
+    {busy ? <Busy text={t('library.updating')} /> : null}
     {message ? <Body>{message}</Body> : null}
     {entry ? <Dialog title={`${appLabel(entry.info.app)} ${entry.info.version}`} onClose={() => setSelected(undefined)}>
       <Body>{entry.fileName}</Body>
-      <Body muted>{`${formatSize(entry.size)} · Added ${new Date(entry.addedAt).toLocaleDateString()}`}</Body>
-      <Label>{`Sequence ${entry.info.sequence}`}</Label>
-      <Body muted>The car verifies this package before installing it.</Body>
-      <Body muted>Removing this file frees phone storage. Applications installed on your cars stay available.</Body>
-      <Button label="Remove file" kind="danger" disabled={busy} onPress={() => void remove(entry.sha256)} />
+      <Body muted>{t('library.sizeAdded', { size: formatSize(entry.size), date: formatDate(entry.addedAt) })}</Body>
+      <Label>{t('app.sequence', { sequence: entry.info.sequence })}</Label>
+      <Body muted>{t('library.verifies')}</Body>
+      <Body muted>{t('library.removeNote')}</Body>
+      <Button label={t('library.remove')} kind="danger" disabled={busy} onPress={() => void remove(entry.sha256)} />
     </Dialog> : null}
   </ScrollView>;
 }

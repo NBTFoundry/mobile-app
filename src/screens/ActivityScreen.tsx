@@ -3,12 +3,13 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { stopFollowing } from '../car/operations';
 import { useActivities, type ActivityPhase } from '../store/activity';
 import { Body, Busy, Button, Panel, Progress, Title, useColors, useStyles } from '../ui/kit';
+import { formatTime, t } from '../i18n';
 
 const phases = (colors: ReturnType<typeof useColors>): Record<ActivityPhase, { label: string; color: string }> => ({
-  running: { label: 'In progress', color: colors.accent },
-  done: { label: 'Done', color: colors.ok },
-  refused: { label: 'Not done', color: colors.warn },
-  failed: { label: 'Failed', color: colors.bad },
+  running: { label: t('activity.running'), color: colors.accent },
+  done: { label: t('activity.done'), color: colors.ok },
+  refused: { label: t('activity.refused'), color: colors.warn },
+  failed: { label: t('activity.failed'), color: colors.bad },
 });
 
 export function ActivityScreen() {
@@ -18,22 +19,22 @@ export function ActivityScreen() {
   const activities = useActivities();
   return (
     <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-      <Title>Activity</Title>
-      {activities.length === 0 ? <Body muted>Your actions will appear here.</Body> : null}
+      <Title>{t('activity.title')}</Title>
+      {activities.length === 0 ? <Body muted>{t('activity.empty')}</Body> : null}
       {activities.map(a => (
         <Panel key={a.id}>
           <View style={styles.head}>
             <Text style={styles.title}>{a.title}</Text>
             <Text style={[styles.phase, { color: PHASE[a.phase].color }]}>{PHASE[a.phase].label}</Text>
           </View>
-          <Body muted>{`${a.carName} · ${new Date(a.startedAt).toLocaleTimeString()}`}</Body>
+          <Body muted>{`${a.carName} · ${formatTime(a.startedAt)}`}</Body>
           {a.digits && a.phase === 'running' ? (
             <Text style={styles.digits}>{`${a.digits.slice(0, 3)} ${a.digits.slice(3)}`}</Text>
           ) : null}
           {a.phase === 'running' ? <Busy text={a.detail} /> : <Body>{a.detail}</Body>}
           {a.phase === 'running' && a.progress !== undefined && a.progress < 1 ? <Progress value={a.progress} /> : null}
           {a.phase === 'running' ? (
-            <Button label="Stop following" kind="plain" onPress={() => stopFollowing(a.id)} />
+            <Button label={t('activity.stopFollowing')} kind="plain" onPress={() => stopFollowing(a.id)} />
           ) : null}
         </Panel>
       ))}

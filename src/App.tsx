@@ -2,9 +2,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { setSystemLocale, t, useLanguage, type Key } from './i18n';
+import { systemLocale } from './i18n/system';
 import { loadCars, selectCar, type CarRecord } from './store/cars';
 import { loadLibrary, type LibraryEntry } from './store/library';
 import { runningCount, useActivities } from './store/activity';
+import { loadPreferences } from './store/preferences';
 import { Button, useColors, useStyles } from './ui/kit';
 import { ActivityScreen } from './screens/ActivityScreen';
 import { AppScreen } from './screens/AppScreen';
@@ -28,12 +31,16 @@ export type AppState = {
   go: (route: Route) => void;
 };
 
-const TABS: { tab: Tab; label: string }[] = [
-  { tab: 'car', label: 'Car' },
-  { tab: 'library', label: 'Library' }, { tab: 'activity', label: 'Activity' },
+const TABS: { tab: Tab; label: Key }[] = [
+  { tab: 'car', label: 'tab.car' },
+  { tab: 'library', label: 'tab.library' }, { tab: 'activity', label: 'tab.activity' },
 ];
 
+// The phone's language, before the first screen; a saved choice follows (loadPreferences).
+setSystemLocale(systemLocale());
+
 export default function App() {
+  useLanguage(); // every screen reads the language when it renders
   const colors = useColors();
   const styles = useStyles(makeStyles);
   const [route, setRoute] = useState<Route>({ tab: 'car' });
@@ -56,6 +63,7 @@ export default function App() {
 
   useEffect(() => {
     let live = true;
+    void loadPreferences();
     void reloadCars();
     void loadLibrary().then(entries => {
       if (live) { setLibrary(entries); setLibraryReady(true); }
@@ -105,15 +113,15 @@ export default function App() {
     <SafeAreaView style={styles.page} edges={['top', 'bottom', 'left', 'right']}>
       <StatusBar barStyle={colors.isDark ? 'light-content' : 'dark-content'} />
       {route.pairing || route.installer || route.app || route.cars ? (
-        <View style={styles.back}><Button label="‹ Back" kind="plain" onPress={() => setRoute({ tab: route.tab })} /></View>
+        <View style={styles.back}><Button label={t('common.back')} kind="plain" onPress={() => setRoute({ tab: route.tab })} /></View>
       ) : null}
       <View style={styles.content}>{screen}</View>
       {!(route.pairing || route.installer || route.app || route.cars) ? <View style={styles.tabs} accessibilityRole="tablist">
-        {TABS.map(t => (
-          <Pressable key={t.tab} accessibilityRole="tab" accessibilityState={{ selected: route.tab === t.tab }}
-            onPress={() => setRoute({ tab: t.tab })} style={[styles.tab, route.tab === t.tab && { borderTopColor: colors.accent }]}>
-            <Text style={[styles.tabText, route.tab === t.tab && styles.tabActive]}>
-              {t.label}{t.tab === 'activity' && running ? ` (${running})` : ''}
+        {TABS.map(item => (
+          <Pressable key={item.tab} accessibilityRole="tab" accessibilityState={{ selected: route.tab === item.tab }}
+            onPress={() => setRoute({ tab: item.tab })} style={[styles.tab, route.tab === item.tab && { borderTopColor: colors.accent }]}>
+            <Text style={[styles.tabText, route.tab === item.tab && styles.tabActive]}>
+              {t(item.label)}{item.tab === 'activity' && running ? ` (${running})` : ''}
             </Text>
           </Pressable>
         ))}

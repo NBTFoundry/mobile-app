@@ -4,49 +4,50 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { runTool } from './session';
 import { CONFIG_MAX } from './state';
 import { Body, Button, Label, Panel, useColors, useStyles } from '../ui/kit';
+import { t } from '../i18n';
 
 export function ToolsPanel({ ready, testApp, example }: { ready: boolean; testApp: boolean; example: string }) {
   const styles = useStyles(makeStyles);
   const [open, setOpen] = useState(false);
   const [config, setConfig] = useState(example);
   const [confirmRemoval, setConfirmRemoval] = useState(false);
-  if (!open) return <Button label="More tools" kind="plain" onPress={() => setOpen(true)} />;
+  if (!open) return <Button label={t('tools.more')} kind="plain" onPress={() => setOpen(true)} />;
   return (
     <Panel>
-      <Label>Logs</Label>
-      <Button label="Collect everything" disabled={!ready} onPress={() => runTool('collectAll')} />
-      <Body>One file: both logs, audio connections, processes and the manager’s files. Changes nothing.</Body>
+      <Label>{t('tools.logs')}</Label>
+      <Button label={t('tools.collect')} disabled={!ready} onPress={() => runTool('collectAll')} />
+      <Body>{t('tools.collectBody')}</Body>
       <View style={styles.buttons}>
-        <Button label="Manager log on" kind="plain" disabled={!ready} onPress={() => runTool('logOn')} />
-        <Button label="Get manager log" kind="plain" disabled={!ready} onPress={() => runTool('fetchLog')} />
-        <Button label="Manager log off" kind="plain" disabled={!ready} onPress={() => runTool('logOff')} />
-        <Button label="Get iDrive log" kind="plain" disabled={!ready} onPress={() => runTool('fetchSystemLog')} />
+        <Button label={t('tools.logOn')} kind="plain" disabled={!ready} onPress={() => runTool('logOn')} />
+        <Button label={t('tools.getLog')} kind="plain" disabled={!ready} onPress={() => runTool('fetchLog')} />
+        <Button label={t('tools.logOff')} kind="plain" disabled={!ready} onPress={() => runTool('logOff')} />
+        <Button label={t('tools.getIdriveLog')} kind="plain" disabled={!ready} onPress={() => runTool('fetchSystemLog')} />
       </View>
 
       {testApp ? (
-        <Button label="Install test app" kind="plain" disabled={!ready} onPress={() => runTool('provisionTestApp')} />
+        <Button label={t('tools.testApp')} kind="plain" disabled={!ready} onPress={() => runTool('provisionTestApp')} />
       ) : null}
 
-      <Label>Controller settings</Label>
+      <Label>{t('tools.controller')}</Label>
       <TextInput value={config} onChangeText={setConfig} multiline maxLength={CONFIG_MAX} style={styles.config}
-        autoCapitalize="none" autoCorrect={false} accessibilityLabel="Controller settings" />
+        autoCapitalize="none" autoCorrect={false} accessibilityLabel={t('tools.controller')} />
       <View style={styles.buttons}>
-        <Button label="Save" kind="plain" disabled={!ready || !config.trim()} onPress={() => runTool('writeConfig', config)} />
-        <Button label="Delete" kind="plain" disabled={!ready} onPress={() => runTool('removeConfig')} />
+        <Button label={t('tools.save')} kind="plain" disabled={!ready || !config.trim()} onPress={() => runTool('writeConfig', config)} />
+        <Button label={t('tools.delete')} kind="plain" disabled={!ready} onPress={() => runTool('removeConfig')} />
       </View>
 
       {confirmRemoval ? (
         <View style={styles.confirm}>
-          <Body>Remove NBT Manager and all its apps?</Body>
+          <Body>{t('tools.removeQuestion')}</Body>
           <View style={styles.buttons}>
-            <Button label="Cancel" kind="plain" onPress={() => setConfirmRemoval(false)} />
-            <Button label="Remove" kind="danger" disabled={!ready}
+            <Button label={t('common.cancel')} kind="plain" onPress={() => setConfirmRemoval(false)} />
+            <Button label={t('tools.remove')} kind="danger" disabled={!ready}
               onPress={() => { setConfirmRemoval(false); runTool('removeAll'); }} />
           </View>
         </View>
-      ) : <Button label="Remove NBT Manager" kind="danger" disabled={!ready} onPress={() => setConfirmRemoval(true)} />}
+      ) : <Button label={t('tools.removeManager')} kind="danger" disabled={!ready} onPress={() => setConfirmRemoval(true)} />}
 
-      <Button label="Hide tools" kind="plain" onPress={() => setOpen(false)} />
+      <Button label={t('tools.hide')} kind="plain" onPress={() => setOpen(false)} />
     </Panel>
   );
 }

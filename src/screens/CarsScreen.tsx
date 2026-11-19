@@ -7,6 +7,8 @@ import { removeKey } from '../car/nativeLink';
 import { forgetCar, renameCar, type CarRecord } from '../store/cars';
 import { Body, Button, Label, Panel, Row, Title, useColors, useStyles } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { LanguageRow } from '../ui/LanguageRow';
+import { t, tn } from '../i18n';
 
 function CarDetails({ car, state, onDone }: { car: CarRecord; state: AppState; onDone: () => void }) {
   const colors = useColors();
@@ -31,16 +33,16 @@ function CarDetails({ car, state, onDone }: { car: CarRecord; state: AppState; o
       onDone();
     } finally { setSaving(false); }
   };
-  return <Dialog title="Manage car" onClose={onDone}>
-    <Label>Name</Label>
+  return <Dialog title={t('cars.manage')} onClose={onDone}>
+    <Label>{t('cars.name')}</Label>
     <TextInput value={name} onChangeText={setName} maxLength={40} style={styles.input}
-      placeholderTextColor={colors.muted} accessibilityLabel="Car name" autoFocus />
-    <Button label="Save name" disabled={saving || !name.trim()} onPress={() => void rename()} />
+      placeholderTextColor={colors.muted} accessibilityLabel={t('cars.nameLabel')} autoFocus />
+    <Button label={t('cars.saveName')} disabled={saving || !name.trim()} onPress={() => void rename()} />
     {confirming ? <>
-      <Body>Forget this car? You will need to pair it again.</Body>
-      <Button label="Forget car" kind="danger" disabled={saving} onPress={() => void forget()} />
-      <Button label="Keep car" kind="plain" onPress={() => setConfirming(false)} />
-    </> : <Button label="Forget this car" kind="danger" onPress={() => setConfirming(true)} />}
+      <Body>{t('cars.forgetQuestion')}</Body>
+      <Button label={t('cars.forget')} kind="danger" disabled={saving} onPress={() => void forget()} />
+      <Button label={t('cars.keep')} kind="plain" onPress={() => setConfirming(false)} />
+    </> : <Button label={t('cars.forgetThis')} kind="danger" onPress={() => setConfirming(true)} />}
   </Dialog>;
 }
 
@@ -54,11 +56,11 @@ function DeskPairing({ state }: { state: AppState }) {
     await state.reloadCars(car?.id);
   };
   return <Panel>
-    <Body muted>Open phone pairing in the desk car before continuing.</Body>
+    <Body muted>{t('cars.deskHint')}</Body>
     <TextInput value={ip} onChangeText={setIp} placeholder="10.0.2.2:18080" keyboardType="url"
       autoCapitalize="none" autoCorrect={false} placeholderTextColor={colors.muted} style={styles.input}
-      accessibilityLabel="Workstation address" />
-    <Button label="Pair the desk car" disabled={!/^\d+\.\d+\.\d+\.\d+(:\d{4,5})?$/.test(ip)}
+      accessibilityLabel={t('cars.deskAddress')} />
+    <Button label={t('cars.pairDesk')} disabled={!/^\d+\.\d+\.\d+\.\d+(:\d{4,5})?$/.test(ip)}
       onPress={() => void pair()} />
   </Panel>;
 }
@@ -75,17 +77,18 @@ export function CarsScreen({ state }: { state: AppState }) {
   };
   const target = state.cars.find(car => car.id === editing);
   return <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-    <Title>Your cars</Title>
+    <Title>{t('cars.title')}</Title>
     {state.cars.length ? <View>{state.cars.map(car => <View key={car.id}>
       <Row title={car.name} onPress={() => void open(car)}
-        detail={car.apps ? `${car.apps.length} applications` : 'Applications haven’t been read'}
-        tag={car.id === state.car?.id ? 'Selected' : undefined} />
-      <View style={styles.manage}><Button label="Manage car" kind="plain" onPress={() => setEditing(car.id)} /></View>
-    </View>)}</View> : <Body muted>No paired cars yet.</Body>}
-    <Button label="Pair another car" onPress={() => state.go({ tab: 'car', pairing: true })} />
-    <Row title="Install NBT Manager on a car" onPress={() => state.go({ tab: 'car', installer: true })} />
+        detail={car.apps ? tn('cars.apps', car.apps.length) : t('cars.notRead')}
+        tag={car.id === state.car?.id ? t('common.selected') : undefined} />
+      <View style={styles.manage}><Button label={t('cars.manage')} kind="plain" onPress={() => setEditing(car.id)} /></View>
+    </View>)}</View> : <Body muted>{t('cars.none')}</Body>}
+    <Button label={t('cars.pairAnother')} onPress={() => state.go({ tab: 'car', pairing: true })} />
+    <Row title={t('common.installNbt')} onPress={() => state.go({ tab: 'car', installer: true })} />
+    <LanguageRow />
     {__DEV__ ? <>
-      <Row title="Development" expanded={development} detail={development ? 'Hide desk pairing' : 'Pair a desk car'} onPress={() => setDevelopment(!development)} />
+      <Row title={t('car.development')} expanded={development} detail={t(development ? 'cars.hideDesk' : 'cars.showDesk')} onPress={() => setDevelopment(!development)} />
       {development ? <DeskPairing state={state} /> : null}
     </> : null}
     {target ? <CarDetails key={target.id} car={target} state={state} onDone={() => setEditing(undefined)} /> : null}
