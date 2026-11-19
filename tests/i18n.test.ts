@@ -17,7 +17,7 @@ import {
   LANGUAGES, catalogs, currentChoice, currentLanguage, languageFor, setChoice, setSystemLocale, t, tn,
 } from '../src/i18n';
 import { connectError, initialState, reduce } from '../src/installer/state';
-import { LinkError } from '../src/protocol/session';
+import { CarError, LinkError } from '../src/protocol/session';
 import { chooseLanguage, loadPreferences } from '../src/store/preferences';
 
 /** A count's singular may name {count} or not (French uses it for 0 too); tn always gives it. */
@@ -92,6 +92,11 @@ describe('languages', () => {
       .toBe('La voiture a signalé un échec. Update failed; previous application restored.');
     expect(describeOpening({ kind: 'by-hand', reason: 'moving' }))
       .toBe('Arrêtez d’abord la voiture. Ouvrez App Manager sur la voiture ; l’action continue dès son ouverture.');
+    expect(describeError(new CarError(413, 'phone-size')))
+      .toBe('Trop grand pour être envoyé depuis un téléphone. Importez-le depuis une clé USB dans la voiture.');
+    expect(describeError(new CarError(404, 'app'))).toBe('Cette application ne prend pas de fichiers.');
+    // An older manager has no files routes.
+    expect(describeError(new CarError(404, 'route'))).toBe('Mettez à jour NBT Manager sur la voiture.');
     setChoice('zh');
     expect(connectError('no-wifi')).toBe('请先连接适配器的 Wi-Fi。');
     expect(reduce(initialState(), { type: 'log', kind: 'system', uri: null, size: 0 }, 0).result).toBe('无法保存iDrive 日志。');

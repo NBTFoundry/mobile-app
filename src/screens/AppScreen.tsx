@@ -11,6 +11,7 @@ import type { CarRecord } from '../store/cars';
 import { appLabel } from '../store/library';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { FilesPanel } from './FilesPanel';
 import { LogView } from './LogView';
 import { t, tn } from '../i18n';
 
@@ -97,6 +98,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
         : settings.length === 0 ? <Body muted>{t('app.noSettings')}</Body>
           : <View>{settings.map(setting => <Row key={setting.key} title={setting.label} detail={setting.value}
             onPress={!busy ? () => setChoosing(setting) : undefined} />)}</View>}
+      <FilesPanel car={car} appId={appId} />
     </> : null}
     {busy ? <Busy text={busy} /> : null}
     {problem ? <><Body>{problem}</Body><Button label={t('common.viewActivity')} kind="plain" onPress={() => state.go({ tab: 'activity' })} /></> : null}

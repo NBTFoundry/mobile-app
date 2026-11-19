@@ -35,6 +35,10 @@ class HttpWireTest {
     assertEquals("GET /v1/nonce HTTP/1.1\r\nHost: 172.16.222.1:8080\r\nConnection: close\r\n\r\n", nonce)
     val upload = HttpWire.head("POST", "/v1/upload", "172.16.222.1:8080", signed, 9).toString(Charsets.US_ASCII)
     assertEquals(true, upload.contains("Content-Type: application/octet-stream\r\n"))
+    val file = HttpWire.head("POST", "/v1/files/data", "172.16.222.1:8080", signed, 9).toString(Charsets.US_ASCII)
+    assertEquals(true, file.contains("Content-Type: application/octet-stream\r\n"))
+    val put = HttpWire.head("POST", "/v1/files/put", "172.16.222.1:8080", signed, 9).toString(Charsets.US_ASCII)
+    assertEquals(true, put.contains("Content-Type: text/plain\r\n"))
   }
 
   @Test fun refusesUnsignedOrInjectedHeaders() {

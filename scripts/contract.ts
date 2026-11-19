@@ -6,7 +6,7 @@
  */
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -14,6 +14,7 @@ import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 import { changeSetting, clearAppLog, installPackage, listApps, pairPhone, readAppLog, readSettings, readSystemLog,
   removeApp, wake, type Follow } from '../src/protocol/actions';
+import { listFiles, removeFile, sendFile } from '../src/protocol/files';
 import { reachManager } from '../src/protocol/opening';
 import { CarError, CarSession } from '../src/protocol/session';
 import { SoftwareKey } from '../tests/support/softwareKey';
@@ -107,6 +108,56 @@ async function main() {
     check((await readAppLog(worker, 'test')).size === 0, 'an application log is cleared');
     const unknown = await readAppLog(worker, 'missing').catch(e => e);
     check(unknown instanceof CarError && unknown.status === 400, 'an unknown application has no log');
+
+    // An application's files (bridge 1.5): sent, listed and deleted with no prompt on the car.
+    const gamesPackage = await driver('pack games v1 1 files=sfc,smc|1|4');
+    const gamesBytes = readFileSync(gamesPackage);
+    let gamesApproved = false;
+    const games = await installPackage(worker, { uri: pathToFileURL(gamesPackage).href, size: gamesBytes.length,
+      sha256: createHash('sha256').update(gamesBytes).digest('hex') }, () => undefined, follow(status => {
+      if (status.state === 'verified' && !gamesApproved) {
+        gamesApproved = true;
+        void driver('approve');
+      }
+    }));
+    check(games.state === 'installed', 'an application that takes files is installed');
+    const empty = await listFiles(worker, 'games');
+    check(empty.count === 0 && empty.files.length === 0 && empty.extensions.join() === 'sfc,smc'
+      && empty.largest === 1048576 && empty.quota === 4194304 && empty.free > 0, 'its files list its policy and no files');
+    const none = await listFiles(worker, 'test').catch(e => e);
+    check(none instanceof CarError && none.status === 404 && none.code === 'app', 'an application without files has none');
+    const rom = path.join(tmpdir(), `nbt-contract-${process.pid}.sfc`);
+    writeFileSync(rom, Buffer.alloc(3000, 7));
+    const romFile = { uri: pathToFileURL(rom).href, size: 3000, sha256: createHash('sha256').update(readFileSync(rom)).digest('hex') };
+    let sent = 0;
+    await sendFile(worker, 'games', 'Game One.sfc', romFile, n => (sent = n));
+    check(sent === 3000, 'a file is sent to the end');
+    const one = await listFiles(worker, 'games');
+    check(one.count === 1 && one.used === 3000 && one.files[0]?.name === 'Game One.sfc' && one.files[0]?.size === 3000,
+      'the car lists the file it stored');
+    const wrongType = await sendFile(worker, 'games', 'notes.txt', romFile, () => undefined).catch(e => e);
+    check(wrongType instanceof CarError && wrongType.status === 400 && wrongType.code === 'type',
+      'a file of a type the application does not take is refused');
+    const big = path.join(tmpdir(), `nbt-contract-${process.pid}-big.sfc`);
+    writeFileSync(big, Buffer.alloc(1048577, 1));
+    const tooBig = await sendFile(worker, 'games', 'Big.sfc', { uri: pathToFileURL(big).href, size: 1048577,
+      sha256: createHash('sha256').update(readFileSync(big)).digest('hex') }, () => undefined).catch(e => e);
+    check(tooBig instanceof CarError && tooBig.status === 413 && tooBig.code === 'size',
+      'a file larger than the application allows is refused before its bytes');
+    rmSync(rom);
+    rmSync(big);
+    await removeFile(worker, 'games', 'Game One.sfc');
+    check((await listFiles(worker, 'games')).count === 0, 'a file is deleted at once');
+    const gone = await removeFile(worker, 'games', 'Game One.sfc').catch(e => e);
+    check(gone instanceof CarError && gone.status === 404 && gone.code === 'missing', 'a file already deleted is missing');
+    let gamesAsked = false;
+    const gamesRemoved = await removeApp(worker, 'games', follow(status => {
+      if (status.state === 'waiting' && !gamesAsked) {
+        gamesAsked = true;
+        void driver('confirm');
+      }
+    }));
+    check(gamesRemoved.state === 'removed', 'the application that takes files is uninstalled');
 
     check(await wake(door) === 'off', 'the door answers off while Open from phone is off');
     check(await driver('SET manager phone_open on') === 'OK', 'Open from phone is switched on at the car');

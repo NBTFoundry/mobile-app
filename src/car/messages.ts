@@ -34,6 +34,20 @@ const CAR: Record<number, Key> = {
   503: 'error.car503',
 };
 
+/** The files routes' refusals (manager docs/files-bridge.md), by their 400, 404 or 413 code. */
+const FILES: Record<string, Key> = {
+  'app': 'error.filesApp',
+  'type': 'error.fileType',
+  'name': 'error.fileName',
+  'size': 'error.fileSize',
+  'phone-size': 'error.filePhoneSize',
+  'quota': 'error.fileQuota',
+  'count': 'error.fileCount',
+  'space': 'error.fileSpace',
+  'missing': 'error.fileMissing',
+  'digest': 'error.fileDigest',
+};
+
 const KEY: Record<string, Key> = {
   ERR_KEY_LOCKED: 'error.keyLocked',
   ERR_KEY_MISSING: 'error.keyMissing',
@@ -45,6 +59,8 @@ export function describeError(error: unknown): string {
   if (error instanceof LinkError) return t(LINK[error.code] ?? 'error.io');
   if (error instanceof CarError && error.code === 'pairing-closed') return t('error.pairingClosed');
   if (error instanceof CarError) {
+    const file = [400, 404, 413].includes(error.status) ? FILES[error.code] : undefined;
+    if (file) return t(file);
     if (error.status === 404 || error.status === 400 && error.code === 'route') return t('error.updateManager');
     const known = CAR[error.status];
     return known ? t(known) : t('error.carOther', { status: error.status });

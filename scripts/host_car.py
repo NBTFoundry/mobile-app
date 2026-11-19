@@ -10,7 +10,8 @@ as the driver gives them on the car; this is a test fixture, not an approval cha
 Commands (one per line, each answered by one line starting with "= "):
   confirm | decline          answer the pending pairing or uninstall
   approve | reject           approve or cancel the reviewed package
-  pack <app> <version> <sequence> [<key|label|default|choices> ...]   build a signed package
+  pack <app> <version> <sequence> [<key|label|default|choices> ...] [files=<policy>]
+                             build a signed package; files= declares bridge 1.5 `files`
   quit
 Any other line is sent to the worker's private channel as is (PHONE STATUS, SET ...).
 """
@@ -30,10 +31,11 @@ APP_ROOT = Path(__file__).resolve().parents[1]
 MANAGER = Path(os.environ.get('NBT_MANAGER_DIR', APP_ROOT.parent / 'manager'))
 
 
-def elf(content: bytes) -> bytes:
+def elf(content: bytes, kind: int = 2) -> bytes:
+    """A placeholder ARM ELF: an executable, or a shared object (kind 3). Nothing runs it."""
     out = bytearray(128)
     out[:7] = b'\x7fELF\x01\x01\x01'
-    out[16:20] = b'\x02\x00\x28\x00'
+    out[16:20] = bytes([kind, 0, 0x28, 0])
     out[52:52 + len(content)] = content
     return bytes(out)
 
@@ -84,7 +86,7 @@ class HostCar:
         self.workdir = workdir
         self.root = workdir / 'managed'
         # The layout setup creates (NBTFoundry/installer: core/src/ssh.rs); a first install needs trust/keys.
-        for part in ('apps', 'data', 'state/manager', 'trust/apps', 'trust/keys', 'manager'):
+        for part in ('apps', 'data', 'state/manager', 'trust/apps', 'trust/keys', 'manager/slots/0', 'manager/slots/1'):
             (self.root / part).mkdir(parents=True, exist_ok=True, mode=0o700)
         for path in [self.root, *self.root.rglob('*')]:
             path.chmod(0o700)
@@ -92,7 +94,9 @@ class HostCar:
         public = workdir / 'apps-public.pem'
         openssl('genpkey', '-algorithm', 'RSA', '-pkeyopt', 'rsa_keygen_bits:3072', '-out', self.key)
         openssl('pkey', '-in', self.key, '-pubout', '-out', public)
-        env = {**os.environ, 'NBT_TEST_APPS_KEY': str(public)}
+        # Applications' files: a folder of the workdir stands in for the car's hard disk.
+        env = {**os.environ, 'NBT_TEST_APPS_KEY': str(public), 'NBT_TEST_FILES_ROOT': str(workdir / 'files')}
+        self.manager_release(build)
         parent, child = socket.socketpair()
         self.worker = subprocess.Popen([build / 'managerd-test', '--control-fd', str(child.fileno()), '--root', self.root],
                                        pass_fds=[child.fileno()], env=env, stdout=logs, stderr=logs)
@@ -109,6 +113,33 @@ class HostCar:
         self.door = subprocess.Popen([build / 'managerd-test', '--door', '--root', self.root, '--interface', 'lo',
                                       '--port', str(door_port)], env=env, stdout=logs, stderr=logs)
         self.door_host = f'127.0.0.1:{door_port}'
+
+    def manager_release(self, build: Path):
+        """An active signed NBT Manager release, as setup leaves on a car: a new application
+        needing the bridge is checked against the bridge it serves."""
+        key = self.workdir / 'manager-key.pem'
+        openssl('genpkey', '-algorithm', 'RSA', '-pkeyopt', 'rsa_keygen_bits:3072', '-out', key)
+        openssl('pkey', '-in', key, '-pubout', '-out', self.root / 'trust/manager.pem')
+        (self.root / 'trust/manager.conf').write_text('NBTMANAGERPROFILE1\ncompat=demo-1\n')
+        parts = self.workdir / 'release'
+        plugin = parts / 'plugin'
+        plugin.mkdir(parents=True)
+        (plugin / 'libNbtManager.so').write_bytes(elf(b'plugin', 3))
+        for name in ('NbtManager.manifest', 'NbtManager.xml', 'NbtManager_ALL_Texts.zip', 'NbtManager_ALL_Images.zip'):
+            (plugin / name).write_bytes(name.encode())
+        args = []
+        for name in ('launcher', 'gui', 'worker'):
+            (parts / name).write_bytes(elf(name.encode()))
+            args += [f'--{name}', parts / name]
+        upload = self.root / 'state/manager/release.upload'
+        subprocess.run([sys.executable, *map(str, [MANAGER / 'tools/package_release.py', '--version', 'v1', '--sequence', 1,
+                                                   '--compat', 'demo-1', '--key', key, '--output', upload, *args,
+                                                   '--plugin-dir', plugin])], check=True, capture_output=True)
+        for path in (upload, self.root / 'trust/manager.pem', self.root / 'trust/manager.conf'):
+            path.chmod(0o600)
+        result = subprocess.run([build / 'manager-stage-probe', self.root, 'initial'], capture_output=True)
+        if result.returncode:
+            raise SystemExit(f'manager release not staged: {result.stderr.decode().strip()}')
 
     def command(self, text: str) -> str:
         with self.lock:
@@ -134,7 +165,10 @@ class HostCar:
         args = [sys.executable, MANAGER / 'tools/package.py', '--app', app, '--version', version,
                 '--sequence', sequence, '--compat', 'demo-1', '--key', self.key, '--output', output]
         for setting in settings:
-            args += ['--setting', setting]
+            if setting.startswith('files='):
+                args += ['--bridge', '1.5', '--bridge-uses', 'show,files', '--bridge-files', setting[6:]]
+            else:
+                args += ['--setting', setting]
         result = subprocess.run([*map(str, args), str(source)], capture_output=True)
         return str(output) if result.returncode == 0 else 'ERR pack'
 

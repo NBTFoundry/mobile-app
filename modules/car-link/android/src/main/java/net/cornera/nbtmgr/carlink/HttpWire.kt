@@ -36,7 +36,7 @@ object HttpWire {
     out.append(method).append(' ').append(route).append(" HTTP/1.1\r\n")
     out.append("Host: ").append(host).append("\r\n")
     if (method == "POST") {
-      out.append("Content-Type: ").append(if (route == "/v1/upload") "application/octet-stream" else "text/plain").append("\r\n")
+      out.append("Content-Type: ").append(if (route in RouteGuard.FILE_ROUTES) "application/octet-stream" else "text/plain").append("\r\n")
       out.append("Content-Length: ").append(length).append("\r\n")
     }
     if (signed) {

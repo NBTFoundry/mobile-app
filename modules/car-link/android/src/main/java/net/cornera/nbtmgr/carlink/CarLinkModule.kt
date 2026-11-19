@@ -105,13 +105,13 @@ class CarLinkModule : Module() {
     }
     val body = when {
       r.fileUri != null -> {
-        if (r.route != "/v1/upload" || r.text != null) throw LinkException("bad-request")
+        if (r.route !in RouteGuard.FILE_ROUTES || r.text != null) throw LinkException("bad-request")
         val file = files.resolve(r.fileUri)
         if (file.length() != r.size.toLong()) throw LinkException("file")
         Body.Upload(file, file.length())
       }
       r.text != null -> {
-        if (r.route == "/v1/upload" || r.text.length > 2048) throw LinkException("bad-request")
+        if (r.route in RouteGuard.FILE_ROUTES || r.text.length > 2048) throw LinkException("bad-request")
         Body.Text(r.text)
       }
       else -> null

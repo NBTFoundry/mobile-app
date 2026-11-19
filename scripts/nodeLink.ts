@@ -11,7 +11,7 @@ import { LinkError, isSaveName, type Link, type LinkRequest, type LinkResponse }
 function head(r: LinkRequest, length: number): string {
   let out = `${r.method} ${r.route} HTTP/1.1\r\nHost: ${r.host}\r\n`;
   if (r.method === 'POST') {
-    out += `Content-Type: ${r.route === '/v1/upload' ? 'application/octet-stream' : 'text/plain'}\r\n`;
+    out += `Content-Type: ${r.body?.kind === 'file' ? 'application/octet-stream' : 'text/plain'}\r\n`;
     out += `Content-Length: ${length}\r\n`;
   }
   for (const name of ['X-NBT-Key', 'X-NBT-Nonce', 'X-NBT-Signature']) {

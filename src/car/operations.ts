@@ -291,10 +291,15 @@ export function applySetting(car: CarRecord, app: string, setting: Setting, valu
     }, id));
 }
 
+/** The worker, once App Manager is open on the car: installs, removals and files need it. */
+export function reachWorker(car: CarRecord, id: number, cancel: Cancel): Promise<CarSession> {
+  const { worker, door } = sessions(car);
+  return reachManager(worker, door, e => updateActivity(id, { detail: describeOpening(e) }), cancel, realWait);
+}
+
 async function managerAction(car: CarRecord, id: number, cancel: Cancel,
   run: (worker: CarSession) => Promise<Status>) {
-  const { worker, door } = sessions(car);
-  const session = await reachManager(worker, door, e => updateActivity(id, { detail: describeOpening(e) }), cancel, realWait);
+  const session = await reachWorker(car, id, cancel);
   const status = await run(session);
   await remember(car, session).catch(() => undefined);
   return { value: status, phase: phaseOf(status), detail: describeStatus(status) };
