@@ -1,0 +1,32 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'net.cornera.nbtmgr'
+version = '0.1.0'
+
+android {
+  namespace "net.cornera.nbtmgr.carinstall"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+    // Applied to the app's release build: keeps JNA and the binding intact.
+    consumerProguardFiles "proguard-rules.pro"
+  }
+  // The installer core (libnbt_installer.so) and its generated Kotlin binding
+  // are build output: scripts/build-installer-core.sh writes them to generated/
+  // (ignored by git, outside build/ so that a Gradle clean keeps them).
+  sourceSets {
+    main {
+      jniLibs.srcDirs += ["$projectDir/generated/jniLibs"]
+      java.srcDirs += ["$projectDir/generated/kotlin"]
+    }
+  }
+}
+
+dependencies {
+  // UniFFI's Kotlin binding calls the Rust library through JNA.
+  implementation 'net.java.dev.jna:jna:5.17.0@aar'
+  testImplementation 'junit:junit:4.13.2'
+}

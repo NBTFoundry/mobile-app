@@ -1,0 +1,52 @@
+{
+  "name": "nbt-manager",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client --lan --port 8082",
+    "android": "expo run:android --port 8082",
+    "emulator": "scripts/emulator.sh",
+    "android:emulator": "scripts/emulator.sh && expo run:android --port 8082",
+    "prebuild": "expo prebuild --platform android",
+    "installer-core": "scripts/build-installer-core.sh",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "jest --runInBand",
+    "test:contract": "tsx scripts/contract.ts",
+    "desk": "python3 scripts/host_car.py",
+    "release": "scripts/build-release.sh"
+  },
+  "dependencies": {
+    "expo": "58.0.25",
+    "expo-build-properties": "58.0.12",
+    "expo-camera": "58.0.14",
+    "expo-dev-client": "58.0.20",
+    "expo-document-picker": "58.0.5",
+    "expo-file-system": "58.0.13",
+    "expo-keep-awake": "58.0.4",
+    "expo-secure-store": "58.0.3",
+    "expo-sharing": "58.0.23",
+    "expo-system-ui": "~58.0.7",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "5.11.1"
+  },
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": "./modules"
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "30.0.0",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-expo": "58.0.4",
+    "jest": "30.5.2",
+    "ts-jest": "29.4.15",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "yarn@4.1.0"
+}

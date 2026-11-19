@@ -1,0 +1,15 @@
+node_modules/
+/android/
+/ios/
+.expo/
+dist/
+coverage/
+build/
+*.keystore
+*.jks
+*.pem
+.env*
+*.log
+__pycache__/
+.yarn/
+modules/car-install/android/generated/
