@@ -3,10 +3,10 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import { CarLink } from '../../modules/car-link';
-import { changeSetting, installPackage, listApps, pairPhone, readSettings, realWait, removeApp,
-  type Cancel, type Follow } from '../protocol/actions';
+import { changeAutostart, changeSetting, installPackage, listApps, pairPhone, readAutostart, readSettings,
+  realWait, removeApp, type Cancel, type Follow } from '../protocol/actions';
 import { listenerHosts, reachManager } from '../protocol/opening';
-import type { Setting, Status } from '../protocol/replies';
+import type { Autostart, Setting, Status } from '../protocol/replies';
 import { CarError, CarSession, LinkError } from '../protocol/session';
 import { cleanPhoneName, keyId } from '../protocol/signing';
 import type { WifiCode } from '../protocol/wifiCode';
@@ -275,11 +275,24 @@ export function refreshApps(car: CarRecord): Promise<CarRecord | undefined> {
     }, id));
 }
 
-export function loadSettings(car: CarRecord, app: string): Promise<Setting[] | undefined> {
+/** An application's declared settings, and Start with the car (null: the car's manager has none). */
+export type AppSettings = { settings: Setting[]; autostart: Autostart | null };
+
+export function loadSettings(car: CarRecord, app: string): Promise<AppSettings | undefined> {
   return act(car.name, t('op.settingsOf', { app }), t('common.joining'), async id =>
     onCarNetwork(car, async () => {
-      const settings = await readSettings(await anyListener(car), app);
-      return { value: settings, phase: 'done' as const, detail: tn('op.settingsRead', settings.length) };
+      const session = await anyListener(car);
+      const settings = await readSettings(session, app);
+      const autostart = await readAutostart(session, app);
+      return { value: { settings, autostart }, phase: 'done' as const, detail: tn('op.settingsRead', settings.length) };
+    }, id));
+}
+
+export function applyAutostart(car: CarRecord, app: string, on: boolean): Promise<boolean | undefined> {
+  return act(car.name, t(on ? 'op.autostartOn' : 'op.autostartOff', { app }), t('common.joining'), async id =>
+    onCarNetwork(car, async () => {
+      await changeAutostart(await anyListener(car), app, on);
+      return { value: true, phase: 'done' as const, detail: t('op.applied', { app }) };
     }, id));
 }
 

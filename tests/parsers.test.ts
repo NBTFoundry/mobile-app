@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 import { createHash } from 'node:crypto';
-import { parseApps, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
+import { parseApps, parseAutostart, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
 import { parseWifiCode } from '../src/protocol/wifiCode';
 import { parsePackageHead } from '../src/protocol/packageHeader';
 
@@ -140,4 +140,18 @@ describe('manager release header', () => {
     const renamed = new Uint8Array(Buffer.from(text, 'latin1'));
     expect(() => parsePackageHead(renamed, renamed.length)).toThrow();
   });
+});
+
+describe('parseAutostart', () => {
+  it('reads the preference and the pause', () => {
+    expect(parseAutostart('AUTOSTART\toff\tready\n')).toEqual({ on: false, paused: false });
+    expect(parseAutostart('AUTOSTART\ton\tready\n')).toEqual({ on: true, paused: false });
+    expect(parseAutostart('AUTOSTART\ton\tblocked\n')).toEqual({ on: true, paused: true });
+    // Paused only matters while it is on.
+    expect(parseAutostart('AUTOSTART\toff\tblocked\n')).toEqual({ on: false, paused: false });
+  });
+  it.each([
+    '', 'AUTOSTART\ton\tready', 'AUTOSTART\tyes\tready\n', 'AUTOSTART\ton\n',
+    'AUTOSTART\ton\tready\textra\n', 'OK\n',
+  ])('rejects malformed replies %#', text => expect(() => parseAutostart(text)).toThrow());
 });

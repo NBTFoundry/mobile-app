@@ -98,6 +98,15 @@ export function parseWake(text: string): WakeState {
   return state;
 }
 
+/** Start with the car: the preference, and whether failed starts paused it (PROTOCOL.md, "Autostart"). */
+export type Autostart = { on: boolean; paused: boolean };
+
+export function parseAutostart(text: string): Autostart {
+  const m = /^AUTOSTART\t(on|off)\t(ready|blocked)\n$/.exec(text);
+  if (!m) bad();
+  return { on: m![1] === 'on', paused: m![1] === 'on' && m![2] === 'blocked' };
+}
+
 export function parseOk(text: string): void {
   if (text !== 'OK\n') bad();
 }

@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import type { AppState } from '../App';
 import { clearLog, fetchAppLog, type CarLog } from '../car/logs';
-import { applySetting, install, loadSettings, uninstall } from '../car/operations';
+import { applyAutostart, applySetting, install, loadSettings, uninstall } from '../car/operations';
 import { compareU64 } from '../protocol/bytes';
-import type { Setting } from '../protocol/replies';
+import type { Autostart, Setting } from '../protocol/replies';
 import type { CarRecord } from '../store/cars';
 import { appLabel } from '../store/library';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
@@ -17,6 +17,7 @@ import { t, tn } from '../i18n';
 
 export function AppScreen({ state, car, appId }: { state: AppState; car: CarRecord; appId: string }) {
   const [settings, setSettings] = useState<Setting[]>();
+  const [autostart, setAutostart] = useState<Autostart | null>(null);
   const [choosing, setChoosing] = useState<Setting>();
   const [menu, setMenu] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -38,7 +39,8 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const readSettings = async () => {
     setBusy(t('app.readingSettings')); setProblem(undefined);
     const result = await loadSettings(car, appId);
-    setSettings(result);
+    setSettings(result?.settings);
+    setAutostart(result?.autostart ?? null);
     if (!result) setProblem(t('app.readSettingsFailed'));
     setBusy(undefined);
   };
@@ -53,6 +55,12 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
     setBusy(t('app.clearingLog'));
     if (log && await clearLog(car, appId)) setLog({ ...log, size: 0, tail: '' });
     else setProblem(t('app.clearLogFailed'));
+    setBusy(undefined);
+  };
+  const switchAutostart = async (on: boolean) => {
+    setBusy(t('app.saving')); setProblem(undefined);
+    if (await applyAutostart(car, appId, on)) setAutostart(a => a && { ...a, on, paused: on && a.paused });
+    else setProblem(t('app.saveFailed'));
     setBusy(undefined);
   };
   const choose = async (setting: Setting, value: string) => {
@@ -98,6 +106,9 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
         : settings.length === 0 ? <Body muted>{t('app.noSettings')}</Body>
           : <View>{settings.map(setting => <Row key={setting.key} title={setting.label} detail={setting.value}
             onPress={!busy ? () => setChoosing(setting) : undefined} />)}</View>}
+      {settings !== undefined && autostart ? <Row title={t('app.startWithCar')}
+        detail={t(autostart.paused ? 'app.autostartPaused' : autostart.on ? 'app.autostartOn' : 'app.autostartOff')}
+        onPress={!busy ? () => void switchAutostart(!autostart.on) : undefined} /> : null}
       <FilesPanel car={car} appId={appId} />
     </> : null}
     {busy ? <Busy text={busy} /> : null}

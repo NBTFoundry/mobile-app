@@ -12,8 +12,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
-import { changeSetting, clearAppLog, installPackage, listApps, pairPhone, readAppLog, readSettings, readSystemLog,
-  removeApp, wake, type Follow } from '../src/protocol/actions';
+import { changeAutostart, changeSetting, clearAppLog, installPackage, listApps, pairPhone, readAppLog,
+  readAutostart, readSettings, readSystemLog, removeApp, wake, type Follow } from '../src/protocol/actions';
 import { listFiles, removeFile, sendFile } from '../src/protocol/files';
 import { reachManager } from '../src/protocol/opening';
 import { CarError, CarSession } from '../src/protocol/session';
@@ -98,6 +98,12 @@ async function main() {
     check((await readSettings(door, 'test'))[0]?.value === 'blue', 'a setting changes at once and the door sees it');
     const invalid = await changeSetting(worker, 'test', 'bg', 'green').catch(e => e);
     check(invalid instanceof CarError, 'an undeclared value is refused');
+    const off = await readAutostart(worker, 'test');
+    check(off?.on === false && !off.paused, 'Start with the car is off after install');
+    await changeAutostart(door, 'test', true);
+    check((await readAutostart(worker, 'test'))?.on === true, 'Start with the car switches on from the door');
+    await changeAutostart(worker, 'test', false);
+    check((await readAutostart(door, 'test'))?.on === false, 'and off from the worker');
 
     const appLog = await readAppLog(door, 'test');
     check(appLog.size === 0 && appLog.tail === '', 'an application that never ran has an empty log');

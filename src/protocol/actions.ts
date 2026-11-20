@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 /** One flow per action. The car confirms pairing, installs and uninstalls; the phone only follows. */
 import { ProtocolError, fromAscii } from './bytes';
-import { parseApps, parseOk, parsePair, parseSettings, parseStatus, parseWake,
-  type CarApp, type Setting, type Status, type StatusState, type WakeState } from './replies';
+import { parseApps, parseAutostart, parseOk, parsePair, parseSettings, parseStatus, parseWake,
+  type Autostart, type CarApp, type Setting, type Status, type StatusState, type WakeState } from './replies';
 import { CarError, type CarSession, type SavedReply } from './session';
 import { pairBody, pairingCode } from './signing';
 
@@ -85,6 +85,23 @@ export async function readSettings(session: CarSession, app: string): Promise<Se
 /** Applied at once by the car, with no prompt there. */
 export async function changeSetting(session: CarSession, app: string, key: string, value: string): Promise<void> {
   parseOk((await session.ok('/v1/settings/set', { kind: 'text', text: `${app}\t${key}\t${value}\n` })).body);
+}
+
+/** Start with the car; null from a manager without it (an older release). */
+export async function readAutostart(session: CarSession, app: string): Promise<Autostart | null> {
+  try {
+    return parseAutostart((await session.ok('/v1/autostart', { kind: 'text', text: `${app}\n` })).body);
+  } catch (error) {
+    if (error instanceof CarError && (error.status === 404 || error.status === 400 && error.code === 'route')) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** Applied at once by the car, with no prompt there; the pause stays until a start by hand. */
+export async function changeAutostart(session: CarSession, app: string, on: boolean): Promise<void> {
+  parseOk((await session.ok('/v1/autostart', { kind: 'text', text: `${app}\t${on ? 'on' : 'off'}\n` })).body);
 }
 
 export type PackageFile = { uri: string; size: number; sha256: string };
