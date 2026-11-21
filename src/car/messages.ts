@@ -13,6 +13,7 @@ const LINK: Record<string, Key> = {
   'permission': 'error.permission',
   'join-failed': 'error.joinFailed',
   'cancelled': 'error.cancelled',
+  'stopped': 'error.sendStopped',
   'no-network': 'error.noNetwork',
   'refused': 'error.refused',
   'no-route': 'error.noRoute',

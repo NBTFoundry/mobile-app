@@ -34,6 +34,8 @@ class LinkRequest : Record {
 class CarLinkModule : Module() {
   private val mutex = Mutex()
   private var deskIp: String? = null
+  /** Uploads to stop, by progress id: the next progress step ends the request ("stopped"). */
+  private val stopped = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
   private val network by lazy {
     CarNetwork(context()).also { it.onState = { state -> sendEvent("onNetwork", mapOf("state" to state)) } }
   }
@@ -83,6 +85,10 @@ class CarLinkModule : Module() {
       }
     }
 
+    Function("cancel") { progressId: String ->
+      stopped.add(progressId)
+    }
+
     AsyncFunction("request") Coroutine { r: LinkRequest ->
       mutex.withLock {
         withContext(Dispatchers.IO) {
@@ -122,7 +128,11 @@ class CarLinkModule : Module() {
     val part = saved?.let { java.io.File(it.path + ".part") }
     try {
       val response = CarHttp(factory).send(target, r.host, r.method, r.route, r.headers, body, part) { sent, total ->
-        r.progressId?.let { sendEvent("onProgress", mapOf("id" to it, "sent" to sent.toDouble(), "total" to total.toDouble())) }
+        r.progressId?.let {
+          // Closing the connection mid-file: the car discards what it received.
+          if (stopped.remove(it)) throw LinkException("stopped")
+          sendEvent("onProgress", mapOf("id" to it, "sent" to sent.toDouble(), "total" to total.toDouble()))
+        }
       }
       if (saved == null || part == null || response.saved == null) {
         return mapOf("status" to response.status, "nonce" to response.nonce, "body" to response.body)
@@ -133,6 +143,7 @@ class CarLinkModule : Module() {
       return mapOf("status" to response.status, "nonce" to response.nonce, "body" to "", "saved" to file)
     } finally {
       part?.delete()
+      r.progressId?.let { stopped.remove(it) }
     }
   }
 }

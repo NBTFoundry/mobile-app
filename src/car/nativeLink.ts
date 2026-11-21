@@ -5,7 +5,7 @@ import { DeviceKey } from '../../modules/device-key';
 import { LinkError, type Link, type LinkRequest, type LinkResponse, type Signer } from '../protocol/session';
 
 const LINK_CODES = ['not-allowed', 'no-network', 'refused', 'no-route', 'timeout', 'io', 'closed', 'bad-reply',
-  'bad-request', 'file', 'join-failed', 'permission', 'cancelled'] as const;
+  'bad-request', 'file', 'join-failed', 'permission', 'cancelled', 'stopped'] as const;
 
 /** Picks the fixed code out of an Expo error; anything unrecognised is `io`. */
 export function linkCode(error: unknown): string {
@@ -18,7 +18,8 @@ let progressCounter = 0;
 
 export const nativeLink: Link = {
   async request(r: LinkRequest): Promise<LinkResponse> {
-    const progressId = r.onProgress ? `p${++progressCounter}` : undefined;
+    const progressId = r.onProgress || r.stop ? `p${++progressCounter}` : undefined;
+    const unbind = progressId && r.stop ? r.stop.bind(() => CarLink.cancel(progressId)) : undefined;
     const subscription = progressId && r.onProgress
       ? CarLink.addListener('onProgress', e => {
         if (e.id === progressId) r.onProgress!(e.sent, e.total);
@@ -37,6 +38,7 @@ export const nativeLink: Link = {
       throw new LinkError(linkCode(error));
     } finally {
       subscription?.remove();
+      unbind?.();
     }
   },
 };

@@ -2,12 +2,12 @@
 /** An application's files on a car: read, sent from this phone, deleted (the phone asks first). */
 import { CarLink } from '../../modules/car-link';
 import { listFiles, removeFile, sendFile, type FileListing } from '../protocol/files';
-import { CarError } from '../protocol/session';
+import { CarError, LinkError, type Stop } from '../protocol/session';
 import { updateActivity } from '../store/activity';
 import type { CarRecord } from '../store/cars';
 import { LibraryError } from '../store/library';
 import { t, tn } from '../i18n';
-import { act, onCarNetwork, reachWorker } from './operations';
+import { act, onCarNetwork, reachWorker, stopFollowing } from './operations';
 
 /** A file picked on the phone, in the app's cache, and the name the car stores it under. */
 export type PickedFile = { uri: string; name: string };
@@ -36,18 +36,28 @@ async function measure(uri: string): Promise<{ size: number; sha256: string }> {
   }
 }
 
-export function uploadFile(car: CarRecord, app: string, picked: PickedFile): Promise<boolean | undefined> {
+/**
+ * Sends one file; `progress` follows its bytes. `stop` ends it at any point: before joining, while
+ * joining (the join is abandoned), or mid-file (the car discards the part it received).
+ */
+export function uploadFile(car: CarRecord, app: string, picked: PickedFile, stop: Stop,
+  progress?: (sent: number, total: number) => void): Promise<boolean | undefined> {
+  let unbind: (() => void) | undefined;
   return act(car.name, t('files.sendTitle', { name: picked.name, app }), t('files.measuring'), async (id, cancel) => {
+    if (stop.stopped) throw new LinkError('stopped');
     const file = await measure(picked.uri);
     updateActivity(id, { detail: t('common.joining') });
     return onCarNetwork(car, async () => {
       const worker = await reachWorker(car, id, cancel);
+      if (stop.stopped) throw new LinkError('stopped');
       updateActivity(id, { detail: t('files.sending'), progress: 0 });
-      await sendFile(worker, app, picked.name, { uri: picked.uri, ...file },
-        (sent, total) => updateActivity(id, { progress: total ? sent / total : 0 }));
+      await sendFile(worker, app, picked.name, { uri: picked.uri, ...file }, (sent, total) => {
+        updateActivity(id, { progress: total ? sent / total : 0 });
+        progress?.(sent, total);
+      }, stop);
       return { value: true, phase: 'done' as const, detail: t('files.sent') };
     }, id);
-  });
+  }, id => { unbind = stop.bind(() => stopFollowing(id)); }).finally(() => unbind?.());
 }
 
 export function deleteFile(car: CarRecord, app: string, name: string): Promise<boolean | undefined> {

@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { ProtocolError } from '../src/protocol/bytes';
 import { PHONE_FILE_MAX, extensionOf, isFileName, listFiles, parseFiles, removeFile, sendFile,
   storedName } from '../src/protocol/files';
-import { CarError, CarSession, type Link, type LinkRequest, type LinkResponse } from '../src/protocol/session';
+import { CarError, CarSession, LinkError, Stop, type Link, type LinkRequest, type LinkResponse } from '../src/protocol/session';
 import { bodyDigest, canonicalText } from '../src/protocol/signing';
 import { SoftwareKey, verifyWith } from './support/softwareKey';
 
@@ -60,6 +60,14 @@ describe('file listings', () => {
     const listing = parseFiles(head(2, 0) + 'B.sfc\t1024\na.smc\t0\n', '');
     expect(listing).toEqual({ count: 2, used: 2000, quota: 1073741824, largest: 16777216, free: 5000000000,
       more: false, extensions: ['sfc', 'smc'], files: [{ name: 'B.sfc', size: 1024 }, { name: 'a.smc', size: 0 }] });
+  });
+
+  it('reads game folders as one entry each (manager dev123)', () => {
+    const listing = parseFiles(head(3, 0, 'cue,bin') + 'Crash/\t900\nTekken 3/\t2000\nz.cue\t1\n', '');
+    expect(listing.files.map(f => f.name)).toEqual(['Crash/', 'Tekken 3/', 'z.cue']);
+    for (const name of ['a/b/', '/', '.x/', 'x /', 'a/b.cue']) {
+      expect(() => parseFiles(head(1, 0) + `${name}\t1\n`, '')).toThrow(ProtocolError);
+    }
   });
 
   it('refuses a malformed, unordered or unbounded reply', () => {
@@ -148,5 +156,26 @@ describe('sending and deleting files', () => {
     const car = new FilesCar(key, () => ({ status: 200, body: 'OK\n' }));
     await removeFile(new CarSession(car, key, HOST), 'snes', 'Game.sfc');
     expect(car.seen[0]).toMatchObject({ route: '/v1/files/remove', body: { kind: 'text', text: 'snes\tGame.sfc\n' } });
+    await removeFile(new CarSession(car, key, HOST), 'psx', 'Tekken 3/');
+    expect(car.seen[1]).toMatchObject({ body: { kind: 'text', text: 'psx\tTekken 3/\n' } });
+  });
+
+  it('stops a transfer: the link gets the Stop, a stopped one sends nothing', async () => {
+    const car = new FilesCar(key, r => {
+      if (r.route === '/v1/files/data') r.stop!.stop(); // the user taps Cancel mid-file
+      return { status: 200, body: 'OK\n' };
+    });
+    car.contents.set('file:///cache/g.cue', Buffer.from('x'));
+    const sha256 = createHash('sha256').update('x').digest('hex');
+    const stop = new Stop();
+    let stopped = 0;
+    stop.bind(() => { stopped++; });
+    await sendFile(new CarSession(car, key, HOST), 'psx', 'g.cue', { uri: 'file:///cache/g.cue', size: 1, sha256 },
+      () => undefined, stop);
+    expect(car.seen[1]!.stop).toBe(stop);
+    expect(stopped).toBe(1);
+    await expect(sendFile(new CarSession(car, key, HOST), 'psx', 'g.cue',
+      { uri: 'file:///cache/g.cue', size: 1, sha256 }, () => undefined, stop)).rejects.toEqual(new LinkError('stopped'));
+    expect(car.seen).toHaveLength(3); // the announcement only
   });
 });

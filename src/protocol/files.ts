@@ -5,7 +5,7 @@
  */
 import { ProtocolError, isHex, isU64 } from './bytes';
 import { MAX_REPLY, parseOk } from './replies';
-import type { CarSession } from './session';
+import type { CarSession, Stop } from './session';
 
 /** The most a phone may send; larger files come from a USB stick on the car. */
 export const PHONE_FILE_MAX = 64 * 1024 * 1024;
@@ -38,6 +38,17 @@ export function isFileName(name: string): boolean {
   const dot = name.lastIndexOf('.');
   return dot > 0 && dot < name.length - 1;
 }
+
+/** A listing's entry: a file, or a game folder as `<folder>/` (manager dev123, `|folders=`). */
+export function isListedName(name: string): boolean {
+  if (isFileName(name)) return true;
+  const folder = name.endsWith('/') ? name.slice(0, -1) : '';
+  return folder.length >= 1 && folder.length <= FILE_NAME_MAX - 1 && !/^[. ]|[. ]$/.test(folder)
+    && [...folder].every(allowed);
+}
+
+/** A game folder's entry: deleted whole. */
+export const isFolderEntry = (name: string) => name.endsWith('/');
 
 /** The extension the car checks: after the last dot, in any case. */
 export const extensionOf = (name: string) => name.slice(name.lastIndexOf('.') + 1).toLowerCase();
@@ -83,7 +94,7 @@ export function parseFiles(text: string, after: string): FileListing & { more: b
   const files = all.slice(1).map(line => {
     const [name, size, ...rest] = line.split('\t');
     // In byte order, after the last name the phone has.
-    if (rest.length || !name || !isFileName(name) || name <= previous) bad();
+    if (rest.length || !name || !isListedName(name) || name <= previous) bad();
     previous = name!;
     return { name: name!, size: bytes(size) };
   });
@@ -112,18 +123,18 @@ export async function listFiles(session: CarSession, app: string): Promise<FileL
 
 /** Announces a file, then sends its bytes, which must be the ones announced. */
 export async function sendFile(session: CarSession, app: string, name: string, file: LocalFile,
-  onProgress: (sent: number, total: number) => void): Promise<void> {
+  onProgress: (sent: number, total: number) => void, stop?: Stop): Promise<void> {
   if (!isFileName(name) || !isHex(file.sha256, 32) || !Number.isSafeInteger(file.size) || file.size <= 0
     || file.size > PHONE_FILE_MAX) {
     throw new ProtocolError('bad-request');
   }
   const announce = `${app}\t${name}\t${file.size}\t${file.sha256}\n`;
   parseOk((await session.ok('/v1/files/put', { kind: 'text', text: announce })).body);
-  parseOk((await session.ok('/v1/files/data', { kind: 'file', ...file }, onProgress)).body);
+  parseOk((await session.ok('/v1/files/data', { kind: 'file', ...file }, onProgress, stop)).body);
 }
 
-/** Deletes a file at once. */
+/** Deletes a file, or a whole game folder (`<folder>/`), at once. */
 export async function removeFile(session: CarSession, app: string, name: string): Promise<void> {
-  if (!isFileName(name)) throw new ProtocolError('bad-request');
+  if (!isListedName(name)) throw new ProtocolError('bad-request');
   parseOk((await session.ok('/v1/files/remove', { kind: 'text', text: `${app}\t${name}\n` })).body);
 }

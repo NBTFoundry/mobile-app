@@ -17,7 +17,31 @@ export type LinkRequest = {
   onProgress?: (sent: number, total: number) => void;
   /** A log route: a 200 reply is saved to a file of this name, not read as text. */
   saveAs?: string;
+  /** Stops a file upload in flight (it then fails with LinkError `stopped`). */
+  stop?: Stop;
 };
+
+/** A user's Stop for transfers: once stopped, each bound action runs (at once if bound later). */
+export class Stop {
+  stopped = false;
+  private readonly actions = new Set<() => void>();
+
+  stop(): void {
+    if (this.stopped) return;
+    this.stopped = true;
+    for (const action of [...this.actions]) action();
+  }
+
+  /** Runs `action` on stop; the returned function unbinds it. */
+  bind(action: () => void): () => void {
+    if (this.stopped) {
+      action();
+      return () => undefined;
+    }
+    this.actions.add(action);
+    return () => this.actions.delete(action);
+  }
+}
 
 /** A reply the link saved: the file, its size and its last lines as printable text. */
 export type SavedReply = { uri: string; size: number; tail: string };
@@ -69,15 +93,17 @@ export class CarSession {
   }
 
   /** Runs one request after the previous one has finished. */
-  send(route: Route, body?: SignedBody, onProgress?: LinkRequest['onProgress'], saveAs?: string): Promise<LinkResponse> {
-    const run = this.queue.then(() => this.sendNow(route, body, onProgress, saveAs));
+  send(route: Route, body?: SignedBody, onProgress?: LinkRequest['onProgress'], saveAs?: string,
+    stop?: Stop): Promise<LinkResponse> {
+    const run = this.queue.then(() => this.sendNow(route, body, onProgress, saveAs, stop));
     this.queue = run.catch(() => undefined);
     return run;
   }
 
   /** Like `send`, but a non-2xx status becomes a `CarError`. */
-  async ok(route: Route, body?: SignedBody, onProgress?: LinkRequest['onProgress']): Promise<LinkResponse> {
-    const response = await this.send(route, body, onProgress);
+  async ok(route: Route, body?: SignedBody, onProgress?: LinkRequest['onProgress'],
+    stop?: Stop): Promise<LinkResponse> {
+    const response = await this.send(route, body, onProgress, undefined, stop);
     if (response.status < 200 || response.status > 299) throw new CarError(response.status, errorCode(response.body));
     return response;
   }
@@ -109,7 +135,8 @@ export class CarSession {
   }
 
   private async sendNow(route: Route, body: SignedBody | undefined, onProgress: LinkRequest['onProgress'],
-    saveAs?: string) {
+    saveAs?: string, stop?: Stop) {
+    if (stop?.stopped) throw new LinkError('stopped');
     const method = methodFor(route);
     if ((method === 'GET') !== !body) throw new ProtocolError('bad-request');
     const nonce = this.nonce ?? await this.fetchNonce();
@@ -134,7 +161,7 @@ export class CarSession {
     }
     const signature = await this.signer.sign(canonicalText(method, route, this.host, nonce, length, digest));
     const response = await this.link.request({
-      host: this.host, method, route, body: linkBody, onProgress, saveAs,
+      host: this.host, method, route, body: linkBody, onProgress, saveAs, stop,
       headers: { 'X-NBT-Key': this.signer.keyId, 'X-NBT-Nonce': nonce, 'X-NBT-Signature': signature },
     });
     if (response.body.length > MAX_REPLY) throw new ProtocolError('bad-reply');

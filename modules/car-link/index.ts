@@ -21,6 +21,8 @@ type CarLinkNative = {
   release(): void;
   setDeskIp(ip: string | null): void;
   randomHex(bytes: number): string;
+  /** Stops the upload of a request in flight (its progress id): it fails with `stopped`. */
+  cancel(progressId: string): void;
   inspect(uri: string, headSize: number): Promise<{ size: number; sha256: string; head: string }>;
   request(request: NativeLinkRequest): Promise<{
     status: number; nonce: string | null; body: string; saved?: NativeSavedReply | null;

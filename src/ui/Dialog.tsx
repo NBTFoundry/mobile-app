@@ -5,8 +5,9 @@ import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } f
 import { Button, Title, useColors, useStyles } from './kit';
 import { t } from '../i18n';
 
-export function Dialog({ title, children, onClose }: {
-  title: string; children: ReactNode; onClose: () => void;
+/** `closeLabel`: the bottom button's label (Close by default; Cancel for a transfer). */
+export function Dialog({ title, children, onClose, closeLabel }: {
+  title: string; children: ReactNode; onClose: () => void; closeLabel?: string;
 }) {
   const styles = useStyles(makeStyles);
   return (
@@ -16,7 +17,7 @@ export function Dialog({ title, children, onClose }: {
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
             <Title>{title}</Title>
             {children}
-            <Button label={t('common.close')} kind="plain" onPress={onClose} />
+            <Button label={closeLabel ?? t('common.close')} kind="plain" onPress={onClose} />
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
