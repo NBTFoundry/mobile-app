@@ -31,11 +31,13 @@ class FilesCar implements Link {
 
 describe('file names', () => {
   it('accepts what the car stores and nothing else', () => {
-    for (const name of ['Game.sfc', 'a.b', 'Super Game (E) [!].SMC', 'x'.repeat(92) + '.sfc']) {
+    for (const name of ['Game.sfc', 'a.b', 'Super Game (E) [!].SMC', 'x'.repeat(92) + '.sfc', 'été.sfc',
+      'ポケモン.sfc', '😀.sfc', 'é'.repeat(46) + '.sfc']) {
       expect([name, isFileName(name)]).toEqual([name, true]);
     }
     for (const name of ['', '.sfc', 'game', 'game.', ' game.sfc', 'game.sfc ', 'a/b.sfc', 'a\\b.sfc', 'a:b.sfc',
-      'a*b.sfc', 'a?b.sfc', 'a"b.sfc', 'a<b.sfc', 'a>b.sfc', 'a|b.sfc', 'tab\t.sfc', 'été.sfc', 'x'.repeat(93) + '.sfc']) {
+      'a*b.sfc', 'a?b.sfc', 'a"b.sfc', 'a<b.sfc', 'a>b.sfc', 'a|b.sfc', 'tab\t.sfc', 'x'.repeat(93) + '.sfc',
+      'c1\u0085.sfc', 'lone\ud800.sfc', 'é'.repeat(47) + '.sfc']) {
       expect([name, isFileName(name)]).toEqual([name, false]);
     }
     expect(extensionOf('Game.Final.SFC')).toBe('sfc');
@@ -43,12 +45,15 @@ describe('file names', () => {
 
   it('names a picked file as the car names one from a USB stick', () => {
     expect(storedName('Game.sfc')).toBe('Game.sfc');
-    // Each UTF-8 byte the car does not allow becomes one underscore.
-    expect(storedName('été: 2?.sfc')).toBe('__t___ 2_.sfc');
+    // UTF-8 characters stay; each byte of one the car does not allow becomes one underscore.
+    expect(storedName('été: 2?.sfc')).toBe('été_ 2_.sfc');
     expect(storedName('..  hidden.smc. ')).toBe('hidden.smc');
-    expect(storedName('😀.sfc')).toBe('____.sfc');
+    expect(storedName('😀.sfc')).toBe('😀.sfc');
+    expect(storedName('c1\u0085.sfc')).toBe('c1__.sfc');
     const long = storedName('y'.repeat(200) + '.sfc')!;
     expect([long.length, long.endsWith('yyy.sfc')]).toEqual([96, true]);
+    // Cut between characters: 46 two-byte characters and ".sfc" are 96 bytes.
+    expect(storedName('é'.repeat(60) + '.sfc')).toBe('é'.repeat(46) + '.sfc');
     expect(storedName('no extension')).toBeUndefined();
     expect(storedName('...')).toBeUndefined();
     expect(storedName('a.' + 'e'.repeat(120))).toBeUndefined();
@@ -60,6 +65,13 @@ describe('file listings', () => {
     const listing = parseFiles(head(2, 0) + 'B.sfc\t1024\na.smc\t0\n', '');
     expect(listing).toEqual({ count: 2, used: 2000, quota: 1073741824, largest: 16777216, free: 5000000000,
       more: false, extensions: ['sfc', 'smc'], files: [{ name: 'B.sfc', size: 1024 }, { name: 'a.smc', size: 0 }] });
+  });
+
+  it('reads UTF-8 names in the byte order of their UTF-8 (manager dev130)', () => {
+    // U+FF5E sorts before U+1F600 in UTF-8, after it in UTF-16.
+    const listing = parseFiles(head(3, 0) + 'Pokémon.sfc\t1\n～.sfc\t1\n😀.sfc\t1\n', '');
+    expect(listing.files.map(f => f.name)).toEqual(['Pokémon.sfc', '～.sfc', '😀.sfc']);
+    expect(() => parseFiles(head(2, 0) + '😀.sfc\t1\n～.sfc\t1\n', '')).toThrow(ProtocolError);
   });
 
   it('reads game folders as one entry each (manager dev123)', () => {

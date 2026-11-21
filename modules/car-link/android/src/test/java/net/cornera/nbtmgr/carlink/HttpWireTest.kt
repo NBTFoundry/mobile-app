@@ -48,6 +48,18 @@ class HttpWireTest {
     bad({ HttpWire.head("GET", "/v1/apps", "h:1", signed, 1) }, "bad-request")
   }
 
+  @Test fun readsUtf8RepliesOnly() {
+    val name = "Pok\u00e9mon \u30dd\u30b1.sfc"
+    val ok = HttpWire.readResponse(ByteArrayInputStream(
+      "HTTP/1.1 200 Result\r\n\r\nFILES\t$name\t1\n".toByteArray(Charsets.UTF_8)))
+    assertEquals("FILES\t$name\t1\n", ok.body)
+    val head = "HTTP/1.1 200 Result\r\n\r\n".toByteArray(Charsets.US_ASCII)
+    for (body in listOf(byteArrayOf(0x61, 0xc3.toByte()), byteArrayOf(0xe9.toByte()), byteArrayOf(0xc2.toByte(), 0x85.toByte()),
+        byteArrayOf(0x61, 0x7f), byteArrayOf(0x61, 0x0d))) {
+      bad({ HttpWire.readResponse(ByteArrayInputStream(head + body)) })
+    }
+  }
+
   @Test fun readsBoundedReplies() {
     val r = read("HTTP/1.1 202 Result\r\nContent-Type: text/plain\r\nContent-Length: 6\r\nX-NBT-Nonce: $hex\r\n" +
       "Connection: close\r\n\r\nOK\nabc")

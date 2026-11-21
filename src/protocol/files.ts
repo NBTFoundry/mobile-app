@@ -3,7 +3,7 @@
  * An application's files on the car: bridge 1.5 `files` (manager docs/files-bridge.md). The car
  * stores and deletes them with no prompt there; the phone asks before a delete.
  */
-import { ProtocolError, isHex, isU64 } from './bytes';
+import { ProtocolError, isHex, isU64, utf8 } from './bytes';
 import { MAX_REPLY, parseOk } from './replies';
 import type { CarSession, Stop } from './session';
 
@@ -26,15 +26,31 @@ const bad = (): never => {
 };
 
 const FORBIDDEN = '/\\:*?"<>|';
-const allowed = (c: string) => c.length === 1 && c >= ' ' && c <= '~' && !FORBIDDEN.includes(c);
+/** A character a stored name may hold: printable ASCII but the forbidden, or one from U+00A0 on. */
+const allowed = (c: string) => {
+  const p = c.codePointAt(0)!;
+  return p < 0x80 ? p >= 32 && p <= 126 && !FORBIDDEN.includes(c) : p >= 0xa0 && (p < 0xd800 || p > 0xdfff);
+};
+/** UTF-8 bytes of a name made of allowed characters. */
+const byteLength = (text: string) => [...text].reduce((n, c) => {
+  const p = c.codePointAt(0)!;
+  return n + (p < 0x80 ? 1 : p < 0x800 ? 2 : p < 0x10000 ? 3 : 4);
+}, 0);
+/** Byte order of the UTF-8 forms, as the car sorts. */
+const byteOrder = (a: string, b: string) => {
+  const x = utf8(a), y = utf8(b);
+  for (let i = 0; i < x.length && i < y.length; i++) if (x[i] !== y[i]) return x[i]! - y[i]!;
+  return x.length - y.length;
+};
 
 /**
- * A name the car stores: 1-96 printable ASCII bytes without / \ : * ? " < > |, neither starting
- * nor ending with a dot or a space, with an extension after its last dot.
+ * A name the car stores: 1-96 bytes of printable ASCII without / \ : * ? " < > | and UTF-8
+ * characters from U+00A0 on (manager dev130), neither starting nor ending with a dot or a space,
+ * with an extension after its last dot.
  */
 export function isFileName(name: string): boolean {
-  if (name.length < 1 || name.length > FILE_NAME_MAX || /^[. ]|[. ]$/.test(name)) return false;
-  if (![...name].every(allowed)) return false;
+  if (!name || ![...name].every(allowed)) return false;
+  if (byteLength(name) > FILE_NAME_MAX || /^[. ]|[. ]$/.test(name)) return false;
   const dot = name.lastIndexOf('.');
   return dot > 0 && dot < name.length - 1;
 }
@@ -43,8 +59,8 @@ export function isFileName(name: string): boolean {
 export function isListedName(name: string): boolean {
   if (isFileName(name)) return true;
   const folder = name.endsWith('/') ? name.slice(0, -1) : '';
-  return folder.length >= 1 && folder.length <= FILE_NAME_MAX - 1 && !/^[. ]|[. ]$/.test(folder)
-    && [...folder].every(allowed);
+  return folder.length >= 1 && [...folder].every(allowed) && byteLength(folder) <= FILE_NAME_MAX - 1
+    && !/^[. ]|[. ]$/.test(folder);
 }
 
 /** A game folder's entry: deleted whole. */
@@ -54,9 +70,10 @@ export const isFolderEntry = (name: string) => name.endsWith('/');
 export const extensionOf = (name: string) => name.slice(name.lastIndexOf('.') + 1).toLowerCase();
 
 /**
- * The name a picked file is stored under, as the car names files from a USB stick: each byte it
- * does not allow becomes `_`, dots and spaces go from both ends, and a long name is cut before
- * its extension. Undefined when no name with an extension is left.
+ * The name a picked file is stored under, as the car names files from a USB stick: characters it
+ * allows are kept, each byte of any other becomes `_`, dots and spaces go from both ends, and a
+ * long name is cut before its extension, between characters. Undefined when no name with an
+ * extension is left.
  */
 export function storedName(picked: string): string | undefined {
   let clean = '';
@@ -67,10 +84,15 @@ export function storedName(picked: string): string | undefined {
   clean = clean.replace(/^[. ]+/, '').replace(/[. ]+$/, '');
   const dot = clean.lastIndexOf('.');
   if (dot < 0) return undefined;
-  if (clean.length > FILE_NAME_MAX) {
+  if (byteLength(clean) > FILE_NAME_MAX) {
     const extension = clean.slice(dot);
-    if (extension.length >= FILE_NAME_MAX) return undefined;
-    clean = clean.slice(0, FILE_NAME_MAX - extension.length) + extension;
+    if (byteLength(extension) >= FILE_NAME_MAX) return undefined;
+    let start = '';
+    for (const c of clean.slice(0, dot)) {
+      if (byteLength(start + c) > FILE_NAME_MAX - byteLength(extension)) break;
+      start += c;
+    }
+    clean = start + extension;
   }
   return isFileName(clean) ? clean : undefined;
 }
@@ -94,7 +116,7 @@ export function parseFiles(text: string, after: string): FileListing & { more: b
   const files = all.slice(1).map(line => {
     const [name, size, ...rest] = line.split('\t');
     // In byte order, after the last name the phone has.
-    if (rest.length || !name || !isListedName(name) || name <= previous) bad();
+    if (rest.length || !name || !isListedName(name) || byteOrder(name, previous) <= 0) bad();
     previous = name!;
     return { name: name!, size: bytes(size) };
   });

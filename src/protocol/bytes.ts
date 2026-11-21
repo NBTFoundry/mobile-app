@@ -29,7 +29,31 @@ export function isHex(text: string, size: number): boolean {
   return text.length === size * 2 && /^[0-9a-f]+$/.test(text);
 }
 
-/** Printable ASCII only; protocol text never carries other bytes. */
+/**
+ * A request's text as UTF-8: printable ASCII, tab and newline, and characters from U+00A0 on (file
+ * names, manager dev130); no other control and no lone surrogate.
+ */
+export function utf8(text: string): Uint8Array {
+  const out: number[] = [];
+  for (const c of text) {
+    const p = c.codePointAt(0)!;
+    if (p < 0x80) {
+      if (p > 126 || (p < 32 && p !== 9 && p !== 10)) throw new ProtocolError('bad-text');
+      out.push(p);
+    } else if (p < 0xa0 || (p >= 0xd800 && p <= 0xdfff)) {
+      throw new ProtocolError('bad-text');
+    } else if (p < 0x800) {
+      out.push(0xc0 | (p >> 6), 0x80 | (p & 63));
+    } else if (p < 0x10000) {
+      out.push(0xe0 | (p >> 12), 0x80 | ((p >> 6) & 63), 0x80 | (p & 63));
+    } else {
+      out.push(0xf0 | (p >> 18), 0x80 | ((p >> 12) & 63), 0x80 | ((p >> 6) & 63), 0x80 | (p & 63));
+    }
+  }
+  return Uint8Array.from(out);
+}
+
+/** Printable ASCII only (signed texts, package headers). */
 export function ascii(text: string): Uint8Array {
   const out = new Uint8Array(text.length);
   for (let i = 0; i < text.length; i++) {

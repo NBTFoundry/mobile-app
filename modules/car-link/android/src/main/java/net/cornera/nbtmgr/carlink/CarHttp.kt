@@ -22,7 +22,8 @@ class CarHttp(private val factory: SocketFactory) {
     target: Target, host: String, method: String, route: String, headers: Map<String, String>, body: Body?,
     save: File? = null, progress: (Long, Long) -> Unit,
   ): CarResponse {
-    val bytes = (body as? Body.Text)?.text?.toByteArray(Charsets.US_ASCII)
+    // UTF-8, as the signature's digest was taken (session.ts: printable ASCII and file names' characters).
+    val bytes = (body as? Body.Text)?.text?.toByteArray(Charsets.UTF_8)
     val length = bytes?.size?.toLong() ?: (body as? Body.Upload)?.size ?: 0L
     val head = HttpWire.head(method, route, host, headers, length)
     try {

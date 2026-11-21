@@ -11,8 +11,9 @@ data class CarResponse(val status: Int, val nonce: String?, val body: String, va
 
 /**
  * HTTP/1.1 as the car's parser accepts it: exact headers, no chunking, compression or
- * Expect, one request per connection. Replies are bounded and ASCII, except a log reply
- * (PROTOCOL.md, Logs), which is saved to a file as it came.
+ * Expect, one request per connection. Replies are bounded, printable ASCII and UTF-8 (file
+ * names, manager dev130) without other controls, except a log reply (PROTOCOL.md, Logs), which
+ * is saved to a file as it came.
  */
 object HttpWire {
   const val HEADER_MAX = 8192
@@ -87,8 +88,24 @@ object HttpWire {
     }
     if (length != null && length > BODY_MAX) throw LinkException("bad-reply")
     val body = readBody(input, length?.toInt())
-    if (body.any { (it < 0x20 && it != 0x0a.toByte() && it != 0x09.toByte()) || it > 0x7e }) throw LinkException("bad-reply")
-    return CarResponse(status, nonce, body.toString(Charsets.US_ASCII))
+    return CarResponse(status, nonce, text(body))
+  }
+
+  /** A reply's text: UTF-8 without control characters but tab and newline. */
+  fun text(body: ByteArray): String {
+    if (body.any { val b = it.toInt() and 0xff; (b < 0x20 && b != 0x0a && b != 0x09) || b == 0x7f }) {
+      throw LinkException("bad-reply")
+    }
+    val decoded = try {
+      Charsets.UTF_8.newDecoder()
+        .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+        .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+        .decode(java.nio.ByteBuffer.wrap(body)).toString()
+    } catch (e: java.nio.charset.CharacterCodingException) {
+      throw LinkException("bad-reply")
+    }
+    if (decoded.any { it in '\u0080'..'\u009f' }) throw LinkException("bad-reply")
+    return decoded
   }
 
   private fun copy(input: InputStream, length: Long, file: File): Long {

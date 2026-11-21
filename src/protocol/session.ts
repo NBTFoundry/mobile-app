@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 /** A signed-request session with one car listener. Requests are serialized: nonces are single use. */
-import { ProtocolError, ascii, isHex } from './bytes';
+import { ProtocolError, isHex, utf8 } from './bytes';
 import { errorCode, MAX_REPLY } from './replies';
 import { EMPTY_SHA256, bodyDigest, canonicalText, isHostPort, methodFor, type Method, type Route } from './signing';
 
@@ -146,7 +146,7 @@ export class CarSession {
     let digest = EMPTY_SHA256;
     let linkBody: LinkBody | undefined;
     if (body?.kind === 'text') {
-      const bytes = ascii(body.text);
+      const bytes = utf8(body.text);
       if (bytes.length > 2048) throw new ProtocolError('bad-request');
       length = bytes.length;
       digest = bodyDigest(bytes);
