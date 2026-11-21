@@ -62,6 +62,8 @@ export const zh: Messages = {
   'app.more': '更多',
   'app.installedVersion': '已安装 {version}',
   'app.managerUpdate': 'NBT Manager 更新',
+  'app.managerSteps': '需要两次更新：先更新此版本，再更新 {second}（此车的 NBT Manager 目前还无法读取它）。',
+  'app.managerUnreadable': '此车的 NBT Manager 目前还无法读取 {version}。请将其过渡版本（{version}-step，随版本一起提供）添加到资料库。',
   'app.ready': '可以安装',
   'app.available': '可用 {version}',
   'app.updateTo': '更新到 {version}',

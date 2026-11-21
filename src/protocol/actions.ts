@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 /** One flow per action. The car confirms pairing, installs and uninstalls; the phone only follows. */
 import { ProtocolError, fromAscii } from './bytes';
-import { parseApps, parseAutostart, parseOk, parsePair, parseSettings, parseStatus, parseWake,
-  type Autostart, type CarApp, type Setting, type Status, type StatusState, type WakeState } from './replies';
+import { parseApps, parseAutostart, parseManager, parseOk, parsePair, parseSettings, parseStatus, parseWake,
+  type Autostart, type CarApp, type CarManager, type Setting, type Status, type StatusState,
+  type WakeState } from './replies';
 import { CarError, type CarSession, type SavedReply } from './session';
 import { pairBody, pairingCode } from './signing';
 
@@ -93,6 +94,21 @@ export async function readAutostart(session: CarSession, app: string): Promise<A
     return parseAutostart((await session.ok('/v1/autostart', { kind: 'text', text: `${app}\n` })).body);
   } catch (error) {
     if (error instanceof CarError && (error.status === 404 || error.status === 400 && error.code === 'route')) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** The car's NBT Manager; null from a manager without the route, which reads releases only
+ * up to NBTRLS2 (PROTOCOL.md, "Manager updates from a phone"). */
+export async function readManager(session: CarSession): Promise<CarManager | null> {
+  try {
+    return parseManager((await session.ok('/v1/manager')).body);
+  } catch (error) {
+    // An unknown route: 404, or 400 from managers that refuse it while parsing the request.
+    if (error instanceof CarError && (error.status === 404
+      || error.status === 400 && (error.code === 'route' || error.code === 'invalid-request'))) {
       return null;
     }
     throw error;

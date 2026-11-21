@@ -4,7 +4,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { CarLink } from '../../modules/car-link';
 import { compareU64, fromHex } from '../protocol/bytes';
 import { HEAD_READ, parsePackageHead, type PackageInfo } from '../protocol/packageHeader';
-import type { CarApp } from '../protocol/replies';
+import type { CarApp, CarManager } from '../protocol/replies';
 
 export type LibraryEntry = {
   sha256: string;
@@ -69,9 +69,21 @@ export async function loadLibrary(): Promise<LibraryEntry[]> {
   }
 }
 
+/** What one library place holds: an application, or the manager's releases of one format, so
+ * that a step release stays beside the release it leads to (the manager's
+ * docs/manager-release.md, "Step releases"). */
+function placeOf(info: PackageInfo): string {
+  return info.app === 'manager' ? `manager/${info.format ?? 1}` : info.app;
+}
+
+function newestIn(entries: LibraryEntry[], place: string): LibraryEntry | undefined {
+  return entries.filter(e => placeOf(e.info) === place)
+    .sort((a, b) => compareU64(b.info.sequence, a.info.sequence) || b.addedAt - a.addedAt)[0];
+}
+
 /** Libraries from before one version per application: the newest of each stays. */
 async function keepNewest(entries: LibraryEntry[]): Promise<LibraryEntry[]> {
-  const kept = entries.filter(e => newestFor(entries, e.info.app) === e);
+  const kept = entries.filter(e => newestIn(entries, placeOf(e.info)) === e);
   if (kept.length === entries.length) return entries;
   try {
     await save(kept);
@@ -111,11 +123,13 @@ export type AddOutcome = {
 };
 
 /** Copies a picked file (already in the app's cache) into the library. The library keeps one
- * version per application: a newer or equal sequence replaces the one held, an older is refused. */
+ * version per application (per format for the manager's releases): a newer or equal sequence
+ * replaces the one held, an older is refused. */
 export async function addPackage(entries: LibraryEntry[], cacheUri: string, fileName: string): Promise<AddOutcome> {
   const checked = await inspectPackage(cacheUri);
   if (entries.some(e => e.sha256 === checked.sha256)) return { entries, outcome: 'already' };
-  const held = newestFor(entries, checked.info.app);
+  const place = placeOf(checked.info);
+  const held = newestIn(entries, place);
   if (held && compareU64(checked.info.sequence, held.info.sequence) < 0) return { entries, outcome: 'older', other: held };
   try {
     if (!dir().exists) dir().create({ intermediates: true });
@@ -127,8 +141,8 @@ export async function addPackage(entries: LibraryEntry[], cacheUri: string, file
   }
   const entry: LibraryEntry = { sha256: checked.sha256, fileName: fileName.replace(/[^\x20-\x7e]/g, '').slice(0, 80) || 'package.nbt',
     size: checked.size, addedAt: Date.now(), info: checked.info };
-  const replaced = entries.filter(e => e.info.app === entry.info.app);
-  const at = entries.findIndex(e => e.info.app === entry.info.app);
+  const replaced = entries.filter(e => placeOf(e.info) === place);
+  const at = entries.findIndex(e => placeOf(e.info) === place);
   const next = entries.filter(e => !replaced.includes(e));
   next.splice(at < 0 ? next.length : at, 0, entry);
   await save(next);
@@ -158,4 +172,23 @@ export function newestFor(entries: LibraryEntry[], app: string): LibraryEntry | 
 export function updateAvailable(entries: LibraryEntry[], app: CarApp): boolean {
   const newest = newestFor(entries, app.id);
   return !!newest && compareU64(newest.info.sequence, app.sequence) > 0;
+}
+
+/**
+ * The manager release to send to a car: the newest it reads (its formats; up to NBTRLS2 for a
+ * manager without `/v1/manager`, `car` null) and newer than it runs. `then` is a newer one it
+ * reads only after `next` (a step release first); `unreadable`, the newest when it reads none.
+ * Unknown car (undefined): the newest.
+ */
+export function managerChoice(entries: LibraryEntry[], car: CarManager | null | undefined):
+  { next?: LibraryEntry; then?: LibraryEntry; unreadable?: LibraryEntry } {
+  const releases = entries.filter(e => e.info.app === 'manager')
+    .sort((a, b) => compareU64(b.info.sequence, a.info.sequence) || b.addedAt - a.addedAt);
+  if (car === undefined) return { next: releases[0] };
+  const formats = car ? car.formats : [1, 2];
+  const newer = releases.filter(e => !car || compareU64(e.info.sequence, car.sequence) > 0);
+  const next = newer.find(e => formats.includes(e.info.format ?? 1));
+  const newest = newer[0];
+  if (!next) return newest ? { unreadable: newest } : {};
+  return newest !== next ? { next, then: newest } : { next };
 }

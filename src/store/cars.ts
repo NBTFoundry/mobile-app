@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 /** Paired cars, one SecureStore entry each, plus an index. Stored data is checked when read. */
 import * as SecureStore from 'expo-secure-store';
-import { parseApps, type CarApp } from '../protocol/replies';
+import { parseApps, parseManager, type CarApp, type CarManager } from '../protocol/replies';
 import { isHostPort } from '../protocol/signing';
 import type { Protection } from '../../modules/device-key';
 import { CarLink } from '../../modules/car-link';
@@ -20,6 +20,8 @@ export type CarRecord = {
   desk?: string;
   apps?: CarApp[];
   appsSeenAt?: number;
+  /** Read with the apps; null: its manager predates `GET /v1/manager` (reads releases up to NBTRLS2). */
+  manager?: CarManager | null;
 };
 
 type Index = { ids: string[]; selected?: string };
@@ -53,6 +55,15 @@ export function checkRecord(raw: unknown): CarRecord | undefined {
       record.appsSeenAt = r.appsSeenAt;
     } catch {
       // Drop an unreadable list; the next session refreshes it.
+    }
+  }
+  if (r.manager === null) record.manager = null;
+  else if (r.manager && typeof r.manager === 'object') {
+    try {
+      const m = r.manager as CarManager;
+      record.manager = parseManager(`MANAGER\t${m.version}\t${m.sequence}\t${m.formats.map(f => `NBTRLS${f}`).join(',')}\n`);
+    } catch {
+      // Read again with the apps.
     }
   }
   return record;
@@ -125,7 +136,7 @@ export function newCarId(): string {
 }
 
 /** Merge delayed results into the latest record, never recreating a forgotten car. */
-function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | 'appsSeenAt'>>): Promise<CarRecord | undefined> {
+function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | 'appsSeenAt' | 'manager'>>): Promise<CarRecord | undefined> {
   return mutate(async () => {
     const { cars } = await loadCars();
     const current = cars.find(car => car.id === id);
@@ -136,4 +147,6 @@ function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | '
   });
 }
 export const renameCar = (id: string, name: string) => patchCar(id, { name });
-export const rememberApps = (id: string, apps: CarApp[]) => patchCar(id, { apps, appsSeenAt: Date.now() });
+/** `manager` undefined: not read this time, the stored one stays. */
+export const rememberApps = (id: string, apps: CarApp[], manager?: CarManager | null) =>
+  patchCar(id, { apps, appsSeenAt: Date.now(), ...(manager !== undefined ? { manager } : {}) });

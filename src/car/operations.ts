@@ -3,8 +3,8 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import { CarLink } from '../../modules/car-link';
-import { changeAutostart, changeSetting, installPackage, listApps, pairPhone, readAutostart, readSettings,
-  realWait, removeApp, type Cancel, type Follow } from '../protocol/actions';
+import { changeAutostart, changeSetting, installPackage, listApps, pairPhone, readAutostart, readManager,
+  readSettings, realWait, removeApp, type Cancel, type Follow } from '../protocol/actions';
 import { listenerHosts, reachManager } from '../protocol/opening';
 import type { Autostart, Setting, Status } from '../protocol/replies';
 import { CarError, CarSession, LinkError } from '../protocol/session';
@@ -208,7 +208,10 @@ export async function anyListener(car: CarRecord): Promise<CarSession> {
 }
 
 async function remember(car: CarRecord, session: CarSession): Promise<CarRecord> {
-  const updated = await rememberApps(car.id, await listApps(session));
+  const apps = await listApps(session);
+  // Which release the car can take next (a step release first); unread on a failure.
+  const manager = await readManager(session).catch(() => undefined);
+  const updated = await rememberApps(car.id, apps, manager);
   if (!updated) throw new LinkError('cancelled');
   return updated;
 }

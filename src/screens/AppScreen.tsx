@@ -8,7 +8,7 @@ import { applyAutostart, applySetting, install, loadSettings, uninstall } from '
 import { compareU64 } from '../protocol/bytes';
 import type { Autostart, Setting } from '../protocol/replies';
 import type { CarRecord } from '../store/cars';
-import { appLabel, type LibraryEntry } from '../store/library';
+import { appLabel, managerChoice, type LibraryEntry } from '../store/library';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
 import { ActivityDialog } from './ActivityDialog';
@@ -32,8 +32,11 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const manager = appId === 'manager';
   const packages = state.library.filter(e => e.info.app === appId)
     .sort((a, b) => compareU64(b.info.sequence, a.info.sequence));
-  const latest = packages[0];
+  // The manager: the newest release the car reads, a step release first (managerChoice).
+  const choice = manager ? managerChoice(state.library, car.manager) : undefined;
+  const latest = manager ? choice?.next : packages[0];
   const canInstall = latest && (manager || !installed || compareU64(latest.info.sequence, installed.sequence) > 0);
+  const known = installed ?? (manager && car.manager ? car.manager : undefined);
   const after = async (run: Promise<unknown>) => {
     state.go({ tab: 'activity' });
     await run;
@@ -83,14 +86,18 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
       {installed && !manager ? <Button label={t('app.more')} kind="plain" onPress={() => setMenu(true)} /> : null}
     </View>
     <Panel>
-      <Body muted>{installed ? t('app.installedVersion', { version: installed.version }) : t(manager ? 'app.managerUpdate' : 'app.ready')}</Body>
+      <Body muted>{known ? t('app.installedVersion', { version: known.version }) : t(manager ? 'app.managerUpdate' : 'app.ready')}</Body>
       {canInstall ? <>
         <Body>{t('app.available', { version: latest.info.version })}</Body>
+        {choice?.then ? <Body muted>{t('app.managerSteps', { first: latest.info.version, second: choice.then.info.version })}</Body> : null}
         <Button label={t(manager || installed ? 'app.updateTo' : 'app.installVersion', { version: latest.info.version })}
           onPress={() => void update(latest)} />
         <Body muted>{t('app.confirmOnCar')}</Body>
+      </> : choice?.unreadable ? <>
+        <Body>{t('app.managerUnreadable', { version: choice.unreadable.info.version })}</Body>
+        <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />
       </> : <>
-        <Body muted>{t(latest && installed ? 'app.noNewer' : 'app.addPackage')}</Body>
+        <Body muted>{t(packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
         <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />
       </>}
     </Panel>

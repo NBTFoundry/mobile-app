@@ -32,6 +32,11 @@ class RouteGuardTest {
       assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "POST", "/v1/autostart", null))
     }
     refused("172.16.222.1:8080", "GET", "/v1/autostart")
+    // The installed manager, from either listener.
+    for (port in listOf(8080, 8081)) {
+      assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "GET", "/v1/manager", null))
+    }
+    refused("172.16.222.1:8080", "POST", "/v1/manager")
     // An application's files, from the worker only.
     for (route in listOf("/v1/files/list", "/v1/files/put", "/v1/files/data", "/v1/files/remove")) {
       assertEquals(Target("172.16.222.1", 8080, false), RouteGuard.check("172.16.222.1:8080", "POST", route, null))

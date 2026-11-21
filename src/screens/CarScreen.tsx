@@ -7,7 +7,7 @@ import { useConnection } from '../car/connection';
 import { fetchManagerLog, fetchSystemLog, type CarLog, type LogResult } from '../car/logs';
 import { connectCar, refreshApps } from '../car/operations';
 import type { CarRecord } from '../store/cars';
-import { appLabel, newestFor, updateAvailable } from '../store/library';
+import { appLabel, managerChoice, newestFor, updateAvailable } from '../store/library';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, useColors, useStyles } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
 import { LanguageRow } from '../ui/LanguageRow';
@@ -59,8 +59,11 @@ export function CarScreen({ state }: { state: AppState }) {
     </ScrollView>
   );
   const apps = car.apps ?? [];
+  // The manager is listed as installed once the car has said which one it runs.
+  const manager = car.manager ?? undefined;
   const available = [...new Set(library.map(e => e.info.app))]
-    .filter(app => !apps.some(a => a.id === app)).map(app => newestFor(library, app)!);
+    .filter(app => !apps.some(a => a.id === app) && !(app === 'manager' && manager))
+    .map(app => newestFor(library, app)!);
   const ours = !car.desk && connection.carId === car.id;
   return (
     <ScrollView contentContainerStyle={styles.page}>
@@ -83,6 +86,9 @@ export function CarScreen({ state }: { state: AppState }) {
       <Label>{t('car.installed')}</Label>
       {car.apps === undefined ? <Body muted>{t('car.readToSee')}</Body>
         : !apps.length ? <Body muted>{t('car.noApps')}</Body> : null}
+      {manager ? <Row title={appLabel('manager')} detail={manager.version}
+        tag={managerChoice(library, manager).next ? t('car.updateAvailable') : undefined} tagColor={colors.accent}
+        onPress={() => state.go({ tab: 'car', app: 'manager' })} /> : null}
       <View>{apps.map(app => <Row key={app.id} title={appLabel(app.id)} detail={app.version}
         tag={updateAvailable(library, app) ? t('car.updateAvailable') : undefined} tagColor={colors.accent}
         onPress={() => state.go({ tab: 'car', app: app.id })} />)}</View>

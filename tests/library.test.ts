@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 /** The library keeps one version per application: the newest. */
 import { createHash } from 'crypto';
-import { addPackage, loadLibrary, type LibraryEntry } from '../src/store/library';
+import { addPackage, loadLibrary, managerChoice, type LibraryEntry } from '../src/store/library';
 
 const files = new Map<string, string>();
 jest.mock('expo-file-system', () => {
@@ -42,8 +42,9 @@ jest.mock('../modules/car-link', () => ({
 jest.mock('../src/protocol/packageHeader', () => ({
   HEAD_READ: 64,
   parsePackageHead: (head: Uint8Array) => {
-    const [app, version, sequence] = Buffer.from(head).toString().split(' ');
-    return { app, version, sequence, compat: '', payloadSize: 0, payloadSha256: '', settings: [] };
+    const [app, version, sequence, format] = Buffer.from(head).toString().split(' ');
+    return { app, version, sequence, compat: '', payloadSize: 0, payloadSha256: '', settings: [],
+      ...(format ? { format: Number(format) } : {}) };
   },
 }));
 
@@ -102,3 +103,45 @@ it('keeps the newest of each application from an older library', async () => {
   expect(JSON.parse(files.get('doc:/library/index.json')!)).toHaveLength(2);
 });
 
+
+it('keeps a manager step release beside the release it leads to', async () => {
+  const full = await add([], 'manager dev126 126 3');
+  const step = await add(full.entries, 'manager dev126-step 125 2');
+  expect(step.outcome).toBe('added');
+  expect(step.entries.map(e => e.info.version)).toEqual(['dev126', 'dev126-step']);
+  // A newer release replaces the one of its format only.
+  const next = await add(step.entries, 'manager dev127 127 3');
+  expect(next.outcome).toBe('replaced');
+  expect(next.entries.map(e => e.info.version).sort()).toEqual(['dev126-step', 'dev127']);
+  expect(stored()).toHaveLength(2);
+});
+
+describe('managerChoice', () => {
+  const entry = (version: string, sequence: string, format: number, addedAt = 0): LibraryEntry => ({
+    sha256: version.padEnd(64, '0'), fileName: `${version}.nbtr`, size: 1, addedAt,
+    info: { app: 'manager', version, sequence, compat: '', payloadSize: 0, payloadSha256: '', settings: [], format },
+  });
+  const full = entry('dev126', '126', 3);
+  const step = entry('dev126-step', '125', 2);
+  const library = [full, step, entry('dev120', '120', 2)];
+
+  it('sends the step first to a manager that predates the route', () => {
+    expect(managerChoice([full, step], null)).toEqual({ next: step, then: full });
+  });
+  it('sends the release itself once the car reads its format', () => {
+    const car = { version: 'dev126-step', sequence: '125', formats: [1, 2, 3] };
+    expect(managerChoice([full, step], car)).toEqual({ next: full });
+    expect(managerChoice([full, step], { ...car, version: 'dev123', sequence: '123' })).toEqual({ next: full });
+  });
+  it('uses the step for a car whose launcher lists only older formats', () => {
+    const car = { version: 'dev123', sequence: '123', formats: [1, 2] };
+    expect(managerChoice(library, car)).toEqual({ next: step, then: full });
+  });
+  it('says when the car reads nothing newer it holds', () => {
+    expect(managerChoice([full], null)).toEqual({ unreadable: full });
+    expect(managerChoice([full, step], { version: 'dev126', sequence: '126', formats: [1, 2, 3] })).toEqual({});
+  });
+  it('offers the newest when the car is unknown', () => {
+    expect(managerChoice([step, full], undefined)).toEqual({ next: full });
+  });
+});

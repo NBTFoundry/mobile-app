@@ -98,6 +98,18 @@ export function parseWake(text: string): WakeState {
   return state;
 }
 
+/** The car's NBT Manager (`GET /v1/manager`): its release, and the release formats
+ * (`NBTRLS<n>`) an update from the phone can use now. */
+export type CarManager = { version: string; sequence: string; formats: number[] };
+
+export function parseManager(text: string): CarManager {
+  const head = lines(text, 1)[0]!.split('\t');
+  const formats = (head[3] ?? '').split(',');
+  if (head.length !== 4 || head[0] !== 'MANAGER' || !VERSION.test(head[1]!) || !isU64(head[2]!, true)
+    || formats.some(f => !/^NBTRLS[1-9]$/.test(f)) || new Set(formats).size !== formats.length) bad();
+  return { version: head[1]!, sequence: head[2]!, formats: formats.map(f => Number(f.slice(6))) };
+}
+
 /** Start with the car: the preference, and whether failed starts paused it (PROTOCOL.md, "Autostart"). */
 export type Autostart = { on: boolean; paused: boolean };
 

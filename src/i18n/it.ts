@@ -62,6 +62,8 @@ export const it: Messages = {
   'app.more': 'Altro',
   'app.installedVersion': 'Installata: {version}',
   'app.managerUpdate': 'Aggiornamento di NBT Manager',
+  'app.managerSteps': 'Due aggiornamenti: prima questo, poi {second}, che l’NBT Manager di quest’auto non sa ancora leggere.',
+  'app.managerUnreadable': 'L’NBT Manager di quest’auto non sa ancora leggere {version}. Aggiungi alla libreria la versione intermedia ({version}-step, fornita insieme).',
   'app.ready': 'Pronta da installare',
   'app.available': 'Disponibile: {version}',
   'app.updateTo': 'Aggiorna a {version}',

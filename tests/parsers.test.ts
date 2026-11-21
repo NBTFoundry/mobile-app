@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 import { createHash } from 'node:crypto';
-import { parseApps, parseAutostart, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
+import { parseApps, parseAutostart, parseManager, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
 import { parseWifiCode } from '../src/protocol/wifiCode';
 import { parsePackageHead } from '../src/protocol/packageHeader';
 
@@ -158,6 +158,19 @@ describe('manager release header', () => {
     const renamed = new Uint8Array(Buffer.from(text, 'latin1'));
     expect(() => parsePackageHead(renamed, renamed.length)).toThrow();
   });
+});
+
+describe('parseManager', () => {
+  it('reads the installed release and the formats an update can use', () => {
+    expect(parseManager('MANAGER\tdev126\t126\tNBTRLS1,NBTRLS2,NBTRLS3\n'))
+      .toEqual({ version: 'dev126', sequence: '126', formats: [1, 2, 3] });
+    expect(parseManager('MANAGER\tv2\t2\tNBTRLS1\n')).toEqual({ version: 'v2', sequence: '2', formats: [1] });
+  });
+  it.each([
+    '', 'MANAGER\tv2\t2\tNBTRLS1', 'MANAGER\tv2\t2\n', 'MANAGER\tv 2\t2\tNBTRLS1\n',
+    'MANAGER\tv2\t-1\tNBTRLS1\n', 'MANAGER\tv2\t2\tNBTRLS1,NBTRLS1\n', 'MANAGER\tv2\t2\tNBTMGR1\n',
+    'MANAGER\tv2\t2\t\n', 'MANAGER\tv2\t2\tNBTRLS1\textra\n',
+  ])('rejects malformed replies %#', text => expect(() => parseManager(text)).toThrow());
 });
 
 describe('parseAutostart', () => {

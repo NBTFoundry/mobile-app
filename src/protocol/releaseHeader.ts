@@ -57,5 +57,5 @@ export function parseReleaseHead(head: Uint8Array, fileSize: number): PackageInf
   if (lines.length || !/^[A-Za-z0-9._-]{1,48}$/.test(version) || !isU64(sequence)
     || platform !== 'qnx6.5-armv7le' || !/^[a-z0-9._-]{1,48}$/.test(compat)
     || fileSize !== HEADER + manifestSize + SIGNATURE + payloadSize) bad();
-  return { app: 'manager', version, sequence, compat, payloadSize, payloadSha256: '', settings: [] };
+  return { app: 'manager', version, sequence, compat, payloadSize, payloadSha256: '', settings: [], format };
 }

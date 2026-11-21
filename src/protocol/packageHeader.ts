@@ -21,6 +21,8 @@ export type PackageInfo = {
   payloadSize: number;
   payloadSha256: string;
   settings: Setting[];
+  /** A manager release's format (`NBTRLS<n>`); absent for an application package. */
+  format?: number;
 };
 
 const bad = (): never => {

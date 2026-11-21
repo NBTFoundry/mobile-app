@@ -13,7 +13,7 @@ import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 import { changeAutostart, changeSetting, clearAppLog, installPackage, listApps, pairPhone, readAppLog,
-  readAutostart, readSettings, readSystemLog, removeApp, wake, type Follow } from '../src/protocol/actions';
+  readAutostart, readManager, readSettings, readSystemLog, removeApp, wake, type Follow } from '../src/protocol/actions';
 import { listFiles, removeFile, sendFile } from '../src/protocol/files';
 import { reachManager } from '../src/protocol/opening';
 import { CarError, CarSession } from '../src/protocol/session';
@@ -110,6 +110,13 @@ async function main() {
     const systemLog = await readSystemLog(worker);
     check(systemLog.tail === 'slog: iDrive started\n' && readFileSync(new URL(systemLog.uri), 'ascii') === systemLog.tail,
       'the system log is saved to a file and its end shown');
+    // The installed manager, from either listener. The host car's launcher is a stand-in that
+    // lists no format, so an update from the phone can use NBTRLS1 only.
+    for (const session of [worker, door]) {
+      const manager = await readManager(session);
+      check(manager?.version === 'v1' && manager.sequence === '1' && manager.formats.join() === '1',
+        'the car names its manager and the release formats it takes');
+    }
     await clearAppLog(door, 'test');
     check((await readAppLog(worker, 'test')).size === 0, 'an application log is cleared');
     const unknown = await readAppLog(worker, 'missing').catch(e => e);

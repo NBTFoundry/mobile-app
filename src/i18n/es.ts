@@ -62,6 +62,8 @@ export const es: Messages = {
   'app.more': 'Más',
   'app.installedVersion': 'Instalada: {version}',
   'app.managerUpdate': 'Actualización de NBT Manager',
+  'app.managerSteps': 'Dos actualizaciones: primero esta y luego {second}, que el NBT Manager de este coche aún no puede leer.',
+  'app.managerUnreadable': 'El NBT Manager de este coche aún no puede leer {version}. Añade a la biblioteca su versión intermedia ({version}-step, incluida con ella).',
   'app.ready': 'Lista para instalar',
   'app.available': 'Disponible: {version}',
   'app.updateTo': 'Actualizar a {version}',

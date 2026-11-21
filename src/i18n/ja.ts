@@ -62,6 +62,8 @@ export const ja: Messages = {
   'app.more': 'その他',
   'app.installedVersion': 'インストール済み {version}',
   'app.managerUpdate': 'NBT Manager のアップデート',
+  'app.managerSteps': '2 回のアップデートが必要です。まずこれを入れ、次に {second} を入れます（この車の NBT Manager はまだそれを読めません）。',
+  'app.managerUnreadable': 'この車の NBT Manager はまだ {version} を読めません。一緒に配布される中間リリース（{version}-step）をライブラリに追加してください。',
   'app.ready': 'インストールの準備ができています',
   'app.available': '利用可能 {version}',
   'app.updateTo': '{version} にアップデート',

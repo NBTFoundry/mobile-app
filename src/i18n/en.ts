@@ -64,6 +64,8 @@ export const en = {
   'app.more': 'More',
   'app.installedVersion': 'Installed {version}',
   'app.managerUpdate': 'NBT Manager update',
+  'app.managerSteps': 'Two updates: this one first, then {second}, which this car’s NBT Manager can’t read yet.',
+  'app.managerUnreadable': 'This car’s NBT Manager can’t read {version} yet. Add its step release ({version}-step, shipped with it) to the library.',
   'app.ready': 'Ready to install',
   'app.available': 'Available {version}',
   'app.updateTo': 'Update to {version}',
