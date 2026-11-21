@@ -69,6 +69,7 @@ export const en = {
   'app.updateTo': 'Update to {version}',
   'app.installVersion': 'Install {version}',
   'app.confirmOnCar': 'Confirm the request on the car.',
+  'app.managerFinish': 'To finish, open App Manager on the car: it checks the new version for about 10 seconds, then asks to restart the head unit when its iDrive entry changed.',
   'app.noNewer': 'No newer version in your library.',
   'app.addPackage': 'Add a package in Library to continue.',
   'app.openLibrary': 'Open Library',

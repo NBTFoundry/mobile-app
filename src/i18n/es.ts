@@ -67,6 +67,7 @@ export const es: Messages = {
   'app.updateTo': 'Actualizar a {version}',
   'app.installVersion': 'Instalar {version}',
   'app.confirmOnCar': 'Confirma la solicitud en el coche.',
+  'app.managerFinish': 'Para terminar, abre App Manager en el coche: comprueba la nueva versión durante unos 10 segundos y luego pide reiniciar la unidad principal si su entrada de iDrive cambió.',
   'app.noNewer': 'No hay una versión más reciente en tu biblioteca.',
   'app.addPackage': 'Añade un paquete en la Biblioteca para continuar.',
   'app.openLibrary': 'Abrir la Biblioteca',

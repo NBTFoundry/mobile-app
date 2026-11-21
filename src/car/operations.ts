@@ -318,7 +318,8 @@ async function managerAction(car: CarRecord, id: number, cancel: Cancel,
   return { value: status, phase: phaseOf(status), detail: describeStatus(status) };
 }
 
-export function install(car: CarRecord, entry: LibraryEntry): Promise<Status | undefined> {
+export function install(car: CarRecord, entry: LibraryEntry,
+  onStarted?: (id: number) => void): Promise<Status | undefined> {
   const installed = car.apps?.some(a => a.id === entry.info.app);
   const manager = entry.info.app === 'manager';
   const title = t(installed || manager ? 'op.updateTitle' : 'op.installTitle',
@@ -329,7 +330,8 @@ export function install(car: CarRecord, entry: LibraryEntry): Promise<Status | u
       return installPackage(worker, { uri: packageFile(entry.sha256).uri, size: entry.size, sha256: entry.sha256 },
         (sent, total) => updateActivity(id, { progress: total ? sent / total : 0 }), follow(id, cancel));
     // The car keeps an approved manager release and starts it at the next opening.
-    }).then(result => (manager && result.phase === 'done' ? { ...result, detail: t('op.managerAccepted') } : result)), id));
+    }).then(result => (manager && result.phase === 'done' ? { ...result, detail: t('op.managerAccepted') } : result)), id),
+  onStarted);
 }
 
 export function uninstall(car: CarRecord, app: string): Promise<Status | undefined> {

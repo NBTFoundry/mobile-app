@@ -67,6 +67,7 @@ export const ja: Messages = {
   'app.updateTo': '{version} にアップデート',
   'app.installVersion': '{version} をインストール',
   'app.confirmOnCar': '車両でリクエストを確認してください。',
+  'app.managerFinish': '仕上げに車で App Manager を開いてください。新しいバージョンを約 10 秒確認し、iDrive のエントリーが変わった場合はヘッドユニットの再起動を求めます。',
   'app.noNewer': 'ライブラリに新しいバージョンはありません。',
   'app.addPackage': '続けるには、ライブラリにパッケージを追加してください。',
   'app.openLibrary': 'ライブラリを開く',

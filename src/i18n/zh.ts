@@ -67,6 +67,7 @@ export const zh: Messages = {
   'app.updateTo': '更新到 {version}',
   'app.installVersion': '安装 {version}',
   'app.confirmOnCar': '请在车辆上确认请求。',
+  'app.managerFinish': '完成更新：在车上打开 App Manager。它会检查新版本约 10 秒；如果其 iDrive 入口有变化，会提示重启主机。',
   'app.noNewer': '资料库中没有更新的版本。',
   'app.addPackage': '请在资料库中添加软件包以继续。',
   'app.openLibrary': '打开资料库',

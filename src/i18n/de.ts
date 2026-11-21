@@ -67,6 +67,7 @@ export const de: Messages = {
   'app.updateTo': 'Auf {version} aktualisieren',
   'app.installVersion': '{version} installieren',
   'app.confirmOnCar': 'Bestätigen Sie die Anfrage im Fahrzeug.',
+  'app.managerFinish': 'Zum Abschluss App Manager im Auto öffnen: Er prüft die neue Version etwa 10 Sekunden lang und fragt dann nach einem Neustart der Head Unit, wenn sich sein iDrive-Eintrag geändert hat.',
   'app.noNewer': 'Keine neuere Version in Ihrer Bibliothek.',
   'app.addPackage': 'Fügen Sie ein Paket in der Bibliothek hinzu, um fortzufahren.',
   'app.openLibrary': 'Bibliothek öffnen',

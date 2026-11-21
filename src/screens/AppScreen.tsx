@@ -8,9 +8,10 @@ import { applyAutostart, applySetting, install, loadSettings, uninstall } from '
 import { compareU64 } from '../protocol/bytes';
 import type { Autostart, Setting } from '../protocol/replies';
 import type { CarRecord } from '../store/cars';
-import { appLabel } from '../store/library';
+import { appLabel, type LibraryEntry } from '../store/library';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { ActivityDialog } from './ActivityDialog';
 import { FilesPanel } from './FilesPanel';
 import { LogView } from './LogView';
 import { t, tn } from '../i18n';
@@ -25,6 +26,8 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const [problem, setProblem] = useState<string>();
   const [busy, setBusy] = useState<string>();
   const [versions, setVersions] = useState(false);
+  /** An install or update followed in a modal. */
+  const [following, setFollowing] = useState<number>();
   const installed = car.apps?.find(a => a.id === appId);
   const manager = appId === 'manager';
   const packages = state.library.filter(e => e.info.app === appId)
@@ -34,6 +37,10 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const after = async (run: Promise<unknown>) => {
     state.go({ tab: 'activity' });
     await run;
+    await state.reloadCars();
+  };
+  const update = async (entry: LibraryEntry) => {
+    await install(car, entry, setFollowing);
     await state.reloadCars();
   };
   const readSettings = async () => {
@@ -80,7 +87,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
       {canInstall ? <>
         <Body>{t('app.available', { version: latest.info.version })}</Body>
         <Button label={t(manager || installed ? 'app.updateTo' : 'app.installVersion', { version: latest.info.version })}
-          onPress={() => void after(install(car, latest))} />
+          onPress={() => void update(latest)} />
         <Body muted>{t('app.confirmOnCar')}</Body>
       </> : <>
         <Body muted>{t(latest && installed ? 'app.noNewer' : 'app.addPackage')}</Body>
@@ -96,7 +103,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
         return <Row key={entry.sha256} title={entry.info.version}
           detail={t('app.sequence', { sequence: entry.info.sequence })}
           tag={t(eligible ? (installed || manager ? 'app.tagUpdate' : 'app.tagInstall') : order === 0 ? 'app.tagInstalled' : 'app.tagOlder')}
-          onPress={eligible ? () => void after(install(car, entry)) : undefined} />;
+          onPress={eligible ? () => void update(entry) : undefined} />;
       })}</View> : null}
     </> : null}
     {installed && !manager ? <>
@@ -122,6 +129,8 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
       <Row title={t('app.showLog')} onPress={!busy ? () => void readLog() : undefined} />
       <Row title={t('app.uninstall')} onPress={() => { setMenu(false); setConfirmRemove(true); }} />
     </Dialog> : null}
+    {following !== undefined ? <ActivityDialog id={following} onClose={() => setFollowing(undefined)}
+      note={manager ? t('app.managerFinish') : undefined} /> : null}
     {confirmRemove ? <Dialog title={t('app.uninstallQuestion')} onClose={() => setConfirmRemove(false)}>
       <Body>{t('app.uninstallBody', { app: appLabel(appId) })}</Body>
       <Button label={t('app.requestUninstall')} kind="danger" onPress={() => void after(uninstall(car, appId))} />
