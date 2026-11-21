@@ -168,6 +168,8 @@ export const en = {
   'library.title': 'Library',
   'library.already': 'Already in your library.',
   'library.added': 'Package added.',
+  'library.replaced': 'Package added. It replaces {app} {version}.',
+  'library.older': 'Not added: your library has a newer version, {app} {version}.',
   'library.reading': 'Reading library…',
   'library.addFile': 'Add file',
   'library.intro': 'Packages on this phone, ready for any of your cars.',

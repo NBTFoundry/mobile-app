@@ -63,9 +63,33 @@ export async function loadLibrary(): Promise<LibraryEntry[]> {
         continue;
       }
     }
-    return entries;
+    return await keepNewest(entries);
   } catch {
     return [];
+  }
+}
+
+/** Libraries from before one version per application: the newest of each stays. */
+async function keepNewest(entries: LibraryEntry[]): Promise<LibraryEntry[]> {
+  const kept = entries.filter(e => newestFor(entries, e.info.app) === e);
+  if (kept.length === entries.length) return entries;
+  try {
+    await save(kept);
+  } catch {
+    return entries;
+  }
+  forget(entries.filter(e => !kept.includes(e)));
+  return kept;
+}
+
+function forget(dropped: LibraryEntry[]): void {
+  for (const entry of dropped) {
+    try {
+      const file = packageFile(entry.sha256);
+      if (file.exists) file.delete();
+    } catch {
+      // The index no longer lists it.
+    }
   }
 }
 
@@ -78,10 +102,21 @@ async function save(entries: LibraryEntry[]): Promise<void> {
   }
 }
 
-/** Copies a picked file (already in the app's cache) into the library. */
-export async function addPackage(entries: LibraryEntry[], cacheUri: string, fileName: string): Promise<LibraryEntry[]> {
+export type AddOutcome = {
+  entries: LibraryEntry[];
+  /** `replaced`: an older version of the application left; `older`: the library keeps a newer one. */
+  outcome: 'added' | 'already' | 'replaced' | 'older';
+  /** The version replaced, or the newer one kept. */
+  other?: LibraryEntry;
+};
+
+/** Copies a picked file (already in the app's cache) into the library. The library keeps one
+ * version per application: a newer or equal sequence replaces the one held, an older is refused. */
+export async function addPackage(entries: LibraryEntry[], cacheUri: string, fileName: string): Promise<AddOutcome> {
   const checked = await inspectPackage(cacheUri);
-  if (entries.some(e => e.sha256 === checked.sha256)) return entries;
+  if (entries.some(e => e.sha256 === checked.sha256)) return { entries, outcome: 'already' };
+  const held = newestFor(entries, checked.info.app);
+  if (held && compareU64(checked.info.sequence, held.info.sequence) < 0) return { entries, outcome: 'older', other: held };
   try {
     if (!dir().exists) dir().create({ intermediates: true });
     const target = packageFile(checked.sha256);
@@ -90,33 +125,33 @@ export async function addPackage(entries: LibraryEntry[], cacheUri: string, file
   } catch {
     throw new LibraryError('storage');
   }
-  const next = [...entries, { sha256: checked.sha256, fileName: fileName.replace(/[^\x20-\x7e]/g, '').slice(0, 80) || 'package.nbt',
-    size: checked.size, addedAt: Date.now(), info: checked.info }];
+  const entry: LibraryEntry = { sha256: checked.sha256, fileName: fileName.replace(/[^\x20-\x7e]/g, '').slice(0, 80) || 'package.nbt',
+    size: checked.size, addedAt: Date.now(), info: checked.info };
+  const replaced = entries.filter(e => e.info.app === entry.info.app);
+  const at = entries.findIndex(e => e.info.app === entry.info.app);
+  const next = entries.filter(e => !replaced.includes(e));
+  next.splice(at < 0 ? next.length : at, 0, entry);
   await save(next);
-  return next;
+  forget(replaced);
+  return { entries: next, outcome: held ? 'replaced' : 'added', other: held };
 }
 
 export async function removePackage(entries: LibraryEntry[], sha256: string): Promise<LibraryEntry[]> {
   const next = entries.filter(e => e.sha256 !== sha256);
   await save(next);
-  try {
-    const file = packageFile(sha256);
-    if (file.exists) file.delete();
-  } catch {
-    // The index no longer lists it.
-  }
+  forget(entries.filter(e => e.sha256 === sha256));
   return next;
 }
 
-/** The newest library package for an application, by sequence. */
 /** How the app names an application id: the manager's own releases are "NBT Manager". */
 export function appLabel(app: string): string {
   return app === 'manager' ? 'NBT Manager' : app;
 }
 
+/** The newest library package for an application, by sequence; the later added on a tie. */
 export function newestFor(entries: LibraryEntry[], app: string): LibraryEntry | undefined {
   return entries.filter(e => e.info.app === app)
-    .sort((a, b) => compareU64(b.info.sequence, a.info.sequence))[0];
+    .sort((a, b) => compareU64(b.info.sequence, a.info.sequence) || b.addedAt - a.addedAt)[0];
 }
 
 /** True when the library holds a higher sequence than the car runs. */

@@ -166,6 +166,8 @@ export const zh: Messages = {
   'library.title': '资料库',
   'library.already': '已在您的资料库中。',
   'library.added': '已添加软件包。',
+  'library.replaced': '已添加软件包，替换了 {app} {version}。',
+  'library.older': '未添加：您的资料库中已有较新的版本 {app} {version}。',
   'library.reading': '正在读取资料库…',
   'library.addFile': '添加文件',
   'library.intro': '此手机上的软件包，可用于您的任何车辆。',

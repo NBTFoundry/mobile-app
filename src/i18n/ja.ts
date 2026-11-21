@@ -166,6 +166,8 @@ export const ja: Messages = {
   'library.title': 'ライブラリ',
   'library.already': 'すでにライブラリにあります。',
   'library.added': 'パッケージを追加しました。',
+  'library.replaced': 'パッケージを追加しました。{app} {version} を置き換えました。',
+  'library.older': '追加しませんでした。ライブラリにはより新しい {app} {version} があります。',
   'library.reading': 'ライブラリを読み込み中…',
   'library.addFile': 'ファイルを追加',
   'library.intro': 'このスマートフォンにあるパッケージ。どの車両でも使えます。',

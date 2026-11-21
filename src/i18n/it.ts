@@ -166,6 +166,8 @@ export const it: Messages = {
   'library.title': 'Libreria',
   'library.already': 'Già nella tua libreria.',
   'library.added': 'Pacchetto aggiunto.',
+  'library.replaced': 'Pacchetto aggiunto. Sostituisce {app} {version}.',
+  'library.older': 'Non aggiunto: la tua libreria ha una versione più recente, {app} {version}.',
   'library.reading': 'Lettura della libreria…',
   'library.addFile': 'Aggiungi file',
   'library.intro': 'I pacchetti su questo telefono, pronti per tutte le tue auto.',

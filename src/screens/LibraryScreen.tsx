@@ -20,9 +20,9 @@ export function LibraryScreen({ state }: { state: AppState }) {
       const picked = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true, multiple: false, type: '*/*' });
       if (picked.canceled || !picked.assets[0]) return;
       const asset = picked.assets[0];
-      const next = await addPackage(state.library, asset.uri, asset.name);
-      setMessage(t(next === state.library ? 'library.already' : 'library.added'));
-      state.setLibrary(next);
+      const { entries, outcome, other } = await addPackage(state.library, asset.uri, asset.name);
+      setMessage(t(`library.${outcome}`, other && { app: appLabel(other.info.app), version: other.info.version }));
+      state.setLibrary(entries);
     } catch (error) { setMessage(describeError(error)); }
     finally { setBusy(false); }
   };

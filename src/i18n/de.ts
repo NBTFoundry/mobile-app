@@ -166,6 +166,8 @@ export const de: Messages = {
   'library.title': 'Bibliothek',
   'library.already': 'Bereits in Ihrer Bibliothek.',
   'library.added': 'Paket hinzugefügt.',
+  'library.replaced': 'Paket hinzugefügt. Es ersetzt {app} {version}.',
+  'library.older': 'Nicht hinzugefügt: Ihre Bibliothek hat eine neuere Version, {app} {version}.',
   'library.reading': 'Bibliothek wird gelesen…',
   'library.addFile': 'Datei hinzufügen',
   'library.intro': 'Pakete auf diesem Telefon, bereit für alle Ihre Fahrzeuge.',
