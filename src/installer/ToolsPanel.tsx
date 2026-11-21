@@ -29,6 +29,13 @@ export function ToolsPanel({ ready, testApp, example }: { ready: boolean; testAp
         <Button label={t('tools.testApp')} kind="plain" disabled={!ready} onPress={() => runTool('provisionTestApp')} />
       ) : null}
 
+      <Label>{t('tools.shim')}</Label>
+      <View style={styles.buttons}>
+        <Button label={t('tools.shimOn')} kind="plain" disabled={!ready} onPress={() => runTool('shimOn')} />
+        <Button label={t('tools.shimOff')} kind="plain" disabled={!ready} onPress={() => runTool('shimOff')} />
+      </View>
+      <Body>{t('tools.shimBody')}</Body>
+
       <Label>{t('tools.controller')}</Label>
       <TextInput value={config} onChangeText={setConfig} multiline maxLength={CONFIG_MAX} style={styles.config}
         autoCapitalize="none" autoCorrect={false} accessibilityLabel={t('tools.controller')} />

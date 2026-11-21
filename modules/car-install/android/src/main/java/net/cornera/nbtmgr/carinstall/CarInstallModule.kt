@@ -111,6 +111,8 @@ class CarInstallModule : Module() {
         "removeConfig" -> Tool.RemoveConfig
         "removeAll" -> Tool.RemoveAll
         "restartIdrive" -> Tool.RestartIdrive
+        "shimOn" -> Tool.Shim(true)
+        "shimOff" -> Tool.Shim(false)
         else -> throw fail("invalid")
       }
       current()?.tool(tool) ?: false

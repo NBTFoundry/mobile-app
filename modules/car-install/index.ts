@@ -22,7 +22,7 @@ export type LogKind = 'debug' | 'system' | 'collection';
 
 export type InstallTool =
   | 'logOn' | 'logOff' | 'fetchLog' | 'fetchSystemLog' | 'collectAll' | 'provisionTestApp'
-  | 'writeConfig' | 'removeConfig' | 'removeAll' | 'restartIdrive';
+  | 'writeConfig' | 'removeConfig' | 'removeAll' | 'restartIdrive' | 'shimOn' | 'shimOff';
 
 export type ConnectSettings = { host: string; port: number; user: string; password: string; gateway: string | null };
 
