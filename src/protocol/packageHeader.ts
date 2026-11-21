@@ -2,7 +2,7 @@
 /** The phone's own check of an `.nbt` file: header, lengths and manifest fields.
  * The car verifies the signature; until it has, these values are unverified. */
 import { ProtocolError, fromAscii, isHex, isU64 } from './bytes';
-import { RELEASE_MAGIC, RELEASE_V2_MAGIC, parseReleaseHead } from './releaseHeader';
+import { RELEASE_MAGICS, parseReleaseHead } from './releaseHeader';
 import { parseSettingLine, type Setting } from './replies';
 
 export const HEADER_SIZE = 24;
@@ -33,7 +33,7 @@ const ORDER = ['app', 'package', 'version', 'sequence', 'platform', 'compat', 's
 export function parsePackageHead(head: Uint8Array, fileSize: number): PackageInfo {
   if (head.length < HEADER_SIZE) bad();
   const magic = fromAscii(head.subarray(0, 8));
-  if (magic === RELEASE_MAGIC || magic === RELEASE_V2_MAGIC) return parseReleaseHead(head, fileSize);
+  if (RELEASE_MAGICS.includes(magic)) return parseReleaseHead(head, fileSize);
   const view = new DataView(head.buffer, head.byteOffset, head.byteLength);
   const manifestSize = view.getUint32(8);
   const signatureSize = view.getUint32(12);

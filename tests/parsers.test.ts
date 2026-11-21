@@ -100,9 +100,10 @@ const COMPONENTS_V1 = ['launcher', 'gui', 'worker', 'plugin_lib', 'plugin_manife
 const COMPONENTS_V2 = [...COMPONENTS_V1, 'capture_lib'];
 
 /** A manager release as tools/package_release.py writes it. */
-function makeRelease(sizes: number[], extra = '', signature = 384, magic = 'NBTRLS1\n'): Uint8Array {
+function makeRelease(sizes: number[], extra = '', signature = 384, magic = 'NBTRLS1\n',
+  named: string[] = []): Uint8Array {
   const sha = createHash('sha256').update('y').digest('hex');
-  const components = magic === 'NBTRLS2\n' ? COMPONENTS_V2 : COMPONENTS_V1;
+  const components = [...(magic === 'NBTRLS2\n' ? COMPONENTS_V2 : COMPONENTS_V1), ...named];
   let text = `version=dev47\nsequence=47\nplatform=qnx6.5-armv7le\ncompat=nbt-evo-dev\n${extra}`;
   components.forEach((name, i) => { text += `${name}_size=${sizes[i]}\n${name}_sha256=${sha}\n`; });
   const m = Buffer.from(text, 'ascii');
@@ -129,6 +130,23 @@ describe('manager release header', () => {
       payloadSize: 730, settings: [] });
     const badV2MagicWith8 = makeRelease(sizes, '', 384, 'NBTRLS2\n');
     expect(() => parsePackageHead(badV2MagicWith8, badV2MagicWith8.length)).toThrow();
+  });
+  it('reads an NBTRLS3 manager release with named components and rejects bad names', () => {
+    const file = makeRelease([...sizes, 64, 9], 'bridge=1.7|show,runner\n', 384, 'NBTRLS3\n',
+      ['runner', 'later_data']);
+    expect(parsePackageHead(file.subarray(0, 4096), file.length)).toMatchObject({ app: 'manager',
+      version: 'dev47', payloadSize: 739 });
+    const plain = makeRelease(sizes, '', 384, 'NBTRLS3\n');
+    expect(parsePackageHead(plain, plain.length)).toMatchObject({ payloadSize: 666 });
+    for (const named of [['gui'], ['runner', 'runner'], ['Runner'], ['a'.repeat(25)]]) {
+      const bad = makeRelease([...sizes, ...named.map(() => 1)], '', 384, 'NBTRLS3\n', named);
+      expect(() => parsePackageHead(bad, bad.length)).toThrow();
+    }
+    const tooMany = Array.from({ length: 9 }, (_, i) => `part${i}`);
+    const crowded = makeRelease([...sizes, ...tooMany.map(() => 1)], '', 384, 'NBTRLS3\n', tooMany);
+    expect(() => parsePackageHead(crowded, crowded.length)).toThrow();
+    const v2WithNamed = makeRelease([...sizes, 64, 9], '', 384, 'NBTRLS2\n', ['runner']);
+    expect(() => parsePackageHead(v2WithNamed, v2WithNamed.length)).toThrow();
   });
   it('rejects wrong lengths, a missing component and a bad signature size', () => {
     const good = makeRelease(sizes);
