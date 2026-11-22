@@ -45,8 +45,8 @@ Part of [NBTFoundry](https://github.com/NBTFoundry):
 [sdk](https://github.com/NBTFoundry/sdk) (application SDK) ·
 [nf-doom](https://github.com/NBTFoundry/nf-doom) (example application)
 
-Not affiliated with or endorsed by BMW AG. BMW, iDrive and NBT are trademarks of
-BMW AG.
+Not affiliated with or endorsed by BMW AG or BlackBerry Limited. BMW, iDrive and
+NBT are trademarks of BMW AG; QNX is a trademark of BlackBerry Limited.
 
 ## In use
 
