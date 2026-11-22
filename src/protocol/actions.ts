@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 /** One flow per action. The car confirms pairing, installs and uninstalls; the phone only follows. */
 import { ProtocolError, fromAscii } from './bytes';
-import { parseApps, parseAutostart, parseManager, parseOk, parsePair, parseSettings, parseStatus, parseWake,
-  type Autostart, type CarApp, type CarManager, type Setting, type Status, type StatusState,
-  type WakeState } from './replies';
+import { parseApps, parseAutostart, parseCrashes, parseManager, parseOk, parsePair, parseSettings, parseStatus,
+  parseWake, type Autostart, type CarApp, type CarCrash, type CarManager, type Setting, type Status,
+  type StatusState, type WakeState } from './replies';
 import { CarError, type CarSession, type SavedReply } from './session';
 import { pairBody, pairingCode } from './signing';
 
@@ -79,6 +79,32 @@ export function readManagerLog(session: CarSession): Promise<SavedReply> {
   return session.download('/v1/logs/manager', { kind: 'text', text: '' }, 'manager');
 }
 
+/** An unknown route: 404, or 400 from managers that refuse it while parsing the request. */
+const unknownRoute = (error: unknown) => error instanceof CarError && (error.status === 404
+  || error.status === 400 && (error.code === 'route' || error.code === 'invalid-request'));
+
+/** Crash reports on the car, newest first: all applications' (and NBT Manager's), or `app`'s;
+ * null from a manager without them (PROTOCOL.md, "Crash reports"). */
+export async function listCrashes(session: CarSession, app?: string): Promise<CarCrash[] | null> {
+  try {
+    return parseCrashes((await session.ok('/v1/crashes', { kind: 'text', text: app ? `${app}\n` : '' })).body);
+  } catch (error) {
+    if (unknownRoute(error)) return null;
+    throw error;
+  }
+}
+
+/** One crash report, saved as a file. */
+export function readCrash(session: CarSession, crash: CarCrash): Promise<SavedReply> {
+  return session.download('/v1/crashes/read', { kind: 'text', text: `${crash.app}\t${crash.slot}\n` },
+    `crash-${crash.app}-${crash.slot}`);
+}
+
+/** Removes the crash reports on the car: all of them, or `app`'s. */
+export async function clearCrashes(session: CarSession, app?: string): Promise<void> {
+  parseOk((await session.ok('/v1/crashes/clear', { kind: 'text', text: app ? `${app}\n` : '' })).body);
+}
+
 export async function readSettings(session: CarSession, app: string): Promise<Setting[]> {
   return parseSettings((await session.ok('/v1/settings/read', { kind: 'text', text: `${app}\n` })).body);
 }
@@ -106,11 +132,7 @@ export async function readManager(session: CarSession): Promise<CarManager | nul
   try {
     return parseManager((await session.ok('/v1/manager')).body);
   } catch (error) {
-    // An unknown route: 404, or 400 from managers that refuse it while parsing the request.
-    if (error instanceof CarError && (error.status === 404
-      || error.status === 400 && (error.code === 'route' || error.code === 'invalid-request'))) {
-      return null;
-    }
+    if (unknownRoute(error)) return null;
     throw error;
   }
 }

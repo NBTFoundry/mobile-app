@@ -7,7 +7,7 @@ import { Body, Button, Label, Panel } from '../ui/kit';
 import { LogText } from '../ui/LogText';
 import { t } from '../i18n';
 
-async function share(uri: string): Promise<void> {
+export async function share(uri: string): Promise<void> {
   if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri, { mimeType: 'text/plain' });
 }
 
@@ -15,7 +15,7 @@ async function share(uri: string): Promise<void> {
 export function LogView({ log, onClose, onClear }: { log: CarLog; onClose: () => void; onClear?: () => void }) {
   return (
     <Panel>
-      <Label>{t('log.title', { name: log.name })}</Label>
+      <Label>{log.title ?? t('log.title', { name: log.name })}</Label>
       {log.size ? (
         <LogText text={log.tail.replace(/\n$/, '')} />
       ) : <Body muted>{log.empty}</Body>}

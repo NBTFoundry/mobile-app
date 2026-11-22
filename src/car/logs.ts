@@ -8,18 +8,17 @@ import { t } from '../i18n';
 import { describeError } from './messages';
 import { act, anyListener, onCarNetwork } from './operations';
 
-/** `empty`: what to say when the car sent nothing. */
-export type CarLog = SavedReply & { name: string; empty: string };
+/** `empty`: what to say when the car sent nothing; `title`: the label, when not "<name> log". */
+export type CarLog = SavedReply & { name: string; empty: string; title?: string };
 /** A log, or why it could not be read: shown where the reader asked for it. */
 export type LogResult = { log: CarLog } | { problem: string };
 
-function fetchLog(car: CarRecord, title: string, name: string,
-  read: (session: CarSession) => Promise<SavedReply>): Promise<LogResult> {
+export function fetchLog(car: CarRecord, title: string, name: string,
+  read: (session: CarSession) => Promise<SavedReply>, empty = t('log.none')): Promise<LogResult> {
   return act<LogResult>(car.name, title, t('common.connecting'), async id => {
     try {
       return await onCarNetwork(car, async () => {
         const saved = await read(await anyListener(car));
-        const empty = t(name === 'NBT Manager' ? 'log.noManagerLog' : 'log.none');
         return { value: { log: { ...saved, name, empty } }, phase: 'done' as const,
           detail: saved.size ? t('log.received') : empty };
       }, id);
@@ -39,7 +38,7 @@ export function fetchSystemLog(car: CarRecord): Promise<LogResult> {
 }
 
 export function fetchManagerLog(car: CarRecord): Promise<LogResult> {
-  return fetchLog(car, t('log.managerTitle'), 'NBT Manager', readManagerLog);
+  return fetchLog(car, t('log.managerTitle'), 'NBT Manager', readManagerLog, t('log.noManagerLog'));
 }
 
 export function clearLog(car: CarRecord, app: string): Promise<boolean | undefined> {

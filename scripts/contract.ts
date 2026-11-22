@@ -12,8 +12,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
-import { changeAutostart, changeSetting, clearAppLog, installPackage, listApps, pairPhone, readAppLog,
-  readAutostart, readManager, readSettings, readSystemLog, removeApp, wake, type Follow } from '../src/protocol/actions';
+import { changeAutostart, changeSetting, clearAppLog, clearCrashes, installPackage, listApps, listCrashes, pairPhone,
+  readAppLog, readAutostart, readCrash, readManager, readSettings, readSystemLog, removeApp, wake,
+  type Follow } from '../src/protocol/actions';
 import { listFiles, removeFile, sendFile } from '../src/protocol/files';
 import { reachManager } from '../src/protocol/opening';
 import { CarError, CarSession } from '../src/protocol/session';
@@ -121,6 +122,19 @@ async function main() {
     check((await readAppLog(worker, 'test')).size === 0, 'an application log is cleared');
     const unknown = await readAppLog(worker, 'missing').catch(e => e);
     check(unknown instanceof CarError && unknown.status === 400, 'an unknown application has no log');
+
+    // Crash reports (none on a car where nothing crashed), from either listener.
+    for (const session of [worker, door]) {
+      const crashes = await listCrashes(session);
+      check(crashes !== null && crashes.length === 0, 'the car lists no crash reports');
+      check((await listCrashes(session, 'test'))?.length === 0, 'nor any of an application');
+    }
+    const noReport = await readCrash(worker, { app: 'test', slot: 0, report: '1', time: '', version: '', ended: '' })
+      .catch(e => e);
+    check(noReport instanceof CarError && noReport.status === 409, 'an empty slot has no report');
+    await clearCrashes(door);
+    await clearCrashes(worker, 'test');
+    check((await listCrashes(worker))?.length === 0, 'crash reports are cleared');
 
     // An application's files (bridge 1.5): sent, listed and deleted with no prompt on the car.
     const gamesPackage = await driver('pack games v1 1 files=sfc,smc|1|4');

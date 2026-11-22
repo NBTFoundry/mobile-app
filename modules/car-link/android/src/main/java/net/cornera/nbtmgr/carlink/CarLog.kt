@@ -5,12 +5,12 @@ import java.io.File
 import java.io.RandomAccessFile
 
 /**
- * Logs read from the car (PROTOCOL.md, Logs), saved in the app's cache as they came, and
+ * Logs and crash reports read from the car (PROTOCOL.md, Logs, Crash reports), saved in the app's cache as they came, and
  * their end as printable text for the screen. src/protocol/logTail.ts does the same.
  */
 object CarLog {
   const val TAIL_BYTES = 16 * 1024
-  val ROUTES = setOf("/v1/logs/app", "/v1/logs/system", "/v1/logs/manager")
+  val ROUTES = setOf("/v1/logs/app", "/v1/logs/system", "/v1/logs/manager", "/v1/crashes/read")
   private val name = Regex("^[a-z0-9][a-z0-9._-]{0,63}$")
 
   /** `<cache>/car-logs/<saveAs>.log`; the name is checked, never a path. */

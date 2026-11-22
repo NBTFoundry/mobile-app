@@ -13,6 +13,7 @@ import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
 import { PackageAbout } from '../ui/PackageAbout';
 import { ActivityDialog } from './ActivityDialog';
+import { CrashesPanel } from './CrashesPanel';
 import { FilesPanel } from './FilesPanel';
 import { LogView } from './LogView';
 import { t, tn } from '../i18n';
@@ -24,6 +25,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const [menu, setMenu] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [log, setLog] = useState<CarLog>();
+  const [crashes, setCrashes] = useState(false);
   const [problem, setProblem] = useState<string>();
   const [busy, setBusy] = useState<string>();
   const [versions, setVersions] = useState(false);
@@ -130,12 +132,14 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
     {busy ? <Busy text={busy} /> : null}
     {problem ? <><Body>{problem}</Body><Button label={t('common.viewActivity')} kind="plain" onPress={() => state.go({ tab: 'activity' })} /></> : null}
     {log ? <LogView log={log} onClose={() => setLog(undefined)} onClear={!busy ? () => void emptyLog() : undefined} /> : null}
+    {crashes ? <CrashesPanel car={car} app={appId} onClose={() => setCrashes(false)} /> : null}
     {choosing ? <Dialog title={choosing.label} onClose={() => setChoosing(undefined)}>
       {choosing.choices.map(value => <Row key={value} title={value} tag={value === choosing.value ? t('common.selected') : undefined}
         onPress={() => void choose(choosing, value)} />)}
     </Dialog> : null}
     {menu ? <Dialog title={appLabel(appId)} onClose={() => setMenu(false)}>
       <Row title={t('app.showLog')} onPress={!busy ? () => void readLog() : undefined} />
+      <Row title={t('crash.title')} onPress={() => { setMenu(false); setCrashes(true); }} />
       <Row title={t('app.uninstall')} onPress={() => { setMenu(false); setConfirmRemove(true); }} />
     </Dialog> : null}
     {following !== undefined ? <ActivityDialog id={following} onClose={() => setFollowing(undefined)}

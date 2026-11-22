@@ -119,6 +119,23 @@ export function parseAutostart(text: string): Autostart {
   return { on: m![1] === 'on', paused: m![1] === 'on' && m![2] === 'blocked' };
 }
 
+/** A crash report kept on the car (PROTOCOL.md, "Crash reports"): its application (or
+ * `manager`), slot, number, the car's local time, version and how it ended. */
+export type CarCrash = { app: string; slot: number; report: string; time: string; version: string; ended: string };
+
+export function parseCrashes(text: string): CarCrash[] {
+  const seen = new Set<string>();
+  return counted(text, 'CRASHES', 16).map(line => {
+    const [app, slot, report, time, version, ended, ...rest] = line.split('\t');
+    if (rest.length || !app || !ID.test(app) || !slot || !/^[0-4]$/.test(slot) || !report || !isU64(report)
+      || time === undefined || !/^[\x20-\x7e]{0,19}$/.test(time) || version === undefined
+      || !/^[\x20-\x7e]{0,48}$/.test(version) || ended === undefined || !/^[\x20-\x7e]{0,80}$/.test(ended)
+      || seen.has(`${app}/${slot}`)) bad();
+    seen.add(`${app}/${slot}`);
+    return { app: app!, slot: Number(slot), report: report!, time: time!, version: version!, ended: ended! };
+  });
+}
+
 export function parseOk(text: string): void {
   if (text !== 'OK\n') bad();
 }

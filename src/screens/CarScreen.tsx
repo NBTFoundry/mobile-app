@@ -12,6 +12,7 @@ import { Body, Busy, Button, Heading, Label, Panel, Row, Title, useColors, useSt
 import { Dialog } from '../ui/Dialog';
 import { LanguageRow } from '../ui/LanguageRow';
 import { formatDateTime, t } from '../i18n';
+import { CrashesPanel } from './CrashesPanel';
 import { LogView } from './LogView';
 
 export function CarScreen({ state }: { state: AppState }) {
@@ -25,6 +26,7 @@ export function CarScreen({ state }: { state: AppState }) {
   const [readingLog, setReadingLog] = useState(false);
   const [refreshProblem, setRefreshProblem] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [crashes, setCrashes] = useState(false);
   const refresh = async () => {
     if (!car) return;
     setRefreshing(true);
@@ -96,6 +98,8 @@ export function CarScreen({ state }: { state: AppState }) {
         <Row key={entry.info.app} title={appLabel(entry.info.app)} detail={entry.info.version}
           onPress={() => state.go({ tab: 'car', app: entry.info.app })} />
       ))}</View></> : null}
+      {crashes ? <CrashesPanel car={car} onClose={() => setCrashes(false)} />
+        : <Row title={t('crash.title')} detail={t('crash.detail')} onPress={() => setCrashes(true)} />}
       {readingLog ? <Busy text={t('common.gettingLog')} /> : null}
       {log ? <LogView log={log} onClose={() => setLog(undefined)} /> : null}
       {logProblem && !log ? <Body>{logProblem}</Body> : null}

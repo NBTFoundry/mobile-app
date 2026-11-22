@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 import { createHash } from 'node:crypto';
-import { parseApps, parseAutostart, parseManager, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
+import { parseApps, parseAutostart, parseCrashes, parseManager, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
 import { parseWifiCode } from '../src/protocol/wifiCode';
 import { parsePackageHead } from '../src/protocol/packageHeader';
 
@@ -196,4 +196,28 @@ describe('parseAutostart', () => {
     '', 'AUTOSTART\ton\tready', 'AUTOSTART\tyes\tready\n', 'AUTOSTART\ton\n',
     'AUTOSTART\ton\tready\textra\n', 'OK\n',
   ])('rejects malformed replies %#', text => expect(() => parseAutostart(text)).toThrow());
+});
+
+describe('parseCrashes', () => {
+  it('reads the crash reports, newest first as the car sent them', () => {
+    expect(parseCrashes('CRASHES\t0\n')).toEqual([]);
+    expect(parseCrashes('CRASHES\t2\ndoom\t1\t7\t2026-11-22 14:03:11\t1.0.23\tended by signal 11 (SIGSEGV, invalid memory access)\n'
+      + 'manager\t0\t2\t2026-11-21 09:00:00\t0.3.1\tmanager GUI terminated by signal 11\n')).toEqual([
+      { app: 'doom', slot: 1, report: '7', time: '2026-11-22 14:03:11', version: '1.0.23',
+        ended: 'ended by signal 11 (SIGSEGV, invalid memory access)' },
+      { app: 'manager', slot: 0, report: '2', time: '2026-11-21 09:00:00', version: '0.3.1',
+        ended: 'manager GUI terminated by signal 11' },
+    ]);
+    // Fields a report lacked are empty.
+    expect(parseCrashes('CRASHES\t1\ntest\t4\t1\t\t\t\n')[0]).toEqual(
+      { app: 'test', slot: 4, report: '1', time: '', version: '', ended: '' });
+  });
+  it.each([
+    '', 'CRASHES\t1\n', 'CRASHES\t0', 'CRASH\t0\n', 'CRASHES\t17\n',
+    'CRASHES\t1\ntest\t5\t1\tt\tv\te\n', 'CRASHES\t1\ntest\t0\t0\tt\tv\te\n',
+    'CRASHES\t1\nTest\t0\t1\tt\tv\te\n', 'CRASHES\t1\ntest\t0\t1\tt\tv\n',
+    'CRASHES\t1\ntest\t0\t1\tt\tv\te\textra\n', 'CRASHES\t1\ntest\t0\t1\t\u00e9\tv\te\n',
+    `CRASHES\t1\ntest\t0\t1\tt\tv\t${'x'.repeat(81)}\n`,
+    'CRASHES\t2\ntest\t0\t1\tt\tv\te\ntest\t0\t2\tt\tv\te\n',
+  ])('rejects malformed replies %#', text => expect(() => parseCrashes(text)).toThrow());
 });
