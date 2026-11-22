@@ -11,6 +11,7 @@ import type { CarRecord } from '../store/cars';
 import { appLabel, managerChoice, type LibraryEntry } from '../store/library';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { PackageAbout } from '../ui/PackageAbout';
 import { ActivityDialog } from './ActivityDialog';
 import { FilesPanel } from './FilesPanel';
 import { LogView } from './LogView';
@@ -89,6 +90,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
       <Body muted>{known ? t('app.installedVersion', { version: known.version }) : t(manager ? 'app.managerUpdate' : 'app.ready')}</Body>
       {canInstall ? <>
         <Body>{t('app.available', { version: latest.info.version })}</Body>
+        <PackageAbout info={latest.info} />
         {choice?.then ? <Body muted>{t('app.managerSteps', { first: latest.info.version, second: choice.then.info.version })}</Body> : null}
         <Button label={t(manager || installed ? 'app.updateTo' : 'app.installVersion', { version: latest.info.version })}
           onPress={() => void update(latest)} />

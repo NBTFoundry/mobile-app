@@ -8,6 +8,7 @@ import { describeError } from '../car/messages';
 import { addPackage, appLabel, removePackage } from '../store/library';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, formatSize } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { PackageAbout } from '../ui/PackageAbout';
 import { formatDate, t } from '../i18n';
 
 export function LibraryScreen({ state }: { state: AppState }) {
@@ -54,6 +55,7 @@ export function LibraryScreen({ state }: { state: AppState }) {
     {message ? <Body>{message}</Body> : null}
     {entry ? <Dialog title={`${appLabel(entry.info.app)} ${entry.info.version}`} onClose={() => setSelected(undefined)}>
       <Body>{entry.fileName}</Body>
+      <PackageAbout info={entry.info} />
       <Body muted>{t('library.sizeAdded', { size: formatSize(entry.size), date: formatDate(entry.addedAt) })}</Body>
       <Label>{t('app.sequence', { sequence: entry.info.sequence })}</Label>
       <Body muted>{t('library.verifies')}</Body>

@@ -21,9 +21,28 @@ export type PackageInfo = {
   payloadSize: number;
   payloadSha256: string;
   settings: Setting[];
+  /** Information for people the package carries (`property=`, `text=` lines; the
+   * manager's PROTOCOL.md, "Package information"); absent for a manager release
+   * and in entries read before this version. */
+  properties?: PackageProperty[];
+  text?: string[];
   /** A manager release's format (`NBTRLS<n>`); absent for an application package. */
   format?: number;
 };
+
+export type PackageProperty = { label: string; value: string };
+
+const PRINTABLE = /^[\x20-\x7e]*$/;
+
+/** A `property=` value, `<label>|<value>`, or undefined when malformed (the car
+ * refuses such a package; the phone only leaves the line out). */
+export function parsePropertyLine(text: string): PackageProperty | undefined {
+  const bar = text.indexOf('|');
+  const label = text.slice(0, bar), value = text.slice(bar + 1);
+  const field = (s: string, max: number) => s.length >= 1 && s.length <= max && PRINTABLE.test(s)
+    && !s.includes('|') && s.trim() === s;
+  return bar > 0 && field(label, 24) && field(value, 64) ? { label, value } : undefined;
+}
 
 const bad = (): never => {
   throw new ProtocolError('bad-package');
@@ -62,7 +81,12 @@ export function parsePackageHead(head: Uint8Array, fileSize: number): PackageInf
     || !/^[A-Za-z0-9._-]{1,48}$/.test(version) || !isU64(sequence)
     || values.get('platform') !== 'qnx6.5-armv7le' || !/^[a-z0-9._-]{1,48}$/.test(compat)
     || values.get('size') !== String(payloadSize) || !isHex(values.get('sha256')!, 32)) bad();
-  const settings = lines.slice(ORDER.length).filter(l => l.startsWith('setting='))
-    .map(l => parseSettingLine(l.slice(8)));
-  return { app, version, sequence, compat, payloadSize, payloadSha256: values.get('sha256')!, settings };
+  const rest = lines.slice(ORDER.length);
+  const settings = rest.filter(l => l.startsWith('setting=')).map(l => parseSettingLine(l.slice(8)));
+  const properties = rest.filter(l => l.startsWith('property=')).slice(0, 8)
+    .map(l => parsePropertyLine(l.slice(9))).filter((p): p is PackageProperty => p !== undefined);
+  const textLines = rest.filter(l => l.startsWith('text=')).slice(0, 20).map(l => l.slice(5))
+    .filter(l => l.length <= 120 && PRINTABLE.test(l));
+  return { app, version, sequence, compat, payloadSize, payloadSha256: values.get('sha256')!, settings,
+    properties, text: textLines };
 }

@@ -80,6 +80,17 @@ describe('package header', () => {
     const info = parsePackageHead(file.subarray(0, 2072), file.length);
     expect(info).toMatchObject({ app: 'test', version: 'v2', sequence: '2', compat: 'demo-1', payloadSize: 64 });
     expect(info.settings).toHaveLength(1);
+    expect(info.properties).toEqual([]);
+    expect(info.text).toEqual([]);
+  });
+  it('reads the information for people, leaving malformed lines out', () => {
+    const file = makePackage(manifest('setting=bg|Background|red|red,blue\nproperty=Upstream|1.9.117 (+2)\n'
+      + 'property=Bad\nproperty= A|1\nproperty=Licence|PolyForm NC 1.0.0\ntext=First | line.\ntext=\n'
+      + `text=${'x'.repeat(121)}\ntext=Last.\n`));
+    const info = parsePackageHead(file.subarray(0, 2072), file.length);
+    expect(info.properties).toEqual([{ label: 'Upstream', value: '1.9.117 (+2)' },
+      { label: 'Licence', value: 'PolyForm NC 1.0.0' }]);
+    expect(info.text).toEqual(['First | line.', '', 'Last.']);
   });
   it('rejects wrong lengths, magic, manager and size mismatches', () => {
     const good = makePackage(manifest());
