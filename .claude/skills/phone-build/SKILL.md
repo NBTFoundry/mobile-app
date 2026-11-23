@@ -33,6 +33,11 @@ yarn test:contract                                # protocol against the manager
   drive the emulator through the Device panel (`device_list`, `device_open`);
   it needs the SDK's command-line tools, and when they are missing say so
   instead of driving it with `adb`.
+- An x86_64 AVD (the usual one) needs an x86_64 build: `NBT_INSTALLER_ABIS="arm64-v8a
+  x86_64" yarn installer-core`, then `assembleDebug -PreactNativeArchitectures=x86_64`.
+  Then install the APK, `yarn expo start --dev-client --port 8082 --localhost`
+  in the background, `adb reverse tcp:8082 tcp:8082`, and enter
+  `http://localhost:8082` in the dev launcher.
 - Desk car: `yarn desk` (the manager's host worker, `make test` in
   `../manager` first); the emulator reaches it at `10.0.2.2`; commands in its
   terminal: `PHONE OPEN`, `confirm`, `approve`, `pack <app> <version> <sequence>`.
