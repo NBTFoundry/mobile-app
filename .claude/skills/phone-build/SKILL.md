@@ -43,6 +43,16 @@ yarn test:contract                                # protocol against the manager
   terminal: `PHONE OPEN`, `confirm`, `approve`, `pack <app> <version> <sequence>`.
 - README screenshots: `python3 scripts/capture_screens.py` (emulator plus desk car).
 
+## Store builds (EAS)
+
+`npx eas-cli build -p android --profile production --non-interactive --no-wait`
+(Play bundle; `preview` gives an APK with an install link), then `npx eas-cli
+build:list` or the build page for its status and logs. Commit first: EAS
+builds the committed tree. A failing `eas/build-core.sh` shows in the
+"Run post-install hook" step. `eas/pins.env` moves with a store release (the
+installer commit, the manager release and its SHA-256). Submitting to Play
+(`eas-cli submit`) needs the Play service account key in EAS's credentials.
+
 ## Release APK
 
 Only when the user asks, or through the manager's `manager-kit` skill (it

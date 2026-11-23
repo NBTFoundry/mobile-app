@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
-import { withAndroidManifest, withAppBuildGradle, withDangerousMod, type ConfigPlugin } from 'expo/config-plugins';
-import { mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+// Plain JavaScript: the EAS CLI resolves config plugins from .js files only.
+// @ts-check
+const { withAndroidManifest, withAppBuildGradle, withDangerousMod } = require('expo/config-plugins');
+const { mkdir, writeFile } = require('node:fs/promises');
+const path = require('node:path');
 
 // Release builds allow cleartext only to the car's two addresses. Debug builds load
 // the dev client's bundle from Metro on the LAN, whose address varies, so they allow it
 // everywhere. Car requests use native sockets and their own allow-list in both.
-const configXml = (debug: boolean) => `<?xml version="1.0" encoding="utf-8"?>
+/** @param {boolean} debug */
+const configXml = debug => `<?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
   <base-config cleartextTrafficPermitted="${debug}" />
   <domain-config cleartextTrafficPermitted="true">
@@ -17,7 +20,8 @@ const configXml = (debug: boolean) => `<?xml version="1.0" encoding="utf-8"?>
 `;
 
 // Release builds are signed only with the dedicated keystore that scripts/build-release.sh
-// names through the environment; without it they stay unsigned, never debug-signed.
+// names through the environment, or in a cloud build (EAS_BUILD) with the upload key EAS
+// fills in; without either they stay unsigned, never debug-signed.
 const RELEASE_SIGNING = `
         release {
             if (System.getenv('NBT_RELEASE_STORE_FILE')) {
@@ -28,20 +32,22 @@ const RELEASE_SIGNING = `
             }
         }`;
 
-const withReleaseSigning: ConfigPlugin = config => withAppBuildGradle(config, mod => {
+/** @type {import('expo/config-plugins').ConfigPlugin} */
+const withReleaseSigning = config => withAppBuildGradle(config, mod => {
   let gradle = mod.modResults.contents;
   if (!gradle.includes('NBT_RELEASE_STORE_FILE')) {
     const debugBlock = /(signingConfigs \{\n\s+debug \{[^}]*\})/;
     const releaseUse = /(release \{\n(?:\s*\/\/.*\n)*\s*)signingConfig signingConfigs\.debug/;
     if (!debugBlock.test(gradle) || !releaseUse.test(gradle)) throw new Error('Unexpected app/build.gradle signing layout');
     gradle = gradle.replace(debugBlock, `$1${RELEASE_SIGNING}`)
-      .replace(releaseUse, "$1signingConfig System.getenv('NBT_RELEASE_STORE_FILE') ? signingConfigs.release : null");
+      .replace(releaseUse, "$1signingConfig (System.getenv('NBT_RELEASE_STORE_FILE') || System.getenv('EAS_BUILD')) ? signingConfigs.release : null");
   }
   mod.modResults.contents = gradle;
   return mod;
 });
 
-const withCarApp: ConfigPlugin = config => {
+/** @type {import('expo/config-plugins').ConfigPlugin} */
+const withCarApp = config => {
   config = withReleaseSigning(config);
   config = withAndroidManifest(config, mod => {
     const manifest = mod.modResults.manifest;
@@ -71,4 +77,4 @@ const withCarApp: ConfigPlugin = config => {
     return mod;
   }]);
 };
-export default withCarApp;
+module.exports = withCarApp;

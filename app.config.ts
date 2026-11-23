@@ -3,14 +3,15 @@ import type { ExpoConfig } from 'expo/config';
 
 const config: ExpoConfig = {
   name: 'NBT Manager',
-  slug: 'nbt-manager',
+  slug: 'manager',
+  owner: 'nbtfoundry',
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   platforms: ['android'],
   icon: './assets/icon.png',
   android: {
-    package: 'net.cornera.nbtmgr',
+    package: 'org.nbtfoundry.manager',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       monochromeImage: './assets/adaptive-icon-monochrome.png',
@@ -26,6 +27,8 @@ const config: ExpoConfig = {
       'android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.VIBRATE',
       'android.permission.USE_BIOMETRIC', 'android.permission.USE_FINGERPRINT'],
   },
+  // The Expo project (expo.dev/accounts/nbtfoundry/projects/manager) that cloud builds use (eas.json).
+  extra: { eas: { projectId: 'c0c9d77a-d148-42f4-a01d-a84b3fee17c8' } },
   plugins: [
     ['expo-splash-screen', {
       image: './assets/splash-light.png', imageWidth: 160, backgroundColor: '#f6f7fa',

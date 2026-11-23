@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from host_car import MANAGER, HostCar, elf  # noqa: E402
 
 APP_ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = 'net.cornera.nbtmgr'
+PACKAGE = 'org.nbtfoundry.manager'
 CAR_PORT, DOOR_PORT = 18080, 18081
 ADDRESS_HINT = '10.0.2.2:18080'                    # the desk pairing field's placeholder
 SCREEN_W, SCREEN_H = 540, 1200                     # half of the Pixel 6's 1080x2400

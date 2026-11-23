@@ -33,7 +33,7 @@ the [NBTFoundry catalog](https://nbtfoundry.github.io); picking a local file sti
 without NBT Manager, **Install NBT Manager on a car** installs it over a Wi-Fi ENET adapter.
 
 Expo SDK 58, React Native 0.88, Android 10 and later, application id
-`net.cornera.nbtmgr`. In English, French, German, Italian, Spanish, Chinese and
+`org.nbtfoundry.manager`. In English, French, German, Italian, Spanish, Chinese and
 Japanese, following the phone's language (English for any other); Language,
 on the Car tab or Your cars, chooses one ([docs/ui.md](docs/ui.md)).
 
@@ -201,6 +201,22 @@ with the kit's sequence as the version code). It refuses to run without the
 keystore or the fingerprint file, and checks the APK's single signer against the
 committed fingerprint. Installing a newer APK over an older one keeps the paired
 cars; uninstalling the app deletes its keys, so each car must be paired again.
+
+## Store builds (EAS)
+
+Google Play builds run on Expo's servers (project `@nbtfoundry/manager`, `eas.json`):
+
+```sh
+npx eas-cli build -p android --profile production   # Play bundle (.aab); --profile preview: an APK
+npx eas-cli submit -p android --profile production  # to Play's internal track
+```
+
+The cloud build builds the installer core itself (`eas/build-core.sh`, run as
+`eas-build-post-install`) from the pins in `eas/pins.env`: the installer commit and
+the public NBT Manager release it embeds, checked against `eas/manager-public.pem`.
+Play signs the app with its own key; EAS holds only the upload key. Version codes
+are EAS's, from 1000; kit APKs keep their own key and the kit sequence, so a phone
+moves between a store build and a kit APK only by uninstalling (and pairing again).
 
 ## Layout
 

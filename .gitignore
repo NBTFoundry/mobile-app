@@ -8,6 +8,8 @@ build/
 *.keystore
 *.jks
 *.pem
+# The manager's public key, for cloud builds (eas/pins.env).
+!eas/manager-public.pem
 .env*
 *.log
 __pycache__/
