@@ -1,7 +1,9 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 # Google Play listing
 
-Paste into Play Console. Graphics: `icon-512.png`, `feature-graphic.png`.
+Paste into Play Console. Graphics: `icon-512.png`, `feature-graphic.png`; phone screenshots
+(1080×1920, in order): `screenshots/1-car.png` to `5-car-dark.png`, taken on the emulator
+against the desk car (test packages, status bar in demo mode).
 
 ## Main store listing
 
