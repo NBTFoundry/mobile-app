@@ -5,13 +5,13 @@
   },
   "build": {
     "production": {
-      "node": "24.22.2",
       "corepack": true,
       "autoIncrement": true,
       "env": {
         "NBT_VERSION_CODE": "1000"
       },
       "android": {
+        "image": "latest",
         "buildType": "app-bundle"
       }
     },
