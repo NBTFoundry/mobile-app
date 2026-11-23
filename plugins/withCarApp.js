@@ -40,7 +40,7 @@ const withReleaseSigning = config => withAppBuildGradle(config, mod => {
     const releaseUse = /(release \{\n(?:\s*\/\/.*\n)*\s*)signingConfig signingConfigs\.debug/;
     if (!debugBlock.test(gradle) || !releaseUse.test(gradle)) throw new Error('Unexpected app/build.gradle signing layout');
     gradle = gradle.replace(debugBlock, `$1${RELEASE_SIGNING}`)
-      .replace(releaseUse, "$1signingConfig (System.getenv('NBT_RELEASE_STORE_FILE') || System.getenv('EAS_BUILD')) ? signingConfigs.release : null");
+      .replace(releaseUse, "$1signingConfig((System.getenv('NBT_RELEASE_STORE_FILE') || System.getenv('EAS_BUILD')) ? signingConfigs.release : null)");
   }
   mod.modResults.contents = gradle;
   return mod;
