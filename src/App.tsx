@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
-/** NBT Manager: cars, their applications, the package library and activity. No router. */
+/** NBT Manager: cars, their applications, the online catalog, the package library and activity. No router. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { setSystemLocale, t, useLanguage, type Key } from './i18n';
 import { systemLocale } from './i18n/system';
 import { loadCars, selectCar, type CarRecord } from './store/cars';
+import { loadCachedCatalog, type Catalog } from './store/catalog';
 import { loadLibrary, type LibraryEntry } from './store/library';
 import { runningCount, useActivities } from './store/activity';
 import { loadPreferences } from './store/preferences';
@@ -17,10 +18,13 @@ import { CarsScreen } from './screens/CarsScreen';
 import { InstallerScreen } from './screens/InstallerScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { PairScreen } from './screens/PairScreen';
+import { StoreScreen } from './screens/StoreScreen';
 import { LicensesScreen } from './screens/LicensesScreen';
 
-export type Tab = 'car' | 'library' | 'activity';
-export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; licenses?: boolean; carId?: string };
+export type Tab = 'car' | 'store' | 'library' | 'activity';
+/** `storeApp`: the application Get apps opens with. */
+export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; licenses?: boolean; carId?: string;
+  storeApp?: string };
 
 export type AppState = {
   cars: CarRecord[];
@@ -28,13 +32,16 @@ export type AppState = {
   library: LibraryEntry[];
   libraryReady: boolean;
   setLibrary: (entries: LibraryEntry[]) => void;
+  /** The online catalog read last (cached), until Get apps reads it again. */
+  catalog?: Catalog;
+  setCatalog: (catalog: Catalog) => void;
   reloadCars: (select?: string) => Promise<void>;
   updateCar: (car: CarRecord) => void;
   go: (route: Route) => void;
 };
 
 const TABS: { tab: Tab; label: Key }[] = [
-  { tab: 'car', label: 'tab.car' },
+  { tab: 'car', label: 'tab.car' }, { tab: 'store', label: 'tab.store' },
   { tab: 'library', label: 'tab.library' }, { tab: 'activity', label: 'tab.activity' },
 ];
 
@@ -50,6 +57,7 @@ export default function App() {
   const [selected, setSelected] = useState<string>();
   const [library, setLibrary] = useState<LibraryEntry[]>([]);
   const [libraryReady, setLibraryReady] = useState(false);
+  const [catalog, setCatalog] = useState<Catalog>();
   const reloadVersion = useRef(0);
   const activities = useActivities();
 
@@ -69,6 +77,10 @@ export default function App() {
     void reloadCars();
     void loadLibrary().then(entries => {
       if (live) { setLibrary(entries); setLibraryReady(true); }
+    });
+    // The cached copy only: the catalog is read online when Get apps opens.
+    void loadCachedCatalog().then(cached => {
+      if (live && cached) setCatalog(current => current ?? cached);
     });
     return () => {
       live = false;
@@ -92,7 +104,7 @@ export default function App() {
 
   const car = cars.find(c => c.id === selected);
   const state: AppState = {
-    cars, car, library, libraryReady, setLibrary, reloadCars,
+    cars, car, library, libraryReady, setLibrary, reloadCars, catalog, setCatalog,
     go: next => setRoute({ ...next, ...(next.app ? { carId: car?.id } : {}) }),
     updateCar: updated => setCars(list => list.map(c => (c.id === updated.id ? { ...c, apps: updated.apps, appsSeenAt: updated.appsSeenAt } : c))),
   };
@@ -106,6 +118,7 @@ export default function App() {
     screen = <AppScreen key={`${route.carId}:${route.app}`} state={state}
       car={cars.find(c => c.id === route.carId)!} appId={route.app} />;
   }
+  else if (route.tab === 'store') screen = <StoreScreen key={route.storeApp ?? 'store'} state={state} open={route.storeApp} />;
   else if (route.tab === 'library') screen = <LibraryScreen state={state} />;
   else if (route.tab === 'activity') screen = <ActivityScreen />;
   else screen = <CarScreen key={car?.id ?? 'empty'} state={state} />;

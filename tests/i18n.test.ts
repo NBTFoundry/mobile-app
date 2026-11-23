@@ -18,7 +18,7 @@ import {
 } from '../src/i18n';
 import { connectError, initialState, reduce } from '../src/installer/state';
 import { CarError, LinkError } from '../src/protocol/session';
-import { chooseLanguage, loadPreferences } from '../src/store/preferences';
+import { chooseBetas, chooseLanguage, loadPreferences, showBetas } from '../src/store/preferences';
 
 /** A count's singular may name {count} or not (French uses it for 0 too); tn always gives it. */
 const placeholders = (text: string, key: string) =>
@@ -104,7 +104,7 @@ describe('languages', () => {
 
   it('keeps the choice, and ignores a saved one it does not know', async () => {
     expect(await chooseLanguage('it')).toBe(true);
-    expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual({ language: 'it' });
+    expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual({ language: 'it', betas: false });
     setChoice('auto');
     await loadPreferences();
     expect(currentChoice()).toBe('it');
@@ -114,5 +114,16 @@ describe('languages', () => {
       await loadPreferences();
       expect([saved, currentChoice()]).toEqual([saved, 'auto']);
     }
+  });
+
+  it('keeps betas beside the language', async () => {
+    setChoice('fr');
+    expect(await chooseBetas(true)).toBe(true);
+    expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual({ language: 'fr', betas: true });
+    await chooseBetas(false);
+    files.set('doc/preferences.json', '{"language":"fr","betas":true}');
+    await loadPreferences();
+    expect(showBetas()).toBe(true);
+    await chooseBetas(false);
   });
 });

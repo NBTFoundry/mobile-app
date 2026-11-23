@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 # User interface
 
-Three labelled tabs: **Car**, **Library** and **Activity**. Car combines the paired
+Four labelled tabs: **Car**, **Get apps**, **Library** and **Activity**. Car combines the paired
 car and its applications. Car management, application details, pairing and the
 manager installer open as pages with a header Back action. Android Back closes a
 modal first, then returns to the parent page. The installer session keeps working
@@ -13,6 +13,8 @@ flowchart TD
   CAR --> MANAGE["Car management<br/>rename · forget · logs"]
   CAR --> PAIR["Pair a car<br/>scan the car's code · confirm digits"]
   CAR --> INSTALLER["Install NBT Manager on a car<br/>SSH over a Wi-Fi ENET adapter"]
+  STORE["Get apps tab<br/>online catalog · betas"] --> REL["Release details<br/>download to the library"]
+  REL --> APP
   LIB["Library tab<br/>imported packages"] --> PKG["Package details<br/>file · version · size · sequence"]
   PKG --> APP
   ACT["Activity tab<br/>results of every action"]
@@ -28,6 +30,11 @@ flowchart TD
 - Cars and their cached applications load independently from package
   verification. Opening the app or Library makes no connection attempt; selecting
   a car, Connect, Refresh and car actions request the network.
+- Get apps reads `https://nbtfoundry.github.io/catalog.json` over the phone's internet
+  connection when it opens (kept 10 minutes) or on Refresh; nothing else goes online.
+  A download lands in the library like a picked file, checked against the catalog's
+  size and SHA-256; betas (pre-releases) show only when chosen. The car page tags an
+  application *Update online* when the catalog has a newer release than the library.
 - An application list that could not be read has its own message; a successful
   empty list says that no applications are installed. The car page shows when the
   list was last read.

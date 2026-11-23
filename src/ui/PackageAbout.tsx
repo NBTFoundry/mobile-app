@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import type { PackageInfo } from '../protocol/packageHeader';
 import { Body } from './kit';
 
-export function PackageAbout({ info }: { info: PackageInfo }) {
+export function PackageAbout({ info }: { info: Pick<PackageInfo, 'properties' | 'text'> }) {
   const properties = info.properties ?? [];
   // An empty text line separates paragraphs.
   const paragraphs = (info.text ?? []).join('\n').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);

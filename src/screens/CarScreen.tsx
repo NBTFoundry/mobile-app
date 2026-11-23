@@ -7,7 +7,9 @@ import { useConnection } from '../car/connection';
 import { fetchManagerLog, fetchSystemLog, type CarLog, type LogResult } from '../car/logs';
 import { connectCar, refreshApps } from '../car/operations';
 import type { CarRecord } from '../store/cars';
+import { onlineUpdate } from '../store/catalog';
 import { appLabel, managerChoice, newestFor, updateAvailable } from '../store/library';
+import { useBetas } from '../store/preferences';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, useColors, useStyles } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
 import { LanguageRow } from '../ui/LanguageRow';
@@ -20,6 +22,7 @@ export function CarScreen({ state }: { state: AppState }) {
   const styles = useStyles(makeStyles);
   const { car, library } = state;
   const connection = useConnection();
+  const betas = useBetas();
   const [menu, setMenu] = useState(false);
   const [log, setLog] = useState<CarLog>();
   const [logProblem, setLogProblem] = useState<string>();
@@ -89,10 +92,13 @@ export function CarScreen({ state }: { state: AppState }) {
       {car.apps === undefined ? <Body muted>{t('car.readToSee')}</Body>
         : !apps.length ? <Body muted>{t('car.noApps')}</Body> : null}
       {manager ? <Row title={appLabel('manager')} detail={manager.version}
-        tag={managerChoice(library, manager).next ? t('car.updateAvailable') : undefined} tagColor={colors.accent}
+        tag={managerChoice(library, manager).next ? t('car.updateAvailable')
+          : onlineUpdate(state.catalog, { id: 'manager', ...manager, running: true }, betas) ? t('car.updateOnline') : undefined}
+        tagColor={colors.accent}
         onPress={() => state.go({ tab: 'car', app: 'manager' })} /> : null}
       <View>{apps.map(app => <Row key={app.id} title={appLabel(app.id)} detail={app.version}
-        tag={updateAvailable(library, app) ? t('car.updateAvailable') : undefined} tagColor={colors.accent}
+        tag={updateAvailable(library, app) ? t('car.updateAvailable')
+          : onlineUpdate(state.catalog, app, betas) ? t('car.updateOnline') : undefined} tagColor={colors.accent}
         onPress={() => state.go({ tab: 'car', app: app.id })} />)}</View>
       {available.length ? <><Label>{t('car.fromLibrary')}</Label><View>{available.map(entry => (
         <Row key={entry.info.app} title={appLabel(entry.info.app)} detail={entry.info.version}

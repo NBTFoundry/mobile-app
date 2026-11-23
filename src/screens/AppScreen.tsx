@@ -8,7 +8,9 @@ import { applyAutostart, applySetting, install, loadSettings, uninstall } from '
 import { compareU64 } from '../protocol/bytes';
 import type { Autostart, Setting } from '../protocol/replies';
 import type { CarRecord } from '../store/cars';
+import { onlineUpdate } from '../store/catalog';
 import { appLabel, managerChoice, type LibraryEntry } from '../store/library';
+import { useBetas } from '../store/preferences';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
 import { PackageAbout } from '../ui/PackageAbout';
@@ -40,6 +42,11 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const latest = manager ? choice?.next : packages[0];
   const canInstall = latest && (manager || !installed || compareU64(latest.info.sequence, installed.sequence) > 0);
   const known = installed ?? (manager && car.manager ? car.manager : undefined);
+  const betas = useBetas();
+  const online = state.catalog?.apps.some(a => a.id === appId)
+    ? onlineUpdate(state.catalog, { id: appId, version: '', sequence: known?.sequence ?? '0', running: false }, betas)
+    : undefined;
+  const offerOnline = online && !packages.some(e => compareU64(e.info.sequence, online.sequence) >= 0);
   const after = async (run: Promise<unknown>) => {
     state.go({ tab: 'activity' });
     await run;
@@ -104,6 +111,10 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
         <Body muted>{t(packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
         <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />
       </>}
+      {offerOnline ? <>
+        <Body>{t('app.online', { version: online.version })}</Body>
+        <Button label={t('app.getOnline')} kind="plain" onPress={() => state.go({ tab: 'store', storeApp: appId })} />
+      </> : null}
     </Panel>
     {packages.length ? <>
       <Row title={t('app.versions')} expanded={versions} detail={tn('app.versionsCount', packages.length)}

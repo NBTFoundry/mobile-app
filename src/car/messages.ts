@@ -6,6 +6,7 @@ import { ProtocolError } from '../protocol/bytes';
 import type { OpeningEvent } from '../protocol/opening';
 import type { Status } from '../protocol/replies';
 import { CarError, LinkError } from '../protocol/session';
+import { CatalogError } from '../store/catalog';
 import { LibraryError } from '../store/library';
 import { KeyError } from './nativeLink';
 
@@ -70,6 +71,10 @@ export function describeError(error: unknown): string {
   if (error instanceof LibraryError) {
     return t(error.code === 'not-a-package' ? 'error.notPackage'
       : error.code === 'unreadable' ? 'error.unreadable' : 'error.storage');
+  }
+  if (error instanceof CatalogError) {
+    return t(error.code === 'offline' ? 'error.offline' : error.code === 'download' ? 'error.download'
+      : error.code === 'mismatch' ? 'error.mismatch' : 'error.badCatalog');
   }
   if (error instanceof ProtocolError) {
     return t(error.code === 'code-mismatch' ? 'error.codeMismatch' : 'error.badReply');

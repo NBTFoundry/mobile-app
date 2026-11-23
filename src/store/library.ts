@@ -124,9 +124,10 @@ export type AddOutcome = {
 
 /** Copies a picked file (already in the app's cache) into the library. The library keeps one
  * version per application (per format for the manager's releases): a newer or equal sequence
- * replaces the one held, an older is refused. */
-export async function addPackage(entries: LibraryEntry[], cacheUri: string, fileName: string): Promise<AddOutcome> {
-  const checked = await inspectPackage(cacheUri);
+ * replaces the one held, an older is refused. `inspected`: the file's check, already made. */
+export async function addPackage(entries: LibraryEntry[], cacheUri: string, fileName: string,
+  inspected?: Awaited<ReturnType<typeof inspectPackage>>): Promise<AddOutcome> {
+  const checked = inspected ?? await inspectPackage(cacheUri);
   if (entries.some(e => e.sha256 === checked.sha256)) return { entries, outcome: 'already' };
   const place = placeOf(checked.info);
   const held = newestIn(entries, place);

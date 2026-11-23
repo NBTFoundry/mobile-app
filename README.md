@@ -28,8 +28,9 @@ uninstall applications on the car's head unit, change their settings and send
 them files (an application that takes files, such as games for an emulator) from
 the phone. Every install and uninstall is confirmed by the driver on the car;
 the phone never approves anything; files are data and go without a prompt, and
-the phone asks before it deletes one. On a car without NBT Manager, **Install NBT
-Manager on a car** installs it over a Wi-Fi ENET adapter.
+the phone asks before it deletes one. **Get apps** downloads signed releases from
+the [NBTFoundry catalog](https://nbtfoundry.github.io); picking a local file still works. On a car
+without NBT Manager, **Install NBT Manager on a car** installs it over a Wi-Fi ENET adapter.
 
 Expo SDK 58, React Native 0.88, Android 10 and later, application id
 `net.cornera.nbtmgr`. In English, French, German, Italian, Spanish, Chinese and
@@ -207,7 +208,7 @@ cars; uninstalling the app deletes its keys, so each car must be paired again.
 | --- | --- |
 | `src/protocol/` | Signing text, pairing code, reply and package parsers, session, action flows |
 | `src/car/` | Native link and signer, the action runner, user-facing messages |
-| `src/store/` | Cars (SecureStore), library (app storage), activity |
+| `src/store/` | Cars (SecureStore), library (app storage), online catalog and downloads, activity |
 | `src/screens/`, `src/ui/` | Screens and shared components ([docs/ui.md](docs/ui.md)) |
 | `src/i18n/` | The texts in each language, the language shown and its detection |
 | `src/installer/` | Manager installer session, state, tools and log panels |
