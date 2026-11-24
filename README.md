@@ -207,9 +207,12 @@ cars; uninstalling the app deletes its keys, so each car must be paired again.
 Google Play builds run on Expo's servers (project `@nbtfoundry/manager`, `eas.json`):
 
 ```sh
-npx eas-cli build -p android --profile production   # Play bundle (.aab); --profile preview: an APK
-npx eas-cli submit -p android --profile production  # to Play's internal track
+yarn play                                         # Play bundle, released to internal testers once built
+npx eas-cli build -p android --profile preview    # an APK with an install link
 ```
+
+`yarn play` submits the build when it finishes, with the Play service account key held
+in EAS's credentials. Moving a release past internal testing is done in Play Console.
 
 The cloud build builds the installer core itself (`eas/build-core.sh`, run as
 `eas-build-post-install`) from the pins in `eas/pins.env`: the installer commit and
