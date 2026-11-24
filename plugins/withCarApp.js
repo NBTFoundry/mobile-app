@@ -66,6 +66,12 @@ const withCarApp = config => {
       'android:usesPermissionFlags': 'neverForLocation' } };
     permissions.push(location, nearby);
     manifest['uses-permission'] = permissions;
+    // The portrait lock implies a portrait screen; devices without one (Chromebooks, Android XR)
+    // run the app letterboxed, so Play must not exclude them.
+    const features = (manifest['uses-feature'] ?? []).filter(f =>
+      f.$['android:name'] !== 'android.hardware.screen.portrait');
+    features.push({ $: { 'android:name': 'android.hardware.screen.portrait', 'android:required': 'false' } });
+    manifest['uses-feature'] = features;
     return mod;
   });
   return withDangerousMod(config, ['android', async mod => {
