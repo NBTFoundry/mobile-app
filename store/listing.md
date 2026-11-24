@@ -23,7 +23,7 @@ NBT Manager is the phone side of NBTFoundry's application platform for BMW NBT E
 • First install: put NBT Manager on a car over a Wi-Fi ENET adapter.
 • English, French, German, Italian, Spanish, Chinese and Japanese.
 
-Requires a car with a BMW NBT Evo head unit. No account, no ads, no data collected.
+Requires a car with a BMW NBT Evo head unit. No account, no ads, no tracking.
 
 Warning: installing or modifying head-unit software can brick your head unit. Recovery may require professional service or replacement, at your expense. Provided as is; use at your own risk. Use applications only while parked.
 
@@ -41,7 +41,10 @@ NBTFoundry is not affiliated with or endorsed by BMW AG. BMW, iDrive and NBT are
 
 - **Ads:** no.
 - **App access:** "All functionality requires a car with a BMW NBT Evo head unit running NBT Manager; pairing needs the code shown on the car's screen. Without a car, Get apps, Library and Language can be opened: Get apps downloads signed packages into the Library. The packages are programs for the car's head unit (QNX); the phone stores and forwards them and never executes them."
-- **Data safety:** no data collected, no data shared.
+- **Data safety:** collects data: yes (Google's ML Kit, the QR scanner, sends device information).
+  Encrypted in transit: yes. Deletion request: no. Type: App info and performance → Diagnostics:
+  collected, not shared, not ephemeral, required, purpose Analytics. Nothing else.
+- **Advertising ID:** no.
 - **Target audience:** 18 and over.
 - **Content rating:** utility; no user-generated content, no sharing of location, no purchases.
 - **News, health, financial, government:** no.
