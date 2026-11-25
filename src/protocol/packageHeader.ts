@@ -4,6 +4,7 @@
 import { ProtocolError, fromAscii, isHex, isU64 } from './bytes';
 import { RELEASE_MAGICS, parseReleaseHead } from './releaseHeader';
 import { parseSettingLine, type Setting } from './replies';
+import { permissionsOf } from './permissions';
 
 export const HEADER_SIZE = 24;
 export const MANIFEST_MAX = 2048;
@@ -26,6 +27,9 @@ export type PackageInfo = {
    * and in entries read before this version. */
   properties?: PackageProperty[];
   text?: string[];
+  /** What it may do to the car (protocol/permissions.ts), from its `bridge-*`
+   * lines; absent for a manager release and entries read before this version. */
+  permissions?: number;
   /** A manager release's format (`NBTRLS<n>`); absent for an application package. */
   format?: number;
 };
@@ -88,5 +92,5 @@ export function parsePackageHead(head: Uint8Array, fileSize: number): PackageInf
   const textLines = rest.filter(l => l.startsWith('text=')).slice(0, 20).map(l => l.slice(5))
     .filter(l => l.length <= 120 && PRINTABLE.test(l));
   return { app, version, sequence, compat, payloadSize, payloadSha256: values.get('sha256')!, settings,
-    properties, text: textLines };
+    properties, text: textLines, permissions: permissionsOf(rest) };
 }

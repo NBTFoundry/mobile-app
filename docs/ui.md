@@ -36,6 +36,8 @@ flowchart TD
   A download lands in the library like a picked file, checked against the catalog's
   size and SHA-256; betas (pre-releases) show only when chosen. The car page tags an
   application *Update online* when the catalog has a newer release than the library.
+- A package's details list its permissions as the car's review does: "Uses: …"
+  and "Can: …" (`src/protocol/permissions.ts`, the manager's `docs/permissions.md`).
 - An application list that could not be read has its own message; a successful
   empty list says that no applications are installed. The car page shows when the
   list was last read.
