@@ -7,7 +7,7 @@ description: The online application catalog and the phone's Get apps tab - list 
 
 | Side | Files |
 | --- | --- |
-| `NBTFoundry/NBTFoundry.github.io` (checkout `../NBTFoundry.github.io`) | `apps.json` (the allowlist), `tools/build_catalog.py` (writes `catalog.json`), `tools/nbt_files.py` (verifies `.nbt`/`.nbtr`), `tools/render_site.py` and `site/` (landing page), `.github/workflows/pages.yml` |
+| `NBTFoundry/NBTFoundry.github.io` (checkout `../NBTFoundry.github.io`) | `apps.json` (the allowlist), `tools/build_catalog.py` (writes `catalog.json`), `tools/nbt_files.py` (verifies `.nbt`/`.nbtr`), `site/` (landing page; `site/apps.js` renders the app cards from `catalog.json` in the browser), `tools/render_site.py` (copies `site/` and `catalog.json`), `.github/workflows/pages.yml` |
 | Phone (this repository) | `src/store/catalog.ts` (parse, cache, `releaseFor`, `onlineUpdate`), `src/store/download.ts`, `src/screens/StoreScreen.tsx`, `tests/catalog.test.ts`, `tests/fixtures/catalog.json` |
 
 The workflow runs on push, every 30 minutes and by hand. It lists, per app,
@@ -28,13 +28,14 @@ a picked file; the car verifies the signature.
 - **Locally:** `python3 -I -m unittest discover -s tests`, then
   `GITHUB_TOKEN=$(gh auth token) python3 -I tools/build_catalog.py --keys
   ../manager/release --output out/catalog.json` and `render_site.py`.
-- **Format change:** both sides in step: the writer, `render_site.py`, the
+- **Format change:** both sides in step: the writer, `site/apps.js`, the
   phone's `parseCatalog` (unknown fields are ignored, so adding one is safe;
   removing or retyping one breaks installed phones: bump `schema` and say so),
   the repository README's "Catalog" section, then refresh
   `tests/fixtures/catalog.json` from the live URL.
 - **Landing page:** edit `site/`, render, and look at it with
-  `chromium-browser --headless=new --screenshot` in light
+  `chromium-browser --headless=new --allow-file-access-from-files --screenshot`
+  (`apps.js` fetches `catalog.json`) in light
   (`--blink-settings=preferredColorScheme=1`) and dark; headless windows are
   at least 500 px wide.
 - **Schedule stopped:** GitHub pauses it after 60 days without a commit
