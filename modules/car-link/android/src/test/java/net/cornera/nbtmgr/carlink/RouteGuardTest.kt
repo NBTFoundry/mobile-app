@@ -44,6 +44,16 @@ class RouteGuardTest {
         refused("172.16.222.1:$port", "GET", route)
       }
     }
+    // Developer keys: listed from either listener, added and removed on the worker only.
+    for (port in listOf(8080, 8081)) {
+      assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "GET", "/v1/keys", null))
+      refused("172.16.222.1:$port", "POST", "/v1/keys")
+    }
+    for (route in listOf("/v1/keys/add", "/v1/keys/remove")) {
+      assertEquals(Target("172.16.222.1", 8080, false), RouteGuard.check("172.16.222.1:8080", "POST", route, null))
+      refused("172.16.222.1:8081", "POST", route)
+      refused("172.16.222.1:8080", "GET", route)
+    }
     // An application's files, from the worker only.
     for (route in listOf("/v1/files/list", "/v1/files/put", "/v1/files/data", "/v1/files/remove")) {
       assertEquals(Target("172.16.222.1", 8080, false), RouteGuard.check("172.16.222.1:8080", "POST", route, null))

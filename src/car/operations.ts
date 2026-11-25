@@ -179,13 +179,13 @@ export function act<T>(carName: string, title: string, detail: string,
   return result;
 }
 
-const follow = (id: number, cancel: Cancel): Follow => ({
+export const follow = (id: number, cancel: Cancel): Follow => ({
   cancel, wait: realWait,
   onStatus: status => updateActivity(id, { detail: describeStatus(status) }),
 });
 
 const phaseOf = (status: Status): ActivityPhase =>
-  ['installed', 'removed', 'paired'].includes(status.state) ? 'done'
+  ['installed', 'removed', 'paired', 'key-added', 'key-removed'].includes(status.state) ? 'done'
     : status.state === 'failed' ? 'failed' : 'refused';
 
 function sessions(car: CarRecord) {
@@ -313,7 +313,7 @@ export function reachWorker(car: CarRecord, id: number, cancel: Cancel): Promise
   return reachManager(worker, door, e => updateActivity(id, { detail: describeOpening(e) }), cancel, realWait);
 }
 
-async function managerAction(car: CarRecord, id: number, cancel: Cancel,
+export async function managerAction(car: CarRecord, id: number, cancel: Cancel,
   run: (worker: CarSession) => Promise<Status>) {
   const session = await reachWorker(car, id, cancel);
   const status = await run(session);

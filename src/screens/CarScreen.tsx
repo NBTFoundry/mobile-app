@@ -114,6 +114,7 @@ export function CarScreen({ state }: { state: AppState }) {
         {!car.desk ? <Row title={t('car.connect')} onPress={() => { setMenu(false); void connectCar(car); }} /> : null}
         <Row title={t('car.idriveLog')} onPress={() => void readLog(fetchSystemLog)} />
         <Row title={t('car.managerLog')} onPress={() => void readLog(fetchManagerLog)} />
+        <Row title={t('keys.title')} onPress={() => { setMenu(false); state.go({ tab: 'car', keys: true }); }} />
         <Row title={t('common.installNbt')} onPress={() => { setMenu(false); state.go({ tab: 'car', installer: true }); }} />
       </Dialog> : null}
       <Row title={t('legal.licenses')} onPress={() => state.go({ tab: 'car', licenses: true })} />

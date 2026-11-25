@@ -5,6 +5,7 @@ import { StoppedFollowing } from '../protocol/actions';
 import { ProtocolError } from '../protocol/bytes';
 import type { OpeningEvent } from '../protocol/opening';
 import type { Status } from '../protocol/replies';
+import { DeveloperKeyError } from '../protocol/developerKey';
 import { CarError, LinkError } from '../protocol/session';
 import { CatalogError } from '../store/catalog';
 import { LibraryError } from '../store/library';
@@ -68,6 +69,10 @@ export function describeError(error: unknown): string {
     return known ? t(known) : t('error.carOther', { status: error.status });
   }
   if (error instanceof KeyError) return t(KEY[error.code] ?? 'error.keyStore');
+  if (error instanceof DeveloperKeyError) {
+    return t(error.code === 'private-key' ? 'keys.privateKey'
+      : error.code === 'not-rsa-3072' ? 'keys.notRsa3072' : 'keys.notPublicKey');
+  }
   if (error instanceof LibraryError) {
     return t(error.code === 'not-a-package' ? 'error.notPackage'
       : error.code === 'unreadable' ? 'error.unreadable' : 'error.storage');
@@ -92,6 +97,8 @@ const OWN: Record<string, Key> = {
   cancelled: 'status.cancelled',
   expired: 'status.expired',
   paired: 'status.paired',
+  'key-added': 'status.keyAdded',
+  'key-removed': 'status.keyRemoved',
 };
 
 /** Result text decided from the state; the car's own message is added as detail. */

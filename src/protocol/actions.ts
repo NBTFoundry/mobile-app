@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 /** One flow per action. The car confirms pairing, installs and uninstalls; the phone only follows. */
 import { ProtocolError, fromAscii } from './bytes';
-import { parseApps, parseAutostart, parseCrashes, parseManager, parseOk, parsePair, parseSettings, parseStatus,
-  parseWake, type Autostart, type CarApp, type CarCrash, type CarManager, type Setting, type Status,
-  type StatusState, type WakeState } from './replies';
+import { parseApps, parseAutostart, parseCrashes, parseKeys, parseManager, parseOk, parsePair, parseSettings,
+  parseStatus, parseWake, type Autostart, type CarApp, type CarCrash, type CarKey, type CarManager, type Setting,
+  type Status, type StatusState, type WakeState } from './replies';
+import { keyAddBody, type DeveloperKey } from './developerKey';
 import { CarError, type CarSession, type SavedReply } from './session';
 import { pairBody, pairingCode } from './signing';
 
@@ -19,7 +20,8 @@ export class StoppedFollowing extends Error {
   }
 }
 
-const TERMINAL: readonly StatusState[] = ['installed', 'removed', 'failed', 'cancelled', 'expired', 'paired'];
+const TERMINAL: readonly StatusState[] = ['installed', 'removed', 'failed', 'cancelled', 'expired', 'paired',
+  'key-added', 'key-removed'];
 export const isTerminal = (state: StatusState) => TERMINAL.includes(state);
 
 export type Follow = { onStatus: (status: Status) => void; cancel: Cancel; wait: Wait };
@@ -166,6 +168,30 @@ export async function installPackage(session: CarSession, file: PackageFile,
 /** Asks the car to uninstall; the driver confirms there. */
 export async function removeApp(session: CarSession, app: string, follow: Follow): Promise<Status> {
   const response = await session.ok('/v1/remove', { kind: 'text', text: `${app}\n` });
+  follow.onStatus(parseStatus(response.body));
+  return followStatus(session, follow, 2 * 60_000);
+}
+
+/** The developer keys the car trusts; null from a manager without them. */
+export async function listKeys(session: CarSession): Promise<CarKey[] | null> {
+  try {
+    return parseKeys((await session.ok('/v1/keys')).body);
+  } catch (error) {
+    if (unknownRoute(error)) return null;
+    throw error;
+  }
+}
+
+/** Asks the car to trust a developer key; the driver checks the fingerprint and confirms there. */
+export async function addKey(session: CarSession, name: string, key: DeveloperKey, follow: Follow): Promise<Status> {
+  const response = await session.ok('/v1/keys/add', { kind: 'text', text: keyAddBody(name, key) });
+  follow.onStatus(parseStatus(response.body));
+  return followStatus(session, follow, 2 * 60_000);
+}
+
+/** Asks the car to forget a developer key; the driver confirms there. */
+export async function removeKey(session: CarSession, id: string, follow: Follow): Promise<Status> {
+  const response = await session.ok('/v1/keys/remove', { kind: 'text', text: `${id}\n` });
   follow.onStatus(parseStatus(response.body));
   return followStatus(session, follow, 2 * 60_000);
 }

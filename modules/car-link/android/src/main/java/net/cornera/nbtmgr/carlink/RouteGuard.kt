@@ -21,13 +21,14 @@ object RouteGuard {
     "/v1/logs/manager" to "POST", "/v1/files/list" to "POST", "/v1/files/put" to "POST",
     "/v1/files/data" to "POST", "/v1/files/remove" to "POST", "/v1/autostart" to "POST",
     "/v1/manager" to "GET", "/v1/crashes" to "POST", "/v1/crashes/read" to "POST",
-    "/v1/crashes/clear" to "POST",
+    "/v1/crashes/clear" to "POST", "/v1/keys" to "GET", "/v1/keys/add" to "POST",
+    "/v1/keys/remove" to "POST",
   )
   /** Routes whose body is a file, sent as `application/octet-stream`; every other body is text. */
   val FILE_ROUTES = setOf("/v1/upload", "/v1/files/data")
   private val door = setOf("/v1/nonce", "/v1/apps", "/v1/settings/read", "/v1/settings/set", "/v1/wake",
     "/v1/logs/app", "/v1/logs/system", "/v1/logs/clear", "/v1/logs/manager", "/v1/autostart", "/v1/manager",
-    "/v1/crashes", "/v1/crashes/read", "/v1/crashes/clear")
+    "/v1/crashes", "/v1/crashes/read", "/v1/crashes/clear", "/v1/keys")
   private val worker = methods.keys - "/v1/wake"
   private val ipv4 = Regex("^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$")
 

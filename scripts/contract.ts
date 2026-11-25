@@ -5,16 +5,17 @@
  * the driver would give them on the car. Run: yarn test:contract
  */
 import { spawn } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, generateKeyPairSync } from 'node:crypto';
 import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
-import { changeAutostart, changeSetting, clearAppLog, clearCrashes, installPackage, listApps, listCrashes, pairPhone,
-  readAppLog, readAutostart, readCrash, readManager, readSettings, readSystemLog, removeApp, wake,
+import { addKey, changeAutostart, changeSetting, clearAppLog, clearCrashes, installPackage, listApps, listCrashes, listKeys, pairPhone,
+  readAppLog, readAutostart, readCrash, readManager, readSettings, readSystemLog, removeApp, removeKey, wake,
   type Follow } from '../src/protocol/actions';
+import { readDeveloperKey } from '../src/protocol/developerKey';
 import { listFiles, removeFile, sendFile } from '../src/protocol/files';
 import { reachManager } from '../src/protocol/opening';
 import { CarError, CarSession } from '../src/protocol/session';
@@ -185,6 +186,35 @@ async function main() {
       }
     }));
     check(gamesRemoved.state === 'removed', 'the application that takes files is uninstalled');
+
+    // Developer keys: listed from either listener, added and removed only once the driver confirms.
+    check((await listKeys(door))?.length === 0, 'the car trusts no developer key yet');
+    const developer = readDeveloperKey(generateKeyPairSync('rsa', { modulusLength: 3072 })
+      .publicKey.export({ type: 'spki', format: 'pem' }) as string);
+    const declinedKey = await addKey(worker, 'Contract dev', developer, follow(status => {
+      if (status.state === 'waiting') void driver('decline');
+    }));
+    check(declinedKey.state === 'cancelled' && (await listKeys(worker))?.length === 0, 'a key declined on the car is not added');
+    let keyAsked = false;
+    const added = await addKey(worker, 'Contract dev', developer, follow(status => {
+      if (status.state === 'waiting' && !keyAsked) {
+        keyAsked = true;
+        void driver('confirm');
+      }
+    }));
+    const keys = await listKeys(door);
+    check(added.state === 'key-added' && keys?.length === 1 && keys[0]?.id === developer.id
+      && keys[0]?.name === 'Contract dev', 'a key confirmed on the car is listed with its id and name');
+    const twice = await addKey(worker, 'Again', developer, follow(() => undefined)).catch(e => e);
+    check(twice instanceof CarError && twice.status === 409, 'the same key is not added twice');
+    keyAsked = false;
+    const keyRemoved = await removeKey(worker, developer.id, follow(status => {
+      if (status.state === 'waiting' && !keyAsked) {
+        keyAsked = true;
+        void driver('confirm');
+      }
+    }));
+    check(keyRemoved.state === 'key-removed' && (await listKeys(worker))?.length === 0, 'a removed key is no longer listed');
 
     check(await wake(door) === 'off', 'the door answers off while Open from phone is off');
     check(await driver('SET manager phone_open on') === 'OK', 'Open from phone is switched on at the car');

@@ -8,7 +8,7 @@ export const MAX_REPLY = 4096;
 export type CarApp = { id: string; version: string; sequence: string; running: boolean };
 export type Setting = { key: string; label: string; value: string; choices: string[] };
 export const STATUS_STATES = ['waiting', 'verified', 'installing', 'installed', 'removed', 'failed',
-  'cancelled', 'expired', 'paired'] as const;
+  'cancelled', 'expired', 'paired', 'key-added', 'key-removed'] as const;
 export type StatusState = (typeof STATUS_STATES)[number];
 export type Status = { state: StatusState; message: string; car?: { bssid: string; address: string } };
 export const WAKE_STATES = ['opening', 'open', 'busy', 'moving', 'off'] as const;
@@ -133,6 +133,21 @@ export function parseCrashes(text: string): CarCrash[] {
       || seen.has(`${app}/${slot}`)) bad();
     seen.add(`${app}/${slot}`);
     return { app: app!, slot: Number(slot), report: report!, time: time!, version: version!, ended: ended! };
+  });
+}
+
+/** A developer key the car trusts (PROTOCOL.md, "Developer keys"); `added` in seconds since the epoch. */
+export type CarKey = { id: string; name: string; added: number };
+
+export function parseKeys(text: string): CarKey[] {
+  const seen = new Set<string>();
+  return counted(text, 'KEYS', 8).map(line => {
+    const [id, name, added, ...rest] = line.split('\t');
+    if (rest.length || !id || !/^[0-9a-f]{64}$/.test(id) || seen.has(id) || !name
+      || !/^[\x21-\x7b\x7d\x7e]([\x20-\x7b\x7d\x7e]{0,30}[\x21-\x7b\x7d\x7e])?$/.test(name)
+      || !added || !/^[1-9][0-9]{0,11}$/.test(added)) bad();
+    seen.add(id!);
+    return { id: id!, name: name!, added: Number(added) };
   });
 }
 

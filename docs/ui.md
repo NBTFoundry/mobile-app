@@ -11,6 +11,7 @@ while its page is closed.
 flowchart TD
   CAR["Car tab<br/>paired car · installed apps · updates"] --> APP["App details<br/>install / update · settings · logs · remove"]
   CAR --> MANAGE["Car management<br/>rename · forget · logs"]
+  MANAGE --> KEYS["Developer keys<br/>list · add a public key file · remove"]
   CAR --> PAIR["Pair a car<br/>scan the car's code · confirm digits"]
   CAR --> INSTALLER["Install NBT Manager on a car<br/>SSH over a Wi-Fi ENET adapter"]
   STORE["Get apps tab<br/>online catalog · betas"] --> REL["Release details<br/>download to the library"]
@@ -49,6 +50,10 @@ flowchart TD
   installs and removals require approval on the car. The SSH manager installer
   keeps explicit SSH consent, a removal confirmation and one visible restart
   action.
+- Developer keys (car management) list the keys the car trusts with their
+  fingerprint. Adding one reads a public key file (PEM, RSA-3072) and shows the
+  fingerprint the car will show; a file with a private key is refused before
+  anything is sent. Adding and removing are confirmed on the car.
 - Touch targets are at least 48 dp. Labels wrap, dialogs scroll, inputs stay
   reachable with the keyboard open, and status always includes text.
 - English, French, German, Italian, Spanish, Chinese (Simplified) and Japanese

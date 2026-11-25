@@ -19,12 +19,17 @@ import { InstallerScreen } from './screens/InstallerScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { PairScreen } from './screens/PairScreen';
 import { StoreScreen } from './screens/StoreScreen';
+import { KeysScreen } from './screens/KeysScreen';
 import { LicensesScreen } from './screens/LicensesScreen';
 
 export type Tab = 'car' | 'store' | 'library' | 'activity';
 /** `storeApp`: the application Get apps opens with. */
-export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; licenses?: boolean; carId?: string;
+export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; licenses?: boolean; keys?: boolean; carId?: string;
   storeApp?: string };
+
+/** A page over the tabs, with a Back button. */
+const isPage = (route: Route) =>
+  !!(route.pairing || route.app || route.installer || route.cars || route.licenses || route.keys);
 
 export type AppState = {
   cars: CarRecord[];
@@ -89,7 +94,7 @@ export default function App() {
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (route.pairing || route.app || route.installer || route.cars || route.licenses) {
+      if (isPage(route)) {
         setRoute({ tab: route.tab });
         return true;
       }
@@ -111,6 +116,7 @@ export default function App() {
 
   let screen;
   if (route.licenses) screen = <LicensesScreen />;
+  else if (route.keys) screen = <KeysScreen state={state} />;
   else if (route.pairing) screen = <PairScreen state={state} />;
   else if (route.installer) screen = <InstallerScreen />;
   else if (route.cars) screen = <CarsScreen state={state} />;
@@ -128,11 +134,11 @@ export default function App() {
     <SafeAreaProvider>
     <SafeAreaView style={styles.page} edges={['top', 'bottom', 'left', 'right']}>
       <StatusBar barStyle={colors.isDark ? 'light-content' : 'dark-content'} />
-      {route.pairing || route.installer || route.app || route.cars || route.licenses ? (
+      {isPage(route) ? (
         <View style={styles.back}><Button label={t('common.back')} kind="plain" onPress={() => setRoute({ tab: route.tab })} /></View>
       ) : null}
       <View style={styles.content}>{screen}</View>
-      {!(route.pairing || route.installer || route.app || route.cars || route.licenses) ? <View style={styles.tabs} accessibilityRole="tablist">
+      {!isPage(route) ? <View style={styles.tabs} accessibilityRole="tablist">
         {TABS.map(item => (
           <Pressable key={item.tab} accessibilityRole="tab" accessibilityState={{ selected: route.tab === item.tab }}
             onPress={() => setRoute({ tab: item.tab })} style={[styles.tab, route.tab === item.tab && { borderTopColor: colors.accent }]}>
