@@ -1,24 +1,31 @@
 // SPDX-License-Identifier: MPL-2.0
-/** Scan the car's Wi-Fi code, join, propose this phone; the driver confirms the code on the car. */
+/** Scan the car's Wi-Fi code (or take one another app handed over), join, propose this phone;
+ * the driver confirms the code on the car. */
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { AppState } from '../App';
 import { pairCar, stopFollowing } from '../car/operations';
-import { parseWifiCode } from '../protocol/wifiCode';
+import { parseWifiCode, type WifiCode } from '../protocol/wifiCode';
 import { useActivities } from '../store/activity';
 import { Body, Busy, Button, Panel, Title, useColors, useStyles } from '../ui/kit';
 import { t } from '../i18n';
 
-export function PairScreen({ state }: { state: AppState }) {
+export function PairScreen({ state, code }: { state: AppState; code?: WifiCode }) {
   const styles = useStyles(makeStyles);
   const [permission, requestPermission] = useCameraPermissions();
   const [activityId, setActivityId] = useState<number>();
   const [problem, setProblem] = useState<string>();
   const scanned = useRef(false);
+  const [offered, setOffered] = useState(code);
   const activities = useActivities();
   const activity = activities.find(a => a.id === activityId);
 
+  const pair = (wifi: WifiCode) => {
+    scanned.current = true;
+    setProblem(undefined);
+    void pairCar(wifi, undefined, setActivityId).then(car => state.reloadCars(car?.id));
+  };
   const onCode = (data: string) => {
     if (scanned.current) return;
     let wifi;
@@ -28,9 +35,7 @@ export function PairScreen({ state }: { state: AppState }) {
       setProblem(t('pair.notCode'));
       return;
     }
-    scanned.current = true;
-    setProblem(undefined);
-    void pairCar(wifi, undefined, setActivityId).then(car => state.reloadCars(car?.id));
+    pair(wifi);
   };
 
   if (activity) {
@@ -56,6 +61,19 @@ export function PairScreen({ state }: { state: AppState }) {
             setActivityId(undefined);
           }} /> : null}
 
+      </ScrollView>
+    );
+  }
+
+  if (offered) {
+    return (
+      <ScrollView contentContainerStyle={styles.page}>
+        <Title>{t('common.pairCar')}</Title>
+        <Panel>
+          <Body>{t('pair.handedOver', { ssid: offered.ssid })}</Body>
+          <Button label={t('pair.useCode', { ssid: offered.ssid })} onPress={() => pair(offered)} />
+        </Panel>
+        <Button label={t('pair.scanInstead')} kind="plain" onPress={() => setOffered(undefined)} />
       </ScrollView>
     );
   }

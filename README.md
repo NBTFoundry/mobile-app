@@ -103,6 +103,17 @@ using the Rust installer core from `NBTFoundry/installer` (`mobile/`, through
 UniFFI). It enables SSH on the head unit only after the user agrees, and asks
 before removing.
 
+### Pairing from another app
+
+An app that has the car's Wi-Fi code (the `WIFI:` text of the car's QR code)
+hands it over with a link; the phone app opens pairing with it, and the user
+still taps Pair and the driver confirms on the car:
+
+```kotlin
+startActivity(Intent(Intent.ACTION_VIEW,
+    Uri.parse("nbtmanager://pair?wifi=" + Uri.encode(wifiCode))))
+```
+
 ## Setup
 
 Node 24 with `corepack enable` (Yarn 4), JDK 17, Android SDK 36 (`ANDROID_HOME` set)

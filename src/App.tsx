@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 /** NBT Manager: cars, their applications, the online catalog, the package library and activity. No router. */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BackHandler, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Linking, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { setSystemLocale, t, useLanguage, type Key } from './i18n';
 import { systemLocale } from './i18n/system';
@@ -10,6 +10,8 @@ import { loadCachedCatalog, type Catalog } from './store/catalog';
 import { loadLibrary, type LibraryEntry } from './store/library';
 import { runningCount, useActivities } from './store/activity';
 import { loadPreferences } from './store/preferences';
+import { parsePairLink } from './protocol/pairLink';
+import type { WifiCode } from './protocol/wifiCode';
 import { Button, useColors, useStyles } from './ui/kit';
 import { ActivityScreen } from './screens/ActivityScreen';
 import { AppScreen } from './screens/AppScreen';
@@ -18,14 +20,16 @@ import { CarsScreen } from './screens/CarsScreen';
 import { InstallerScreen } from './screens/InstallerScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { PairScreen } from './screens/PairScreen';
+import { WhatsNewSheet } from './screens/WhatsNewSheet';
 import { StoreScreen } from './screens/StoreScreen';
 import { KeysScreen } from './screens/KeysScreen';
 import { LicensesScreen } from './screens/LicensesScreen';
 
 export type Tab = 'car' | 'store' | 'library' | 'activity';
 /** `storeApp`: the application Get apps opens with. */
+/** `pairCode`: a Wi-Fi code another app handed over (protocol/pairLink.ts). */
 export type Route = { tab: Tab; pairing?: boolean; app?: string; installer?: boolean; cars?: boolean; licenses?: boolean; keys?: boolean; carId?: string;
-  storeApp?: string };
+  storeApp?: string; pairCode?: WifiCode };
 
 /** A page over the tabs, with a Back button. */
 const isPage = (route: Route) =>
@@ -63,6 +67,8 @@ export default function App() {
   const [library, setLibrary] = useState<LibraryEntry[]>([]);
   const [libraryReady, setLibraryReady] = useState(false);
   const [catalog, setCatalog] = useState<Catalog>();
+  const [preferencesReady, setPreferencesReady] = useState(false);
+  const [carsReady, setCarsReady] = useState(false);
   const reloadVersion = useRef(0);
   const activities = useActivities();
 
@@ -73,12 +79,15 @@ export default function App() {
     if (version === reloadVersion.current) {
       setCars(loaded.cars);
       setSelected(loaded.selected);
+      setCarsReady(true);
     }
   }, []);
 
   useEffect(() => {
     let live = true;
-    void loadPreferences();
+    void loadPreferences().then(() => {
+      if (live) setPreferencesReady(true);
+    });
     void reloadCars();
     void loadLibrary().then(entries => {
       if (live) { setLibrary(entries); setLibraryReady(true); }
@@ -91,6 +100,17 @@ export default function App() {
       live = false;
     };
   }, [reloadCars]);
+
+  // A Wi-Fi code from another app opens pairing with it; the user still chooses to pair.
+  useEffect(() => {
+    const open = (url: string | null | undefined) => {
+      const code = parsePairLink(url);
+      if (code) setRoute({ tab: 'car', pairing: true, pairCode: code });
+    };
+    void Linking.getInitialURL().then(open);
+    const sub = Linking.addEventListener('url', event => open(event.url));
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -117,7 +137,7 @@ export default function App() {
   let screen;
   if (route.licenses) screen = <LicensesScreen />;
   else if (route.keys) screen = <KeysScreen state={state} />;
-  else if (route.pairing) screen = <PairScreen state={state} />;
+  else if (route.pairing) screen = <PairScreen key={route.pairCode?.ssid ?? 'scan'} state={state} code={route.pairCode} />;
   else if (route.installer) screen = <InstallerScreen />;
   else if (route.cars) screen = <CarsScreen state={state} />;
   else if (route.app && cars.some(c => c.id === route.carId)) {
@@ -138,6 +158,7 @@ export default function App() {
         <View style={styles.back}><Button label={t('common.back')} kind="plain" onPress={() => setRoute({ tab: route.tab })} /></View>
       ) : null}
       <View style={styles.content}>{screen}</View>
+      <WhatsNewSheet ready={preferencesReady && carsReady && libraryReady} usedBefore={cars.length > 0 || library.length > 0} />
       {!isPage(route) ? <View style={styles.tabs} accessibilityRole="tablist">
         {TABS.map(item => (
           <Pressable key={item.tab} accessibilityRole="tab" accessibilityState={{ selected: route.tab === item.tab }}

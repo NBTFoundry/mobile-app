@@ -54,6 +54,12 @@ flowchart TD
   (`src/protocol/companion.ts`, the manager's `docs/companion-bridge.md`). A
   malformed widget is left out. Taps go to the application, which decides what
   changes; the next read shows it.
+- A Wi-Fi code another app hands over (`nbtmanager://pair?wifi=…`,
+  `src/protocol/pairLink.ts`) opens Pair a car with it: "Pair with <network>"
+  or "Scan a code instead"; nothing starts until the user taps.
+- "What's new" (`src/whatsNew.ts`): a sheet once after an update whose list is
+  newer than the last seen, kept in `preferences.json`; a new install starts
+  without it.
 - Pairing digits appear only while confirmation is pending. If the camera
   permission is denied for good, the app offers its settings page. Application
   installs and removals require approval on the car. The SSH manager installer
