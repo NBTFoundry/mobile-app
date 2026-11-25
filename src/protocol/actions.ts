@@ -4,6 +4,7 @@ import { ProtocolError, fromAscii } from './bytes';
 import { parseApps, parseAutostart, parseCrashes, parseKeys, parseManager, parseOk, parsePair, parseSettings,
   parseStatus, parseWake, type Autostart, type CarApp, type CarCrash, type CarKey, type CarManager, type Setting,
   type Status, type StatusState, type WakeState } from './replies';
+import { parseCompanion, type CompanionPage } from './companion';
 import { keyAddBody, type DeveloperKey } from './developerKey';
 import { CarError, type CarSession, type SavedReply } from './session';
 import { pairBody, pairingCode } from './signing';
@@ -114,6 +115,23 @@ export async function readSettings(session: CarSession, app: string): Promise<Se
 /** Applied at once by the car, with no prompt there. */
 export async function changeSetting(session: CarSession, app: string, key: string, value: string): Promise<void> {
   parseOk((await session.ok('/v1/settings/set', { kind: 'text', text: `${app}\t${key}\t${value}\n` })).body);
+}
+
+/** An application's phone page; null when it has none, or from a manager without them. */
+export async function readCompanion(session: CarSession, app: string): Promise<CompanionPage | null> {
+  try {
+    return parseCompanion((await session.ok('/v1/companion', { kind: 'text', text: `${app}\n` })).body);
+  } catch (error) {
+    if (error instanceof CarError && (error.status === 404 || error.status === 400 && error.code === 'route')) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** A tap on the page: the widget's id and value (empty for a button). */
+export async function sendCompanionEvent(session: CarSession, app: string, id: string, value: string): Promise<void> {
+  parseOk((await session.ok('/v1/companion/event', { kind: 'text', text: `${app}\t${id}\t${value}\n` })).body);
 }
 
 /** Start with the car; null from a manager without it (an older release). */

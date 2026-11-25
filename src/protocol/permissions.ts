@@ -15,6 +15,7 @@ export const PERM = {
   clear: 0x100,
   control: 0x200,
   drive: 0x400,
+  companion: 0x800,
 } as const;
 
 const CAPS = /^[a-z][a-z0-9-]{0,23}(,[a-z][a-z0-9-]{0,23})*$/;
@@ -57,6 +58,7 @@ export function permissionsOf(lines: string[]): number {
   if (has('car-data')) out |= PERM.carData;
   if (has('files')) out |= PERM.files;
   if (has('net')) out |= PERM.phoneNet;
+  if (has('companion')) out |= PERM.companion;
   const diag = value('bridge-diag');
   if (has('diag') && diag && diag.length <= 160) out |= diagPermissions(diag);
   const most = value('bridge-most');
@@ -67,7 +69,8 @@ export function permissionsOf(lines: string[]): number {
 /** The labels to show, as i18n keys: what it uses, and what it can do to the car. */
 export function permissionLabels(bits: number): { uses: string[]; can: string[]; driving?: boolean } {
   const uses = ([['background', PERM.background], ['carData', PERM.carData], ['engine', PERM.engine],
-    ['files', PERM.files], ['phoneNet', PERM.phoneNet], ['mostRead', PERM.mostRead]] as const)
+    ['files', PERM.files], ['phoneNet', PERM.phoneNet], ['companion', PERM.companion],
+    ['mostRead', PERM.mostRead]] as const)
     .filter(([, bit]) => bits & bit).map(([key]) => `perm.${key}`);
   const can = ([['clear', PERM.clear], ['control', PERM.control], ['mostAny', PERM.mostAny],
     ['mostSend', PERM.mostSend]] as const)

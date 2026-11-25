@@ -47,6 +47,13 @@ flowchart TD
   Manager releases use their own update flow.
 - Settings load on request. Current values appear in rows, with the choices in a
   modal. Package details show file name, version, size, sequence and date added.
+- Phone page (an installed application whose Library package declares
+  `companion`): opened on request as an activity, then read every 2 s while
+  shown, without an activity entry each; titles, texts, buttons, toggles,
+  choices (in a modal) and progress bars as the application describes them
+  (`src/protocol/companion.ts`, the manager's `docs/companion-bridge.md`). A
+  malformed widget is left out. Taps go to the application, which decides what
+  changes; the next read shows it.
 - Pairing digits appear only while confirmation is pending. If the camera
   permission is denied for good, the app offers its settings page. Application
   installs and removals require approval on the car. The SSH manager installer

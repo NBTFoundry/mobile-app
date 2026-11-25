@@ -13,7 +13,7 @@ import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 import { addKey, changeAutostart, changeSetting, clearAppLog, clearCrashes, installPackage, listApps, listCrashes, listKeys, pairPhone,
-  readAppLog, readAutostart, readCrash, readManager, readSettings, readSystemLog, removeApp, removeKey, wake,
+  readAppLog, readAutostart, readCompanion, readCrash, readManager, readSettings, readSystemLog, removeApp, removeKey, sendCompanionEvent, wake,
   type Follow } from '../src/protocol/actions';
 import { readDeveloperKey } from '../src/protocol/developerKey';
 import { listFiles, removeFile, sendFile } from '../src/protocol/files';
@@ -106,6 +106,10 @@ async function main() {
     check((await readAutostart(worker, 'test'))?.on === true, 'Start with the car switches on from the door');
     await changeAutostart(worker, 'test', false);
     check((await readAutostart(door, 'test'))?.on === false, 'and off from the worker');
+    check(await readCompanion(worker, 'test') === null && await readCompanion(door, 'test') === null,
+      'an application without a phone page has none, from either listener');
+    const noPage = await sendCompanionEvent(door, 'test', 'go', '').catch(e => e);
+    check(noPage instanceof CarError && noPage.status === 404, 'and takes no taps');
 
     const appLog = await readAppLog(door, 'test');
     check(appLog.size === 0 && appLog.tail === '', 'an application that never ran has an empty log');

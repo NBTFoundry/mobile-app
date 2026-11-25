@@ -6,6 +6,7 @@ import type { AppState } from '../App';
 import { clearLog, fetchAppLog, type CarLog } from '../car/logs';
 import { applyAutostart, applySetting, install, loadSettings, uninstall } from '../car/operations';
 import { compareU64 } from '../protocol/bytes';
+import { PERM } from '../protocol/permissions';
 import type { Autostart, Setting } from '../protocol/replies';
 import type { CarRecord } from '../store/cars';
 import { onlineUpdate } from '../store/catalog';
@@ -15,6 +16,7 @@ import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
 import { PackageAbout } from '../ui/PackageAbout';
 import { ActivityDialog } from './ActivityDialog';
+import { CompanionPanel } from './CompanionPanel';
 import { CrashesPanel } from './CrashesPanel';
 import { FilesPanel } from './FilesPanel';
 import { LogView } from './LogView';
@@ -28,6 +30,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [log, setLog] = useState<CarLog>();
   const [crashes, setCrashes] = useState(false);
+  const [companion, setCompanion] = useState(false);
   const [problem, setProblem] = useState<string>();
   const [busy, setBusy] = useState<string>();
   const [versions, setVersions] = useState(false);
@@ -47,6 +50,8 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
     ? onlineUpdate(state.catalog, { id: appId, version: '', sequence: known?.sequence ?? '0', running: false }, betas)
     : undefined;
   const offerOnline = online && !packages.some(e => compareU64(e.info.sequence, online.sequence) >= 0);
+  // A page on the phone, when a package of it in the Library declares one.
+  const hasPage = !!installed && !manager && packages.some(e => (e.info.permissions ?? 0) & PERM.companion);
   const after = async (run: Promise<unknown>) => {
     state.go({ tab: 'activity' });
     await run;
@@ -139,6 +144,9 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
         detail={t(autostart.paused ? 'app.autostartPaused' : autostart.on ? 'app.autostartOn' : 'app.autostartOff')}
         onPress={!busy ? () => void switchAutostart(!autostart.on) : undefined} /> : null}
       <FilesPanel car={car} appId={appId} />
+      {hasPage && !companion ? <Row title={t('companion.title')} detail={t('companion.openDetail')}
+        onPress={() => setCompanion(true)} /> : null}
+      {companion ? <CompanionPanel car={car} app={appId} onClose={() => setCompanion(false)} /> : null}
     </> : null}
     {busy ? <Busy text={busy} /> : null}
     {problem ? <><Body>{problem}</Body><Button label={t('common.viewActivity')} kind="plain" onPress={() => state.go({ tab: 'activity' })} /></> : null}

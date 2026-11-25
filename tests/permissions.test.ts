@@ -9,6 +9,9 @@ describe('permissions', () => {
         | PERM.control | PERM.drive | PERM.mostRead | PERM.mostSend);
     expect(permissionsOf(['bridge-optional=most', 'bridge-most=tx:*.*.*'])).toBe(PERM.mostSend | PERM.mostAny);
     expect(permissionsOf(['bridge-optional=most', 'bridge-most=tx:05.00.001'])).toBe(PERM.mostSend | PERM.mostAny);
+    expect(permissionsOf(['bridge=1.9', 'bridge-optional=companion'])).toBe(PERM.companion);
+    expect(permissionLabels(PERM.phoneNet | PERM.companion | PERM.mostRead).uses)
+      .toEqual(['perm.phoneNet', 'perm.companion', 'perm.mostRead']);
     expect(permissionsOf(['bridge=1.5', 'bridge-uses=show,status'])).toBe(0);
     expect(permissionsOf([])).toBe(0);
   });

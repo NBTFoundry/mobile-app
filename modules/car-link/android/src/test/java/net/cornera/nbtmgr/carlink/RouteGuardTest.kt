@@ -44,6 +44,13 @@ class RouteGuardTest {
         refused("172.16.222.1:$port", "GET", route)
       }
     }
+    // An application's phone page and its events, from either listener.
+    for (port in listOf(8080, 8081)) {
+      for (route in listOf("/v1/companion", "/v1/companion/event")) {
+        assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "POST", route, null))
+        refused("172.16.222.1:$port", "GET", route)
+      }
+    }
     // Developer keys: listed from either listener, added and removed on the worker only.
     for (port in listOf(8080, 8081)) {
       assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "GET", "/v1/keys", null))
