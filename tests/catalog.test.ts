@@ -3,7 +3,7 @@
 import { createHash } from 'crypto';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { CatalogError, onlineUpdate, parseCatalog, releaseFor, type CatalogApp } from '../src/store/catalog';
+import { CATALOG_URL, CatalogError, fetchCatalog, onlineUpdate, parseCatalog, releaseFor, type CatalogApp } from '../src/store/catalog';
 import { downloadRelease } from '../src/store/download';
 
 const files = new Map<string, string>();
@@ -91,6 +91,20 @@ it('reads the published catalog', () => {
   const manager = catalog.apps.find(a => a.id === 'manager')!;
   expect(manager.releases[0]!.files.map(f => f.format)).toEqual([3, 2]);
   expect(catalog.fetchedAt).toBe(5);
+});
+
+it('fetches the catalog past every cache', async () => {
+  const fetched = jest.fn(async () => ({ ok: true, text: async () => JSON.stringify(real) }));
+  const saved = global.fetch;
+  global.fetch = fetched as unknown as typeof fetch;
+  try {
+    expect((await fetchCatalog(7)).fetchedAt).toBe(7);
+  } finally {
+    global.fetch = saved;
+  }
+  const [url, init] = fetched.mock.calls[0] as unknown as [string, RequestInit];
+  expect(url).toBe(`${CATALOG_URL}?t=7`);
+  expect(init.headers).toMatchObject({ 'Cache-Control': 'no-store' });
 });
 
 it('refuses another schema and leaves out a malformed application', () => {

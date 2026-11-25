@@ -148,7 +148,11 @@ export async function fetchCatalog(now = Date.now()): Promise<Catalog> {
   const timer = setTimeout(() => abort.abort(), TIMEOUT_MS);
   let body: string;
   try {
-    const response = await fetch(CATALOG_URL, { signal: abort.signal, headers: { Accept: 'application/json' } });
+    // Pages lets clients keep the file 10 minutes: an unused query and no-store skip every cache.
+    const response = await fetch(`${CATALOG_URL}?t=${now}`, {
+      signal: abort.signal,
+      headers: { Accept: 'application/json', 'Cache-Control': 'no-store' },
+    });
     if (!response.ok) throw new CatalogError('offline');
     body = await response.text();
   } catch (error) {
