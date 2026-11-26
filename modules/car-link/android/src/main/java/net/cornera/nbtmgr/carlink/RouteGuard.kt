@@ -40,6 +40,22 @@ object RouteGuard {
     return p[0] == 10 || (p[0] == 172 && p[1] in 16..31) || (p[0] == 192 && p[1] == 168)
   }
 
+  /** Throws `bad-request` unless `ips` are one or two distinct car addresses. */
+  fun carIps(ips: List<String>): List<String> {
+    if (ips.isEmpty() || ips.size > CAR_ADDRESSES.size || ips.toSet().size != ips.size ||
+      ips.any { it !in CAR_ADDRESSES }) throw LinkException("bad-request")
+    return ips
+  }
+
+  /** Whether car address `ip` is on the phone's IPv4 link `local` (4 bytes) / `prefix`, and is not `local`. */
+  fun onCarLink(local: ByteArray, prefix: Int, ip: String): Boolean {
+    if (local.size != 4 || prefix !in 1..30 || !ipv4.matches(ip)) return false
+    val own = local.fold(0) { acc, b -> (acc shl 8) or (b.toInt() and 0xff) }
+    val car = ip.split('.').fold(0) { acc, p -> (acc shl 8) or p.toInt() }
+    val mask = -1 shl (32 - prefix)
+    return own != car && (own and mask) == (car and mask)
+  }
+
   /** Throws `not-allowed` unless host, method and route are a permitted car request. */
   fun check(host: String, method: String, route: String, deskIp: String?): Target {
     val colon = host.lastIndexOf(':')

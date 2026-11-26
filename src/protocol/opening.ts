@@ -7,6 +7,15 @@ import { LinkError, type CarSession } from './session';
 export const WORKER_PORT = 8080;
 export const DOOR_PORT = 8081;
 
+/** The car's worker listeners, on its two Wi-Fi networks; pairing tries both. */
+export const CAR_WORKERS = ['172.16.222.1:8080', '172.16.224.1:8080'];
+
+/** The car addresses an action talks to: the paired car's, or both while pairing. */
+export function carIps(address?: string): string[] {
+  const hosts = address ? [address] : CAR_WORKERS;
+  return hosts.map(host => host.slice(0, host.lastIndexOf(':')));
+}
+
 export type OpeningEvent =
   | { kind: 'waking' }
   | { kind: 'opening' }

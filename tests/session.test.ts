@@ -2,7 +2,7 @@
 import { randomBytes } from 'node:crypto';
 import { changeSetting, installPackage, listApps, pairPhone, removeApp, StoppedFollowing,
   type Follow } from '../src/protocol/actions';
-import { reachManager, listenerHosts, type OpeningEvent } from '../src/protocol/opening';
+import { carIps, reachManager, listenerHosts, type OpeningEvent } from '../src/protocol/opening';
 import { CarError, CarSession, LinkError, type Link, type LinkRequest, type LinkResponse } from '../src/protocol/session';
 import { bodyDigest, canonicalText, pairingCode } from '../src/protocol/signing';
 import { SoftwareKey, verifyWith } from './support/softwareKey';
@@ -126,6 +126,11 @@ describe('signed session', () => {
 describe('opening the manager', () => {
   const key = new SoftwareKey();
   const hosts = listenerHosts('172.16.222.1:8080');
+
+  it('names the car addresses a join is for', () => {
+    expect(carIps('172.16.224.1:8080')).toEqual(['172.16.224.1']);
+    expect(carIps()).toEqual(['172.16.222.1', '172.16.224.1']);
+  });
 
   it('wakes through the door and waits for the worker', async () => {
     const car = new FakeCar(key, () => [202, 'WAKE\topening\n']);

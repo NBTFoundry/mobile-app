@@ -5,7 +5,7 @@ import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import { CarLink } from '../../modules/car-link';
 import { changeAutostart, changeSetting, installPackage, listApps, pairPhone, readAutostart, readManager,
   readSettings, realWait, removeApp, type Cancel, type Follow } from '../protocol/actions';
-import { listenerHosts, reachManager } from '../protocol/opening';
+import { CAR_WORKERS, carIps, listenerHosts, reachManager } from '../protocol/opening';
 import type { Autostart, Setting, Status } from '../protocol/replies';
 import { CarError, CarSession, LinkError } from '../protocol/session';
 import { cleanPhoneName, keyId } from '../protocol/signing';
@@ -38,7 +38,7 @@ async function wifiPermission(): Promise<void> {
   }
 }
 
-type Network = Pick<CarRecord, 'ssid' | 'passphrase' | 'desk'> & { id?: string };
+type Network = Pick<CarRecord, 'ssid' | 'passphrase' | 'desk'> & { id?: string; address?: string };
 
 /** When the app last let go of the car's network (ms since epoch). */
 let releasedAt = 0;
@@ -92,7 +92,7 @@ async function joinCar(car: Network, onRetry: () => void): Promise<void> {
   try {
     for (let attempt = 0; ; attempt++) {
       try {
-        await CarLink.join(car.ssid, car.passphrase);
+        await CarLink.join(car.ssid, car.passphrase, carIps(car.address));
         setConnection({ state: 'connected', ssid: car.ssid, carId: car.id });
         return;
       } catch (error) {
@@ -229,7 +229,7 @@ export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: nu
       return await onCarNetwork({ ...wifi, desk }, async () => {
         updateActivity(id, { detail: t('op.asking') });
         const signer = deviceSigner(alias, keyId(key.publicKey));
-        const candidates = desk ? [`127.0.0.1:${deskPort}`] : ['172.16.222.1:8080', '172.16.224.1:8080'];
+        const candidates = desk ? [`127.0.0.1:${deskPort}`] : CAR_WORKERS;
         let session: CarSession | undefined;
         for (const host of candidates) {
           const s = new CarSession(nativeLink, signer, host);

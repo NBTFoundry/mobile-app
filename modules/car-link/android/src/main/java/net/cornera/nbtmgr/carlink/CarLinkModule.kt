@@ -49,9 +49,9 @@ class CarLinkModule : Module() {
     Name("CarLink")
     Events("onProgress", "onNetwork")
 
-    AsyncFunction("join") Coroutine { ssid: String, passphrase: String ->
+    AsyncFunction("join") Coroutine { ssid: String, passphrase: String, ips: List<String> ->
       try {
-        network.join(ssid, passphrase)
+        network.join(ssid, passphrase, ips)
         true
       } catch (e: LinkException) {
         throw fail(e)
@@ -107,7 +107,7 @@ class CarLinkModule : Module() {
     val factory: SocketFactory = if (target.desk) {
       SocketFactory.getDefault()
     } else {
-      network.network?.socketFactory ?: throw LinkException("no-network")
+      network.current()?.socketFactory ?: throw LinkException("no-network")
     }
     val body = when {
       r.fileUri != null -> {

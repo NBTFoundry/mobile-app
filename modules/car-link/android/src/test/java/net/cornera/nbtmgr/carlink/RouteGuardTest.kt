@@ -97,4 +97,32 @@ class RouteGuardTest {
     assertFalse(RouteGuard.isPrivateIpv4("172.32.0.1"))
     assertFalse(RouteGuard.isPrivateIpv4("192.168.1.256"))
   }
+
+  @Test fun acceptsOnlyCarAddressesToJoinFor() {
+    assertEquals(listOf("172.16.222.1"), RouteGuard.carIps(listOf("172.16.222.1")))
+    assertEquals(listOf("172.16.222.1", "172.16.224.1"), RouteGuard.carIps(listOf("172.16.222.1", "172.16.224.1")))
+    for (bad in listOf(emptyList(), listOf("192.168.1.1"), listOf("172.16.222.1", "172.16.222.1"),
+      listOf("172.16.222.1", "172.16.224.1", "172.16.222.1"))) {
+      try {
+        RouteGuard.carIps(bad)
+        fail("accepted $bad")
+      } catch (e: LinkException) {
+        assertEquals("bad-request", e.code)
+      }
+    }
+  }
+
+  @Test fun findsTheCarOnThePhonesLink() {
+    val phone = byteArrayOf(172.toByte(), 16, 222.toByte(), 100)
+    assertTrue(RouteGuard.onCarLink(phone, 24, "172.16.222.1"))
+    assertFalse(RouteGuard.onCarLink(phone, 24, "172.16.224.1"))
+    assertTrue(RouteGuard.onCarLink(phone, 16, "172.16.224.1"))
+    // The phone's own address, a host-only prefix, IPv6 or a bad address: never the car.
+    assertFalse(RouteGuard.onCarLink(byteArrayOf(172.toByte(), 16, 222.toByte(), 1), 24, "172.16.222.1"))
+    assertFalse(RouteGuard.onCarLink(phone, 32, "172.16.222.1"))
+    assertFalse(RouteGuard.onCarLink(ByteArray(16), 64, "172.16.222.1"))
+    assertFalse(RouteGuard.onCarLink(phone, 24, "172.16.222.1.5"))
+    // Home Wi-Fi on another range.
+    assertFalse(RouteGuard.onCarLink(byteArrayOf(192.toByte(), 168.toByte(), 1, 20), 24, "172.16.222.1"))
+  }
 }
