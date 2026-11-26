@@ -222,11 +222,14 @@ Google Play builds run on Expo's servers (project `@nbtfoundry/manager`, `eas.js
 
 ```sh
 yarn play                                         # Play bundle, released to internal testers once built
+yarn play:closed                                  # the same, released to closed testing (Google reviews it)
 npx eas-cli build -p android --profile preview    # an APK with an install link
 ```
 
 `yarn play` submits the build when it finishes, with the Play service account key held
-in EAS's credentials. Moving a release past internal testing is done in Play Console.
+in EAS's credentials. A version code goes to one track; Play Console's Promote release
+moves it to another, and to production. Anyone can join closed testing:
+[nbtfoundry.github.io/beta.html](https://nbtfoundry.github.io/beta.html).
 
 The cloud build builds the installer core itself (`eas/build-core.sh`, run as
 `eas-build-post-install`) from the pins in `eas/pins.env`: the installer commit and
