@@ -10,10 +10,11 @@ export const ROUTES = ['/v1/nonce', '/v1/apps', '/v1/settings/read', '/v1/settin
   '/v1/logs/clear', '/v1/logs/manager', '/v1/files/list', '/v1/files/put', '/v1/files/data',
   '/v1/files/remove', '/v1/autostart', '/v1/manager', '/v1/crashes', '/v1/crashes/read',
   '/v1/crashes/clear', '/v1/keys', '/v1/keys/add', '/v1/keys/remove', '/v1/companion',
-  '/v1/companion/event'] as const;
+  '/v1/companion/event', '/v1/selftest'] as const;
 export type Route = (typeof ROUTES)[number];
 
-const GET_ROUTES: readonly Route[] = ['/v1/nonce', '/v1/apps', '/v1/status', '/v1/manager', '/v1/keys'];
+const GET_ROUTES: readonly Route[] = ['/v1/nonce', '/v1/apps', '/v1/status', '/v1/manager', '/v1/keys',
+  '/v1/selftest'];
 
 export function methodFor(route: Route): Method {
   return GET_ROUTES.includes(route) ? 'GET' : 'POST';

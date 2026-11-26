@@ -16,6 +16,7 @@ import { LanguageRow } from '../ui/LanguageRow';
 import { formatDateTime, t } from '../i18n';
 import { CrashesPanel } from './CrashesPanel';
 import { LogView } from './LogView';
+import { SelfTestPanel } from './SelfTestPanel';
 
 export function CarScreen({ state }: { state: AppState }) {
   const colors = useColors();
@@ -30,6 +31,7 @@ export function CarScreen({ state }: { state: AppState }) {
   const [refreshProblem, setRefreshProblem] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [crashes, setCrashes] = useState(false);
+  const [selfTest, setSelfTest] = useState(false);
   const refresh = async () => {
     if (!car) return;
     setRefreshing(true);
@@ -106,6 +108,8 @@ export function CarScreen({ state }: { state: AppState }) {
       ))}</View></> : null}
       {crashes ? <CrashesPanel car={car} onClose={() => setCrashes(false)} />
         : <Row title={t('crash.title')} detail={t('crash.detail')} onPress={() => setCrashes(true)} />}
+      {selfTest ? <SelfTestPanel car={car} onClose={() => setSelfTest(false)} />
+        : <Row title={t('selfTest.title')} detail={t('selfTest.detail')} onPress={() => setSelfTest(true)} />}
       {readingLog ? <Busy text={t('common.gettingLog')} /> : null}
       {log ? <LogView log={log} onClose={() => setLog(undefined)} /> : null}
       {logProblem && !log ? <Body>{logProblem}</Body> : null}

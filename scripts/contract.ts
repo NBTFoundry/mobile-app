@@ -13,7 +13,8 @@ import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 import { addKey, changeAutostart, changeSetting, clearAppLog, clearCrashes, installPackage, listApps, listCrashes, listKeys, pairPhone,
-  readAppLog, readAutostart, readCompanion, readCrash, readManager, readSettings, readSystemLog, removeApp, removeKey, sendCompanionEvent, wake,
+  readAppLog, readAutostart, readCompanion, readCrash, readManager, readSelfTest, readSettings, readSystemLog, removeApp, removeKey,
+  sendCompanionEvent, wake,
   type Follow } from '../src/protocol/actions';
 import { readDeveloperKey } from '../src/protocol/developerKey';
 import { listFiles, removeFile, sendFile } from '../src/protocol/files';
@@ -122,6 +123,9 @@ async function main() {
       const manager = await readManager(session);
       check(manager?.version === 'v1' && manager.sequence === '1' && manager.formats.join() === '1',
         'the car names its manager and the release formats it takes');
+      // No self test run on this car yet (Settings › Self test).
+      const selfTest = await readSelfTest(session);
+      check(selfTest !== null && 'none' in selfTest, 'the car says no self test has run yet');
     }
     await clearAppLog(door, 'test');
     check((await readAppLog(worker, 'test')).size === 0, 'an application log is cleared');

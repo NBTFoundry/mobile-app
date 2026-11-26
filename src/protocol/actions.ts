@@ -6,6 +6,7 @@ import { parseApps, parseAutostart, parseCrashes, parseKeys, parseManager, parse
   type Status, type StatusState, type WakeState } from './replies';
 import { parseCompanion, type CompanionPage } from './companion';
 import { keyAddBody, type DeveloperKey } from './developerKey';
+import { parseSelfTest, type SelfTestReport } from './selfTest';
 import { CarError, type CarSession, type SavedReply } from './session';
 import { pairBody, pairingCode } from './signing';
 
@@ -85,6 +86,16 @@ export function readManagerLog(session: CarSession): Promise<SavedReply> {
 /** An unknown route: 404, or 400 from managers that refuse it while parsing the request. */
 const unknownRoute = (error: unknown) => error instanceof CarError && (error.status === 404
   || error.status === 400 && (error.code === 'route' || error.code === 'invalid-request'));
+
+/** The last self test's report (NBT Manager's docs/self-test.md); null from a manager without it. */
+export async function readSelfTest(session: CarSession): Promise<SelfTestReport | null> {
+  try {
+    return parseSelfTest((await session.ok('/v1/selftest')).body);
+  } catch (error) {
+    if (unknownRoute(error)) return null;
+    throw error;
+  }
+}
 
 /** Crash reports on the car, newest first: all applications' (and NBT Manager's), or `app`'s;
  * null from a manager without them (PROTOCOL.md, "Crash reports"). */

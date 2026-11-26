@@ -11,6 +11,7 @@ while its page is closed.
 flowchart TD
   CAR["Car tab<br/>paired car · installed apps · updates"] --> APP["App details<br/>install / update · settings · logs · remove"]
   CAR --> MANAGE["Car management<br/>rename · forget · logs"]
+  CAR --> SELFTEST["Self test panel<br/>the car's last run · failed, skipped, passed · share"]
   MANAGE --> KEYS["Developer keys<br/>list · add a public key file · remove"]
   CAR --> PAIR["Pair a car<br/>scan the car's code · confirm digits"]
   CAR --> INSTALLER["Install NBT Manager on a car<br/>SSH over a Wi-Fi ENET adapter"]
