@@ -17,9 +17,10 @@ export type NativeLinkRequest = {
 export type NativeSavedReply = { uri: string; size: number; tail: string };
 
 type CarLinkNative = {
-  /** `ips`: the car addresses the requests will go to; a Wi-Fi network another app already
-   * joined on their link is used as it is (wireless phone projection), else the app joins. */
-  join(ssid: string, passphrase: string, ips: string[]): Promise<boolean>;
+  /** Joins the car's Wi-Fi, or uses the one another app already joined (wireless phone
+   * projection, on either of the car's networks). Resolves to the car's address on that
+   * network's link, '' when Android does not tell. */
+  join(ssid: string, passphrase: string): Promise<string>;
   release(): void;
   setDeskIp(ip: string | null): void;
   randomHex(bytes: number): string;

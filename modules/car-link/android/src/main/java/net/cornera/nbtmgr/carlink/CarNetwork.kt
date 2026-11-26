@@ -14,7 +14,8 @@ import kotlinx.coroutines.withContext
 
 /**
  * The car's Wi-Fi as a local-only network for this app. When another app already joined it
- * (wireless phone projection), that network is used as it is (SharedNetwork). Otherwise the app
+ * (wireless phone projection, on either of the car's networks), that network is used as it
+ * is (SharedNetwork). Otherwise the app
  * requests its own: Android shows its Connect dialog the first time, and drops the network as
  * soon as no request holds it, so it is held across actions and released by the app (idle,
  * background, another car).
@@ -23,9 +24,9 @@ class CarNetwork(context: Context) {
   private val connectivity = context.getSystemService(ConnectivityManager::class.java)
   private var callback: ConnectivityManager.NetworkCallback? = null
   private var held: Pair<String, String>? = null
-  /** Another app's network in use, and the car addresses it was found for; never held. */
+  /** Another app's network in use, and the car's address on its link; never held. */
   private var shared: Network? = null
-  private var sharedIps: List<String> = emptyList()
+  private var sharedIp = ""
   /** The join waiting for Android, ended by the first of: available, unavailable, release. */
   private var pending: CancellableContinuation<Network>? = null
   @Volatile var network: Network? = null
@@ -33,28 +34,29 @@ class CarNetwork(context: Context) {
   /** Told "connected", "lost" (Android dropped it) or "released"; no details. */
   var onState: ((String) -> Unit)? = null
 
-  /** `ips`: the car addresses the next requests go to (both while pairing). */
-  suspend fun join(ssid: String, passphrase: String, ips: List<String>): Network {
+  /** Returns the car's address on the network's link ("" when Android does not tell). */
+  suspend fun join(ssid: String, passphrase: String): String {
     if (ssid.isEmpty() || ssid.length > 32 || passphrase.length !in 8..63 ||
       (ssid + passphrase).any { it.code !in 0x20..0x7e }) throw LinkException("bad-request")
-    RouteGuard.carIps(ips)
     val current = network
-    if (current != null && callback != null && held == Pair(ssid, passphrase)) return current
+    if (current != null && callback != null && held == Pair(ssid, passphrase)) return carIp(current)
     val reuse = shared
-    if (reuse != null && ips.all { it in sharedIps } &&
-      withContext(Dispatchers.IO) { SharedNetwork.stillOn(connectivity, reuse, ips) }) return reuse
+    if (reuse != null && carIp(reuse) == sharedIp) return sharedIp
     // A network just let go of (its car may differ) is never taken for another app's.
     release()
-    val found = withContext(Dispatchers.IO) { SharedNetwork.find(connectivity, ips, current) }
+    val found = withContext(Dispatchers.IO) { SharedNetwork.find(connectivity, current) }
     if (found != null) {
-      shared = found
-      sharedIps = ips
-      network = found
+      shared = found.first
+      sharedIp = found.second
+      network = found.first
       onState?.invoke("connected")
-      return found
+      return found.second
     }
-    return request(ssid, passphrase)
+    return carIp(request(ssid, passphrase))
   }
+
+  private suspend fun carIp(n: Network): String =
+    withContext(Dispatchers.IO) { SharedNetwork.carOn(connectivity, n) } ?: ""
 
   private suspend fun request(ssid: String, passphrase: String): Network {
     held = Pair(ssid, passphrase)
@@ -104,7 +106,7 @@ class CarNetwork(context: Context) {
   /** The network for the next request; another app's that went away is given up ("lost"). */
   fun current(): Network? {
     val reuse = shared ?: return network
-    if (SharedNetwork.stillOn(connectivity, reuse, sharedIps)) return reuse
+    if (SharedNetwork.carOn(connectivity, reuse) == sharedIp) return reuse
     if (drop()) onState?.invoke("lost")
     return null
   }
@@ -130,7 +132,7 @@ class CarNetwork(context: Context) {
     callback = null
     held = null
     shared = null
-    sharedIps = emptyList()
+    sharedIp = ""
     network = null
     if (cb != null) {
       try {

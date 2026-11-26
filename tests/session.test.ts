@@ -2,7 +2,7 @@
 import { randomBytes } from 'node:crypto';
 import { changeSetting, installPackage, listApps, pairPhone, removeApp, StoppedFollowing,
   type Follow } from '../src/protocol/actions';
-import { carIps, reachManager, listenerHosts, type OpeningEvent } from '../src/protocol/opening';
+import { atCarIp, pairHosts, reachManager, listenerHosts, type OpeningEvent } from '../src/protocol/opening';
 import { CarError, CarSession, LinkError, type Link, type LinkRequest, type LinkResponse } from '../src/protocol/session';
 import { bodyDigest, canonicalText, pairingCode } from '../src/protocol/signing';
 import { SoftwareKey, verifyWith } from './support/softwareKey';
@@ -127,9 +127,11 @@ describe('opening the manager', () => {
   const key = new SoftwareKey();
   const hosts = listenerHosts('172.16.222.1:8080');
 
-  it('names the car addresses a join is for', () => {
-    expect(carIps('172.16.224.1:8080')).toEqual(['172.16.224.1']);
-    expect(carIps()).toEqual(['172.16.222.1', '172.16.224.1']);
+  it('talks to the car on the network the phone is on', () => {
+    expect(atCarIp('172.16.222.1:8080', '172.16.224.1')).toBe('172.16.224.1:8080');
+    expect(atCarIp('172.16.224.1:8080', '')).toBe('172.16.224.1:8080');
+    expect(pairHosts('172.16.224.1')).toEqual(['172.16.224.1:8080', '172.16.222.1:8080']);
+    expect(pairHosts('')).toEqual(['172.16.222.1:8080', '172.16.224.1:8080']);
   });
 
   it('wakes through the door and waits for the worker', async () => {

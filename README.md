@@ -73,8 +73,9 @@ The phone talks to the car's NBT Manager over the car's Wi-Fi with the paired-ph
 HTTP protocol defined in `NBTFoundry/manager: PROTOCOL.md`. Each request is signed
 with a P-256 key that never leaves the Android Keystore; the car checks the
 signature and asks the driver to approve installs and uninstalls on the iDrive
-screen. When another app is already on the car's Wi-Fi (wireless Android Auto),
-the phone uses that connection instead of joining again
+screen. When another app is already on the car's Wi-Fi (wireless Android Auto,
+on the Wi-Fi Direct group or the CarPlay hotspot), the phone uses that
+connection and the car's address on it instead of joining again
 (`NBTFoundry/manager: docs/android-auto-wifi.md`).
 
 ```mermaid

@@ -49,10 +49,9 @@ class CarLinkModule : Module() {
     Name("CarLink")
     Events("onProgress", "onNetwork")
 
-    AsyncFunction("join") Coroutine { ssid: String, passphrase: String, ips: List<String> ->
+    AsyncFunction("join") Coroutine { ssid: String, passphrase: String ->
       try {
-        network.join(ssid, passphrase, ips)
-        true
+        network.join(ssid, passphrase)
       } catch (e: LinkException) {
         throw fail(e)
       }

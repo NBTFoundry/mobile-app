@@ -10,10 +10,16 @@ export const DOOR_PORT = 8081;
 /** The car's worker listeners, on its two Wi-Fi networks; pairing tries both. */
 export const CAR_WORKERS = ['172.16.222.1:8080', '172.16.224.1:8080'];
 
-/** The car addresses an action talks to: the paired car's, or both while pairing. */
-export function carIps(address?: string): string[] {
-  const hosts = address ? [address] : CAR_WORKERS;
-  return hosts.map(host => host.slice(0, host.lastIndexOf(':')));
+/** `address` (ip:port) at the car's address `ip` on the phone's network, when known: the
+ * manager listens on both of the car's networks, at the same ports. */
+export function atCarIp(address: string, ip: string): string {
+  return ip ? `${ip}${address.slice(address.lastIndexOf(':'))}` : address;
+}
+
+/** Where pairing asks: the worker on the phone's network first, then the others. */
+export function pairHosts(ip: string): string[] {
+  const here = CAR_WORKERS.filter(host => ip && host.startsWith(`${ip}:`));
+  return [...here, ...CAR_WORKERS.filter(host => !here.includes(host))];
 }
 
 export type OpeningEvent =
