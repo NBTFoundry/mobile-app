@@ -17,6 +17,7 @@
     "desk": "python3 scripts/host_car.py",
     "release": "scripts/build-release.sh",
     "play": "npx eas-cli build -p android --profile production --auto-submit --non-interactive --no-wait",
+    "play:closed": "npx eas-cli build -p android --profile production --auto-submit-with-profile closed --non-interactive --no-wait",
     "eas-build-post-install": "eas/build-core.sh"
   },
   "dependencies": {

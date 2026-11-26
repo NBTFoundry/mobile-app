@@ -47,14 +47,17 @@ yarn test:contract                                # protocol against the manager
 
 `yarn play`: the Play bundle, submitted by EAS when it finishes and released
 to internal testers (`eas.json` submit profile; the service account key is in
-EAS's credentials, Submissions slot). `npx eas-cli build -p android --profile
+EAS's credentials, Submissions slot). `yarn play:closed` releases it to closed
+testing instead (track `alpha`, submit profile `closed`; Google reviews each
+closed release). Play refuses a version code twice: a build goes to one track,
+Play Console's Promote release moves it to another. `npx eas-cli build -p android --profile
 preview --non-interactive --no-wait` gives an APK with an install link. Then
 `npx eas-cli build:list` or the build page for status and logs; a build alone
 goes up with `npx eas-cli submit -p android --profile production --id <build>
 --non-interactive`. Commit first: EAS builds the committed tree. A failing
 `eas/build-core.sh` shows in the "Run post-install hook" step. `eas/pins.env`
 moves with a store release (the installer commit, the manager release and its
-SHA-256). Testers, closed testing and production are the user's, in Play Console.
+SHA-256). Testers and production are the user's, in Play Console.
 
 ## Release APK
 
