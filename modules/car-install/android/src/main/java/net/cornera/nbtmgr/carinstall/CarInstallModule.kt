@@ -96,6 +96,7 @@ class CarInstallModule : Module() {
     }
 
     Function("confirmActivation") { approve: Boolean -> current()?.confirmActivation(approve) }
+    Function("confirmRemoveNbtApps") { approve: Boolean -> current()?.confirmRemoveNbtapps(approve) }
     Function("install") { current()?.install() ?: false }
     Function("update") { current()?.update() ?: false }
 
@@ -143,6 +144,8 @@ class CarInstallModule : Module() {
     is InstallerEvent.Detail -> mapOf("type" to "detail", "text" to event.text)
     is InstallerEvent.ConfirmActivation ->
       mapOf("type" to "confirmActivation", "host" to event.host, "hint" to event.hint)
+    is InstallerEvent.ConfirmRemoveNbtApps ->
+      mapOf("type" to "confirmRemoveNbtApps", "agent" to event.agent, "plugin" to event.plugin)
     is InstallerEvent.Phase -> mapOf(
       "type" to "phase", "index" to event.index.toInt(), "count" to event.count.toInt(),
       "label" to event.label, "bytes" to event.bytes.toDouble(),

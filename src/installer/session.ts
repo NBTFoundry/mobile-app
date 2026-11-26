@@ -84,6 +84,12 @@ export function answerActivation(approve: boolean): void {
   set({ ...current(), ask: undefined });
 }
 
+/** The user's answer to "NBTApps is installed: move it aside?" (no stops the operation). */
+export function answerNbtApps(approve: boolean): void {
+  CarInstall.confirmRemoveNbtApps(approve);
+  set({ ...current(), askNbtApps: undefined });
+}
+
 export function install(): void {
   if (CarInstall.install()) set(working(current()));
 }

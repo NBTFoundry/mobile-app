@@ -8,7 +8,7 @@
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
-  answerActivation, askRestart, bundled, connect, defaults, disconnect, dismissRestart, install, runTool, update, useInstaller,
+  answerActivation, answerNbtApps, askRestart, bundled, connect, defaults, disconnect, dismissRestart, install, runTool, update, useInstaller,
 } from '../installer/session';
 import { overall } from '../installer/state';
 import { FetchedLogs, LogPanel } from '../installer/LogPanel';
@@ -79,6 +79,17 @@ export function InstallerScreen() {
           <View style={styles.buttons}>
             <Button label={t('common.cancel')} kind="plain" onPress={() => answerActivation(false)} />
             <Button label={t('installer.turnOn')} onPress={() => answerActivation(true)} />
+          </View>
+        </Panel>
+      ) : null}
+
+      {state.askNbtApps ? (
+        <Panel style={styles.ask}>
+          <Label>{t('installer.nbtAppsQuestion')}</Label>
+          <Body>{t('installer.nbtAppsBody')}</Body>
+          <View style={styles.buttons}>
+            <Button label={t('common.cancel')} kind="plain" onPress={() => answerNbtApps(false)} />
+            <Button label={t('installer.nbtAppsRemove')} onPress={() => answerNbtApps(true)} />
           </View>
         </Panel>
       ) : null}
