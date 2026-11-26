@@ -25,17 +25,6 @@ describe('installer state', () => {
     expect(state.result).toBe('Connected.');
   });
 
-  it('asks before moving NBTApps aside, and forgets the question when the install ends', () => {
-    let state = working(run(started(initialState()), [{ type: 'connected' }, { type: 'target', ok: true }]));
-    state = run(state, [{ type: 'confirmRemoveNbtApps', agent: true, plugin: false }]);
-    expect(state.askNbtApps).toEqual({ agent: true, plugin: false });
-    expect(state.busy).toBe(true);
-    state = run(state, [{ type: 'installFinished', ok: false }]);
-    expect(state.askNbtApps).toBeUndefined();
-    expect(started(run(state, [{ type: 'confirmRemoveNbtApps', agent: true, plugin: true }])).askNbtApps)
-      .toBeUndefined();
-  });
-
   it('shows step and byte progress, and frees the buttons when an install ends', () => {
     let state = working(run(started(initialState()), [{ type: 'connected' }, { type: 'target', ok: true }]));
     expect(state.busy).toBe(true);

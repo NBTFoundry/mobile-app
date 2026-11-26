@@ -30,8 +30,6 @@ export type InstallerState = {
   busy: boolean;
   /** SSH did not answer: enabling it waits for the user. */
   ask?: { host: string; hint: string | null };
-  /** NBTApps is on the head unit: Install or Update waits for "move it aside?". */
-  askNbtApps?: { agent: boolean; plugin: boolean };
   /** The last outcome, in plain words, for the screen. */
   result?: string;
   /** The head unit has to restart to load the new plugin: offer it once nothing runs. */
@@ -62,8 +60,7 @@ export const outcome = (state: InstallerState, text: string, at: number): Instal
 
 /** A connection was started; its events follow. */
 export const started = (state: InstallerState): InstallerState =>
-  ({ ...state, running: true, connected: false, target: false, busy: false, ask: undefined, askNbtApps: undefined,
-    phase: undefined,
+  ({ ...state, running: true, connected: false, target: false, busy: false, ask: undefined, phase: undefined,
     result: undefined, restart: false });
 
 /** An install, update or tool was sent. */
@@ -80,8 +77,6 @@ export function reduce(state: InstallerState, event: InstallerEvent, at: number)
       return line(event.text, true);
     case 'confirmActivation':
       return { ...state, ask: { host: event.host, hint: event.hint } };
-    case 'confirmRemoveNbtApps':
-      return { ...state, askNbtApps: { agent: event.agent, plugin: event.plugin } };
     case 'phase':
       return { ...state, phase: { index: event.index, count: event.count, label: event.label },
         progress: { sent: 0, total: event.bytes } };
@@ -93,12 +88,11 @@ export function reduce(state: InstallerState, event: InstallerEvent, at: number)
       return { ...state, progress: { sent: event.sent, total: event.total } };
     case 'installFinished':
       return { ...said(t(event.ok ? 'installer.installed' : 'installer.installFailed')),
-        busy: false, phase: undefined, askNbtApps: undefined };
+        busy: false, phase: undefined };
     case 'restartNeeded':
       return { ...state, restart: true };
     case 'updateFinished':
-      return { ...said(t(event.ok ? 'installer.updated' : 'installer.updateFailed')), busy: false, phase: undefined,
-        askNbtApps: undefined };
+      return { ...said(t(event.ok ? 'installer.updated' : 'installer.updateFailed')), busy: false, phase: undefined };
     case 'toolFinished':
       return { ...outcome(line(event.text), t(event.ok ? 'installer.done' : 'installer.failed'), at),
         busy: false, phase: undefined };

@@ -6,7 +6,6 @@ export type InstallerEvent =
   | { type: 'message'; text: string }
   | { type: 'detail'; text: string }
   | { type: 'confirmActivation'; host: string; hint: string | null }
-  | { type: 'confirmRemoveNbtApps'; agent: boolean; plugin: boolean }
   | { type: 'phase'; index: number; count: number; label: string; bytes: number }
   | { type: 'connected' }
   | { type: 'target'; ok: boolean }
@@ -35,8 +34,6 @@ type CarInstallNative = {
   /** Holds the Wi-Fi the phone is on and mobile data, then connects in the background. */
   connect(settings: ConnectSettings): Promise<{ addresses: string[]; mobileData: boolean }>;
   confirmActivation(approve: boolean): void;
-  /** The answer to "NBTApps is installed: move it aside?" before Install or Update. */
-  confirmRemoveNbtApps(approve: boolean): void;
   install(): boolean;
   update(): boolean;
   tool(name: InstallTool, text: string | null): boolean;
