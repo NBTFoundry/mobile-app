@@ -20,7 +20,8 @@ export type CatalogFile = { name: string; url: string; size: number; sha256: str
   sequence: string };
 export type CatalogRelease = { version: string; sequence: string; prerelease: boolean; date?: number;
   page?: string; compat: string; bridge?: string; properties: PackageProperty[]; text: string[];
-  files: CatalogFile[] };
+  /** What is new, from the release's page: "### Heading", "- item" or a sentence per line. */
+  notes: string[]; files: CatalogFile[] };
 export type CatalogApp = { id: string; name: string; summary: string; repo: string; license: string;
   category: string; releases: CatalogRelease[] };
 export type Catalog = { generated: number; fetchedAt: number; apps: CatalogApp[] };
@@ -33,6 +34,8 @@ export class CatalogError extends Error {
 }
 
 const PRINTABLE = /^[\x20-\x7e]*$/;
+/** A line of release notes: any script, no control character. */
+const NOTE_LINE = /^[^\x00-\x1f\x7f]{1,300}$/u;
 const ID = /^[a-z0-9_-]{1,48}$/;
 const VERSION = /^[A-Za-z0-9._-]{1,48}$/;
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
@@ -88,6 +91,7 @@ function parseRelease(raw: unknown, repo: string, app: string): CatalogRelease {
       return parsed ? [parsed] : [];
     }),
     text: list(r.text ?? [], 20).filter((l): l is string => typeof l === 'string' && l.length <= 120 && PRINTABLE.test(l)),
+    notes: list(r.notes ?? [], 24).filter((l): l is string => typeof l === 'string' && NOTE_LINE.test(l)),
   };
 }
 

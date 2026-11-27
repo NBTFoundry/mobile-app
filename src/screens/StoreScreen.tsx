@@ -101,7 +101,7 @@ export function StoreScreen({ state, open }: { state: AppState; open?: string })
     {chosen ? <Dialog title={`${chosen.app.name} ${chosen.release.version}`}
       onClose={() => { if (!progress) setSelected(undefined); }}>
       {chosen.release.prerelease ? <Label>{t('store.beta')}</Label> : null}
-      <PackageAbout info={chosen.release} summary={chosen.app.summary} />
+      <PackageAbout info={chosen.release} summary={chosen.app.summary} notes={chosen.release.notes} />
       <Body muted>{t('store.licence', { licence: chosen.app.license })}</Body>
       <Body muted>{t('store.details', { size: formatSize(chosen.release.files.reduce((s, f) => s + f.size, 0)),
         date: chosen.release.date ? formatDate(chosen.release.date) : '–' })}</Body>

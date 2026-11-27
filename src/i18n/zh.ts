@@ -171,7 +171,9 @@ export const zh: Messages = {
   'pair.useCode': "与 {ssid} 配对",
   'pair.scanInstead': "改为扫描代码",
   'whatsNew.title': "新功能",
-  'whatsNew.themes': "全新外观，并按车型提供主题：BMW、MINI 或 Supra。应用跟随车辆显示的主题（在车上：设置 › 主题）。",
+  'whatsNew.notes': "“获取应用”会在“更多详情”中说明每个版本的新内容。",
+  'whatsNew.short': "应用页面更简短：两行简介，其余内容在“更多详情”中。",
+  'whatsNew.restart': "从手机发送的 NBT Manager 更新会立即在车上重新启动 App Manager（NBT Manager 0.5.2 或更高版本）。",
   'whatsNew.ok': "确定",
 
   'perm.uses': "使用：{list}",

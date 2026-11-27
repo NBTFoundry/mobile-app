@@ -46,8 +46,9 @@ flowchart TD
   application *Update online* when the catalog has a newer release than the library, and
   NBT Manager *Up to date* when neither has a newer one.
 - An application's description takes two lines at most, in Get apps' list and on
-  a package's page (`src/ui/about.ts`); *More details* opens the rest: the other
-  paragraphs, the package's properties and its permissions.
+  a package's page (`src/ui/about.ts`); *More details* opens the rest: in Get apps
+  what is new in that release (the catalog's `notes`, from the release's page), then
+  the other paragraphs, the package's properties and its permissions.
 - A package's details list its permissions as the car's review does: "Uses: …"
   and "Can: …" (`src/protocol/permissions.ts`, the manager's `docs/permissions.md`).
 - An application list that could not be read has its own message; a successful

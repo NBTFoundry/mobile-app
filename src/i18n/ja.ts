@@ -171,7 +171,9 @@ export const ja: Messages = {
   'pair.useCode': "{ssid} とペアリング",
   'pair.scanInstead': "コードをスキャンする",
   'whatsNew.title': "新機能",
-  'whatsNew.themes': "新しいデザインと、車に合わせたテーマ：BMW、MINI、Supra。アプリは車が表示しているテーマに従います（車側：設定 › テーマ）。",
+  'whatsNew.notes': "「アプリを入手」では、各バージョンの新機能を「詳細を表示」で確認できます。",
+  'whatsNew.short': "アプリのページを短くしました：説明は2行まで、残りは「詳細を表示」に。",
+  'whatsNew.restart': "スマートフォンから送った NBT Manager の更新は、車の App Manager をすぐに再起動します（NBT Manager 0.5.2 以降）。",
   'whatsNew.ok': "OK",
 
   'perm.uses': "使用：{list}",

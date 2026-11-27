@@ -171,7 +171,9 @@ export const es: Messages = {
   'pair.useCode': "Vincular con {ssid}",
   'pair.scanInstead': "Escanear un código",
   'whatsNew.title': "Novedades",
-  'whatsNew.themes': "Nuevo aspecto, con un tema para tu coche: BMW, MINI o Supra. La app sigue el del coche (en el coche: Ajustes › Tema).",
+  'whatsNew.notes': "El catálogo indica las novedades de cada versión, en Más detalles.",
+  'whatsNew.short': "Páginas de aplicación más cortas: dos líneas de descripción, el resto en Más detalles.",
+  'whatsNew.restart': "Una actualización de NBT Manager enviada desde el teléfono reinicia App Manager en el coche al momento (NBT Manager 0.5.2 o posterior).",
   'whatsNew.ok': "Aceptar",
 
   'perm.uses': "Usa: {list}",

@@ -89,8 +89,19 @@ it('reads the published catalog', () => {
   const catalog = parseCatalog(real, 5);
   expect(catalog.apps.map(a => a.id)).toEqual(expect.arrayContaining(['manager', 'doom']));
   const manager = catalog.apps.find(a => a.id === 'manager')!;
-  expect(manager.releases[0]!.files.map(f => f.name)).toEqual(['nbt-manager-0.3.1.nbtr']);
+  expect(manager.releases[0]!.files.map(f => f.name)).toEqual(['nbt-manager-0.5.5.nbtr']);
+  expect(manager.releases[0]!.notes[0]).toBe('### New');
   expect(catalog.fetchedAt).toBe(5);
+});
+
+it('keeps the plain lines of a release\'s notes and drops the others', () => {
+  const entry = app('doom', [{ version: '1.0.0', sequence: '1000000' }]) as { releases: Record<string, unknown>[] };
+  entry.releases[0]!.notes = ['### New', '- Settings \u203a Theme', 'tab\there', '', 7, 'x'.repeat(301),
+    ...Array.from({ length: 30 }, (_, i) => `- item ${i}`)];
+  const notes = catalogOf(entry).apps[0]!.releases[0]!.notes;
+  expect(notes.slice(0, 3)).toEqual(['### New', '- Settings \u203a Theme', '- item 0']);
+  expect(notes.length).toBe(20);
+  expect(catalogOf(app('doom', [{ version: '1.0.0', sequence: '1000000' }])).apps[0]!.releases[0]!.notes).toEqual([]);
 });
 
 it('fetches the catalog past every cache', async () => {

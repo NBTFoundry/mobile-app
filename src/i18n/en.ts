@@ -173,7 +173,9 @@ export const en = {
   'pair.useCode': "Pair with {ssid}",
   'pair.scanInstead': "Scan a code instead",
   'whatsNew.title': "What’s new",
-  'whatsNew.themes': "A new look, with a theme for your car: BMW, MINI or Supra. The app follows the one the car shows (on the car: Settings › Theme).",
+  'whatsNew.notes': "Get apps says what is new in each release, under More details.",
+  'whatsNew.short': "Shorter application pages: two lines of description, the rest under More details.",
+  'whatsNew.restart': "A manager update sent from the phone restarts App Manager in the car at once (NBT Manager 0.5.2 or later).",
   'whatsNew.ok': "OK",
 
   'perm.uses': "Uses: {list}",
