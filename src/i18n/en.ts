@@ -378,6 +378,7 @@ export const en = {
   'selfTest.check.runner': 'runner',
   'selfTest.check.files': 'files folder',
   'selfTest.check.space': 'free space',
+  'selfTest.check.audio': 'audio output',
   'selfTest.check.start': 'start',
   'selfTest.check.bridge': 'capabilities',
   'selfTest.check.screen': 'screen',

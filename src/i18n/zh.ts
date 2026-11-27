@@ -376,6 +376,7 @@ export const zh: Messages = {
   'selfTest.check.runner': '运行器',
   'selfTest.check.files': '文件夹',
   'selfTest.check.space': '可用空间',
+  'selfTest.check.audio': '音频输出',
   'selfTest.check.start': '启动',
   'selfTest.check.bridge': '功能',
   'selfTest.check.screen': '屏幕',

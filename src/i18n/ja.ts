@@ -376,6 +376,7 @@ export const ja: Messages = {
   'selfTest.check.runner': 'ランナー',
   'selfTest.check.files': 'ファイルフォルダー',
   'selfTest.check.space': '空き容量',
+  'selfTest.check.audio': '音声出力',
   'selfTest.check.start': '起動',
   'selfTest.check.bridge': '機能',
   'selfTest.check.screen': '画面',

@@ -17,7 +17,8 @@ const GROUPS: Record<string, Key> = {
 };
 const CHECKS: Record<string, Key> = {
   release: 'selfTest.check.release', runner: 'selfTest.check.runner', files: 'selfTest.check.files',
-  space: 'selfTest.check.space', start: 'selfTest.check.start', bridge: 'selfTest.check.bridge',
+  space: 'selfTest.check.space', audio: 'selfTest.check.audio', start: 'selfTest.check.start',
+  bridge: 'selfTest.check.bridge',
   screen: 'selfTest.check.screen', sound: 'selfTest.check.sound', status: 'selfTest.check.status',
   cardata: 'selfTest.check.cardata', diag: 'selfTest.check.diag', phone: 'selfTest.check.phone',
   controller: 'selfTest.check.controller',

@@ -376,6 +376,7 @@ export const fr: Messages = {
   'selfTest.check.runner': 'runner',
   'selfTest.check.files': 'dossier des fichiers',
   'selfTest.check.space': 'espace libre',
+  'selfTest.check.audio': 'sortie audio',
   'selfTest.check.start': 'démarrage',
   'selfTest.check.bridge': 'capacités',
   'selfTest.check.screen': 'écran',

@@ -376,6 +376,7 @@ export const it: Messages = {
   'selfTest.check.runner': 'runner',
   'selfTest.check.files': 'cartella dei file',
   'selfTest.check.space': 'spazio libero',
+  'selfTest.check.audio': 'uscita audio',
   'selfTest.check.start': 'avvio',
   'selfTest.check.bridge': 'funzionalità',
   'selfTest.check.screen': 'schermo',
