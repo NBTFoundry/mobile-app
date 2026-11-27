@@ -12,6 +12,7 @@ export const ja: Messages = {
   'common.later': '後で',
   'common.share': '共有',
   'common.selected': '選択中',
+  'common.upToDate': '最新です',
   'common.connecting': '接続中…',
   'common.connected': '接続しました。',
   'common.gettingLog': 'ログを取得中…',
@@ -404,6 +405,7 @@ export const ja: Messages = {
   'op.sending': 'パッケージを送信中です。',
   'op.managerAccepted': '完了しました。次に App Manager を開いたときに起動します。',
   'op.managerRestarts': '完了しました。NBT Manager は新しいバージョンで再起動します。',
+  'op.managerRestarting': '車両で NBT Manager を再起動しています…',
   'op.uninstallTitle': '{app} をアンインストール',
   'op.wifiLost': 'Wi-Fi が切断されました。',
 

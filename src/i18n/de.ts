@@ -12,6 +12,7 @@ export const de: Messages = {
   'common.later': 'Später',
   'common.share': 'Teilen',
   'common.selected': 'Ausgewählt',
+  'common.upToDate': 'Aktuell',
   'common.connecting': 'Verbindung wird hergestellt…',
   'common.connected': 'Verbunden.',
   'common.gettingLog': 'Protokoll wird abgerufen…',
@@ -404,6 +405,7 @@ export const de: Messages = {
   'op.sending': 'Paket wird gesendet.',
   'op.managerAccepted': 'Erledigt. Er startet beim nächsten Öffnen von App Manager.',
   'op.managerRestarts': 'Erledigt. NBT Manager startet jetzt damit neu.',
+  'op.managerRestarting': 'NBT Manager startet im Auto neu…',
   'op.uninstallTitle': '{app} deinstallieren',
   'op.wifiLost': 'WLAN verloren.',
 

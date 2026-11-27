@@ -114,8 +114,10 @@ export function describeStatus(status: Status): string {
 
 /** A manager release the driver approved: from 0.5.2 the car starts it at once
  * ("NBT Manager <version> starts in a moment"), before that at the next opening. */
+export const managerRestarts = (status: Status) => status.message.endsWith(' starts in a moment');
+
 export function describeManagerAccepted(status: Status): string {
-  return t(status.message.endsWith(' starts in a moment') ? 'op.managerRestarts' : 'op.managerAccepted');
+  return t(managerRestarts(status) ? 'op.managerRestarts' : 'op.managerAccepted');
 }
 
 export function describeOpening(event: OpeningEvent): string {

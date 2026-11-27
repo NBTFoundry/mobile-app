@@ -14,6 +14,7 @@ export const en = {
   'common.later': 'Later',
   'common.share': 'Share',
   'common.selected': 'Selected',
+  'common.upToDate': 'Up to date',
   'common.connecting': 'Connecting…',
   'common.connected': 'Connected.',
   'common.gettingLog': 'Getting the log…',
@@ -406,6 +407,7 @@ export const en = {
   'op.sending': 'Sending the package.',
   'op.managerAccepted': 'Done. It starts next time App Manager opens.',
   'op.managerRestarts': 'Done. NBT Manager restarts with it now.',
+  'op.managerRestarting': 'NBT Manager restarts on the car…',
   'op.uninstallTitle': 'Uninstall {app}',
   'op.wifiLost': 'Wi-Fi lost.',
 

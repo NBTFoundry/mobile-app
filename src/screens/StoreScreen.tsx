@@ -49,7 +49,11 @@ export function StoreScreen({ state, open }: { state: AppState; open?: string })
     const entry = newestFor(state.library, app.id);
     return entry ? compareU64(entry.info.sequence, sequence) >= 0 : undefined;
   };
+  /** What the chosen car runs of an application: the manager's release or an installed app. */
+  const onCar = (id: string) => (id === 'manager' ? state.car?.manager : state.car?.apps?.find(a => a.id === id)) ?? undefined;
   const tagFor = (app: CatalogApp, sequence: string) => {
+    const running = onCar(app.id);
+    if (running && compareU64(running.sequence, sequence) >= 0) return { text: t('common.upToDate'), color: colors.ok };
     const held = holds(app, sequence);
     if (held) return { text: t('store.inLibrary'), color: colors.ok };
     if (held === false) return { text: t('store.update'), color: colors.accent };

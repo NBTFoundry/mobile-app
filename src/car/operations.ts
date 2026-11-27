@@ -15,7 +15,7 @@ import { forgetCar, loadCars, newCarId, saveCar, rememberApps, type CarRecord } 
 import { appLabel, packageFile, type LibraryEntry } from '../store/library';
 import { t, tn } from '../i18n';
 import { setConnection } from './connection';
-import { describeError, describeManagerAccepted, describeOpening, describeStatus } from './messages';
+import { describeError, describeManagerAccepted, describeOpening, describeStatus, managerRestarts } from './messages';
 import { createKey, deviceSigner, linkCode, nativeLink, removeKey } from './nativeLink';
 import { busy, serialized } from './queue';
 import { IDLE_RELEASE_MS, releaseDelay } from './networkHold';
@@ -313,6 +313,9 @@ export function applySetting(car: CarRecord, app: string, setting: Setting, valu
     }, id));
 }
 
+/** The car shows an approved manager update for 3 s, then stages and starts it (on trial). */
+const MANAGER_RESTART_MS = 8000;
+
 /** The worker, once App Manager is open on the car: installs, removals and files need it. */
 export function reachWorker(car: CarRecord, id: number, cancel: Cancel): Promise<CarSession> {
   const { worker, door } = sessions(car);
@@ -338,12 +341,22 @@ export function install(car: CarRecord, entry: LibraryEntry,
       updateActivity(id, { detail: t('op.sending'), progress: 0 });
       return installPackage(worker, { uri: packageFile(entry.sha256).uri, size: entry.size, sha256: entry.sha256 },
         (sent, total) => updateActivity(id, { progress: total ? sent / total : 0 }), follow(id, cancel));
-    // The car keeps an approved manager release: a manager from 0.5.2 starts it at once
-    // ("… starts in a moment"), an older one at the next opening.
-    }).then(result => (manager && result.phase === 'done'
-      ? { ...result, detail: describeManagerAccepted(result.value) }
-      : result)), id),
+    }).then(result => (manager && result.phase === 'done' ? afterManagerUpdate(car, id, cancel, result) : result)), id),
   onStarted);
+}
+
+/** The car keeps an approved manager release: a manager from 0.5.2 starts it at once
+ * ("… starts in a moment"), an older one at the next opening. Once it has restarted, the car's
+ * release is read again, so that its pages do not offer the release it now runs. */
+async function afterManagerUpdate<T extends { value: Status; phase: ActivityPhase; detail: string }>(
+  car: CarRecord, id: number, cancel: Cancel, result: T): Promise<T> {
+  const done = { ...result, detail: describeManagerAccepted(result.value) };
+  if (!managerRestarts(result.value)) return done;
+  updateActivity(id, { detail: t('op.managerRestarting') });
+  await realWait(MANAGER_RESTART_MS);
+  // Best effort, never a wait for the driver: the car's pages read it again at the next refresh.
+  if (!cancel.cancelled) await anyListener(car).then(session => remember(car, session)).catch(() => undefined);
+  return done;
 }
 
 export function uninstall(car: CarRecord, app: string): Promise<Status | undefined> {

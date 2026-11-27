@@ -41,8 +41,10 @@ flowchart TD
 - Get apps reads `https://nbtfoundry.github.io/catalog.json` over the phone's internet
   connection when it opens (kept 10 minutes) or on Refresh; nothing else goes online.
   A download lands in the library like a picked file, checked against the catalog's
-  size and SHA-256; betas (pre-releases) show only when chosen. The car page tags an
-  application *Update online* when the catalog has a newer release than the library.
+  size and SHA-256; betas (pre-releases) show only when chosen, and a release the chosen
+  car already runs (or an older one) is tagged *Up to date*. The car page tags an
+  application *Update online* when the catalog has a newer release than the library, and
+  NBT Manager *Up to date* when neither has a newer one.
 - A package's details list its permissions as the car's review does: "Uses: …"
   and "Can: …" (`src/protocol/permissions.ts`, the manager's `docs/permissions.md`).
 - An application list that could not be read has its own message; a successful
@@ -51,7 +53,9 @@ flowchart TD
 - App details offer the newest eligible package as the main install or update
   action. Equal and older sequences are shown for information. The car still
   checks its own high-water mark and decides whether to accept a file. NBT
-  Manager releases use their own update flow.
+  Manager releases use their own update flow, compared with the release the car
+  said it runs; after an update the car starts at once (0.5.2), the phone reads
+  that release again some seconds later.
 - Settings load on request. Current values appear in rows, with the choices in a
   modal. Package details show file name, version, size, sequence and date added.
 - Phone page (an installed application whose Library package declares

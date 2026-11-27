@@ -12,6 +12,7 @@ export const es: Messages = {
   'common.later': 'Más tarde',
   'common.share': 'Compartir',
   'common.selected': 'Seleccionado',
+  'common.upToDate': 'Actualizado',
   'common.connecting': 'Conectando…',
   'common.connected': 'Conectado.',
   'common.gettingLog': 'Obteniendo el registro…',
@@ -404,6 +405,7 @@ export const es: Messages = {
   'op.sending': 'Enviando el paquete.',
   'op.managerAccepted': 'Hecho. Se inicia la próxima vez que se abra App Manager.',
   'op.managerRestarts': 'Hecho. NBT Manager se reinicia ahora con esta versión.',
+  'op.managerRestarting': 'NBT Manager se reinicia en el coche…',
   'op.uninstallTitle': 'Desinstalar {app}',
   'op.wifiLost': 'Wi-Fi perdido.',
 

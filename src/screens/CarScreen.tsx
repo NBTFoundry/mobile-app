@@ -95,8 +95,10 @@ export function CarScreen({ state }: { state: AppState }) {
         : !apps.length ? <Body muted>{t('car.noApps')}</Body> : null}
       {manager ? <Row title={appLabel('manager')} detail={manager.version}
         tag={managerChoice(library, manager) ? t('car.updateAvailable')
-          : onlineUpdate(state.catalog, { id: 'manager', ...manager, running: true }, betas) ? t('car.updateOnline') : undefined}
-        tagColor={colors.accent}
+          : onlineUpdate(state.catalog, { id: 'manager', ...manager, running: true }, betas) ? t('car.updateOnline')
+          : t('common.upToDate')}
+        tagColor={managerChoice(library, manager) || onlineUpdate(state.catalog, { id: 'manager', ...manager, running: true }, betas)
+          ? colors.accent : colors.ok}
         onPress={() => state.go({ tab: 'car', app: 'manager' })} /> : null}
       <View>{apps.map(app => <Row key={app.id} title={appLabel(app.id)} detail={app.version}
         tag={updateAvailable(library, app) ? t('car.updateAvailable')

@@ -108,7 +108,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
           onPress={() => void update(latest)} />
         <Body muted>{t('app.confirmOnCar')}</Body>
       </> : <>
-        <Body muted>{t(packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
+        <Body muted>{t(known && !offerOnline ? 'common.upToDate' : packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
         <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />
       </>}
       {offerOnline ? <>
@@ -120,11 +120,12 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
       <Row title={t('app.versions')} expanded={versions} detail={tn('app.versionsCount', packages.length)}
         onPress={() => setVersions(!versions)} />
       {versions ? <View>{packages.map(entry => {
-        const order = installed ? compareU64(entry.info.sequence, installed.sequence) : 1;
-        const eligible = manager || order > 0;
+        // The manager is not in the car's list: its release, when the car said it, stands in.
+        const order = known ? compareU64(entry.info.sequence, known.sequence) : 1;
+        const eligible = order > 0;
         return <Row key={entry.sha256} title={entry.info.version}
           detail={t('app.sequence', { sequence: entry.info.sequence })}
-          tag={t(eligible ? (installed || manager ? 'app.tagUpdate' : 'app.tagInstall') : order === 0 ? 'app.tagInstalled' : 'app.tagOlder')}
+          tag={t(eligible ? (known || manager ? 'app.tagUpdate' : 'app.tagInstall') : order === 0 ? 'app.tagInstalled' : 'app.tagOlder')}
           onPress={eligible ? () => void update(entry) : undefined} />;
       })}</View> : null}
     </> : null}

@@ -12,6 +12,7 @@ export const zh: Messages = {
   'common.later': '稍后',
   'common.share': '分享',
   'common.selected': '已选择',
+  'common.upToDate': '已是最新',
   'common.connecting': '正在连接…',
   'common.connected': '已连接。',
   'common.gettingLog': '正在获取日志…',
@@ -404,6 +405,7 @@ export const zh: Messages = {
   'op.sending': '正在发送软件包。',
   'op.managerAccepted': '已完成。下次打开 App Manager 时启动。',
   'op.managerRestarts': '已完成。NBT Manager 正在以新版本重新启动。',
+  'op.managerRestarting': 'NBT Manager 正在车上重新启动…',
   'op.uninstallTitle': '卸载 {app}',
   'op.wifiLost': 'Wi-Fi 已断开。',
 
