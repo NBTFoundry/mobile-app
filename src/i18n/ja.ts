@@ -64,7 +64,6 @@ export const ja: Messages = {
   'app.more': 'その他',
   'app.installedVersion': 'インストール済み {version}',
   'app.managerUpdate': 'NBT Manager のアップデート',
-  'app.managerUnreadable': 'この車の NBT Manager は古いため、電話から {version} に更新できません。一度インストーラーで更新してください。以降はここから更新できます。',
   'app.ready': 'インストールの準備ができています',
   'app.available': '利用可能 {version}',
   'app.updateTo': '{version} にアップデート',

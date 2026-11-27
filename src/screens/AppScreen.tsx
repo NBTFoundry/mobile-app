@@ -40,9 +40,8 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const manager = appId === 'manager';
   const packages = state.library.filter(e => e.info.app === appId)
     .sort((a, b) => compareU64(b.info.sequence, a.info.sequence));
-  // The manager: the newest release, when the car reads its format (managerChoice).
-  const choice = manager ? managerChoice(state.library, car.manager) : undefined;
-  const latest = manager ? choice?.next : packages[0];
+  // The manager: the newest release, when newer than the car runs (managerChoice).
+  const latest = manager ? managerChoice(state.library, car.manager) : packages[0];
   const canInstall = latest && (manager || !installed || compareU64(latest.info.sequence, installed.sequence) > 0);
   const known = installed ?? (manager && car.manager ? car.manager : undefined);
   const betas = useBetas();
@@ -108,9 +107,6 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
         <Button label={t(manager || installed ? 'app.updateTo' : 'app.installVersion', { version: latest.info.version })}
           onPress={() => void update(latest)} />
         <Body muted>{t('app.confirmOnCar')}</Body>
-      </> : choice?.unreadable ? <>
-        <Body>{t('app.managerUnreadable', { version: choice.unreadable.info.version })}</Body>
-        <Button label={t('installer.title')} kind="plain" onPress={() => state.go({ tab: 'car', installer: true })} />
       </> : <>
         <Body muted>{t(packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
         <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />

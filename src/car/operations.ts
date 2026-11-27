@@ -213,7 +213,7 @@ export async function anyListener(car: CarRecord): Promise<CarSession> {
 
 async function remember(car: CarRecord, session: CarSession): Promise<CarRecord> {
   const apps = await listApps(session);
-  // The release formats the car reads; unread on a failure.
+  // The car's manager release; unread on a failure.
   const manager = await readManager(session).catch(() => undefined);
   // The theme its screen shows, which this app then takes; unread on a failure or an older manager.
   const theme = await readTheme(session).catch(() => undefined);

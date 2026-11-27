@@ -163,19 +163,9 @@ export function updateAvailable(entries: LibraryEntry[], app: CarApp): boolean {
   return !!newest && compareU64(newest.info.sequence, app.sequence) > 0;
 }
 
-/**
- * The manager release to send to a car: the newest, when it is newer than the car runs and in a
- * format the car reads (up to NBTRLS2 for a manager without `/v1/manager`, `car` null);
- * `unreadable` when the car does not read its format (it updates once with the installer).
- * Unknown car (undefined): the newest.
- */
-export function managerChoice(entries: LibraryEntry[], car: CarManager | null | undefined):
-  { next?: LibraryEntry; unreadable?: LibraryEntry } {
-  const newest = entries.filter(e => e.info.app === 'manager')
-    .sort((a, b) => compareU64(b.info.sequence, a.info.sequence) || b.addedAt - a.addedAt)[0];
-  if (!newest) return {};
-  if (car === undefined) return { next: newest };
-  if (car && compareU64(newest.info.sequence, car.sequence) <= 0) return {};
-  const formats = car ? car.formats : [1, 2];
-  return formats.includes(newest.info.format ?? 1) ? { next: newest } : { unreadable: newest };
+/** The manager release to send to a car: the newest, when it is newer than the car runs (or the
+ * car's release is unknown). */
+export function managerChoice(entries: LibraryEntry[], car: CarManager | null | undefined): LibraryEntry | undefined {
+  const newest = newestFor(entries, 'manager');
+  return newest && (!car || compareU64(newest.info.sequence, car.sequence) > 0) ? newest : undefined;
 }

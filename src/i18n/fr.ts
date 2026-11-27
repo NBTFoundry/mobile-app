@@ -64,7 +64,6 @@ export const fr: Messages = {
   'app.more': 'Plus',
   'app.installedVersion': 'Installée : {version}',
   'app.managerUpdate': 'Mise à jour de NBT Manager',
-  'app.managerUnreadable': 'Le NBT Manager de cette voiture est trop ancien pour passer à {version} depuis le téléphone. Mettez-le à jour une fois avec l’installateur ; les mises à jour suivantes se font d’ici.',
   'app.ready': 'Prête à installer',
   'app.available': 'Disponible : {version}',
   'app.updateTo': 'Mettre à jour vers {version}',

@@ -64,7 +64,6 @@ export const zh: Messages = {
   'app.more': '更多',
   'app.installedVersion': '已安装 {version}',
   'app.managerUpdate': 'NBT Manager 更新',
-  'app.managerUnreadable': '此车的 NBT Manager 版本过旧，无法从手机更新到 {version}。请先用安装程序更新一次，之后即可在此更新。',
   'app.ready': '可以安装',
   'app.available': '可用 {version}',
   'app.updateTo': '更新到 {version}',

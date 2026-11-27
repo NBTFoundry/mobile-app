@@ -66,7 +66,6 @@ export const en = {
   'app.more': 'More',
   'app.installedVersion': 'Installed {version}',
   'app.managerUpdate': 'NBT Manager update',
-  'app.managerUnreadable': 'This car’s NBT Manager is too old to update to {version} from the phone. Update it once with the installer; later updates work from here.',
   'app.ready': 'Ready to install',
   'app.available': 'Available {version}',
   'app.updateTo': 'Update to {version}',

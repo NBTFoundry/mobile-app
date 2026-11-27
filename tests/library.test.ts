@@ -113,25 +113,22 @@ it('keeps one manager release, the newest', async () => {
 });
 
 describe('managerChoice', () => {
-  const entry = (version: string, sequence: string, format: number, addedAt = 0): LibraryEntry => ({
+  const entry = (version: string, sequence: string, addedAt = 0): LibraryEntry => ({
     sha256: version.padEnd(64, '0'), fileName: `${version}.nbtr`, size: 1, addedAt,
-    info: { app: 'manager', version, sequence, compat: '', payloadSize: 0, payloadSha256: '', settings: [], format },
+    info: { app: 'manager', version, sequence, compat: '', payloadSize: 0, payloadSha256: '', settings: [], format: 3 },
   });
-  const full = entry('dev126', '126', 3);
+  const full = entry('dev126', '126');
   const car = { version: 'dev123', sequence: '123', formats: [1, 2, 3] };
 
-  it('sends the newest release when the car reads its format', () => {
-    expect(managerChoice([entry('dev120', '120', 2), full], car)).toEqual({ next: full });
-  });
-  it('says when the car does not read its format', () => {
-    expect(managerChoice([full], null)).toEqual({ unreadable: full });
-    expect(managerChoice([full], { ...car, formats: [1, 2] })).toEqual({ unreadable: full });
+  it('sends the newest release when it is newer than the car runs', () => {
+    expect(managerChoice([entry('dev120', '120'), full], car)).toBe(full);
   });
   it('offers nothing when the car runs it or newer', () => {
-    expect(managerChoice([full], { ...car, version: 'dev126', sequence: '126' })).toEqual({});
-    expect(managerChoice([], car)).toEqual({});
+    expect(managerChoice([full], { ...car, version: 'dev126', sequence: '126' })).toBeUndefined();
+    expect(managerChoice([], car)).toBeUndefined();
   });
-  it('offers the newest when the car is unknown', () => {
-    expect(managerChoice([full], undefined)).toEqual({ next: full });
+  it('offers the newest when the car\'s release is unknown', () => {
+    expect(managerChoice([full], undefined)).toBe(full);
+    expect(managerChoice([full], null)).toBe(full);
   });
 });
