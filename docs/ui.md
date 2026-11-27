@@ -29,7 +29,7 @@ flowchart TD
   capital labels after a slanted bar. Shared semantic colours cover text,
   input fields, logs, status and dialogs (`src/ui/palettes.ts`).
 - Three themes, one per make: BMW (blue, an orange bar, square corners), MINI
-  (teal, round) and Supra (red, sharp). The app takes the selected car's, the
+  (blue, round) and Supra (orange-red, sharp). The app takes the selected car's, the
   one its own screen shows (the car's Settings › Theme, Automatic by its
   make): read with the application list (`GET /v1/theme`) and kept with the
   car. BMW's without a car, or with a manager that does not say.
