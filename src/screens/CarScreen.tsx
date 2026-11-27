@@ -7,7 +7,7 @@ import { useConnection } from '../car/connection';
 import { fetchManagerLog, fetchSystemLog, type CarLog, type LogResult } from '../car/logs';
 import { connectCar, refreshApps } from '../car/operations';
 import type { CarRecord } from '../store/cars';
-import { onlineUpdate } from '../store/catalog';
+import { listsNewest, onlineUpdate } from '../store/catalog';
 import { appLabel, managerChoice, newestFor, updateAvailable } from '../store/library';
 import { useBetas } from '../store/preferences';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, useColors, useStyles } from '../ui/kit';
@@ -32,6 +32,7 @@ export function CarScreen({ state }: { state: AppState }) {
   const [refreshing, setRefreshing] = useState(false);
   const [crashes, setCrashes] = useState(false);
   const [selfTest, setSelfTest] = useState(false);
+  const [opened] = useState(() => Date.now());
   const refresh = async () => {
     if (!car) return;
     setRefreshing(true);
@@ -96,7 +97,8 @@ export function CarScreen({ state }: { state: AppState }) {
       {manager ? <Row title={appLabel('manager')} detail={manager.version}
         tag={managerChoice(library, manager) ? t('car.updateAvailable')
           : onlineUpdate(state.catalog, { id: 'manager', ...manager, running: true }, betas) ? t('car.updateOnline')
-          : t('common.upToDate')}
+          // Only a catalog read lately can say so.
+          : listsNewest(state.catalog, 'manager', opened) ? t('common.upToDate') : undefined}
         tagColor={managerChoice(library, manager) || onlineUpdate(state.catalog, { id: 'manager', ...manager, running: true }, betas)
           ? colors.accent : colors.ok}
         onPress={() => state.go({ tab: 'car', app: 'manager' })} /> : null}

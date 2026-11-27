@@ -3,7 +3,7 @@
 import { createHash } from 'crypto';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { CATALOG_URL, CatalogError, fetchCatalog, onlineUpdate, parseCatalog, releaseFor, type CatalogApp } from '../src/store/catalog';
+import { CATALOG_CURRENT_MS, CATALOG_URL, CatalogError, fetchCatalog, listsNewest, onlineUpdate, parseCatalog, releaseFor, type CatalogApp } from '../src/store/catalog';
 import { downloadRelease } from '../src/store/download';
 
 const files = new Map<string, string>();
@@ -126,6 +126,15 @@ it('refuses another schema and leaves out a malformed application', () => {
   otherRepo.releases[0]!.files[0]!.url = 'https://github.com/someone/else/releases/download/v1.0.0/snes9x-1.0.0.nbt';
   const catalog = catalogOf(elsewhere, otherRepo, app('gauges', [{ version: '1.0.0', sequence: '1000000' }]));
   expect(catalog.apps.map(a => a.id)).toEqual(['gauges']);
+});
+
+it('says what is newest only from a catalog read within a day that lists the application', () => {
+  const catalog = catalogOf(app('doom', [{ version: '1.0.0', sequence: '1000000' }]), app('gauges', []));
+  expect(listsNewest(catalog, 'doom', catalog.fetchedAt + CATALOG_CURRENT_MS - 1)).toBe(true);
+  expect(listsNewest(catalog, 'doom', catalog.fetchedAt + CATALOG_CURRENT_MS)).toBe(false);
+  expect(listsNewest(catalog, 'gauges', catalog.fetchedAt)).toBe(false);
+  expect(listsNewest(catalog, 'snes9x', catalog.fetchedAt)).toBe(false);
+  expect(listsNewest(undefined, 'doom', 0)).toBe(false);
 });
 
 it('offers the newest stable release, or the newest with betas', () => {

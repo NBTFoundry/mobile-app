@@ -131,6 +131,16 @@ export function onlineUpdate(catalog: Catalog | undefined, app: CarApp, betas: b
   return release && compareU64(release.sequence, app.sequence) > 0 ? release : undefined;
 }
 
+/** A catalog read longer ago does not say what is newest. */
+export const CATALOG_CURRENT_MS = 24 * 3_600_000;
+
+/** Whether the catalog can tell that nothing newer than `id`'s listed release exists:
+ * read within a day, and listing a release of it. */
+export function listsNewest(catalog: Catalog | undefined, id: string, now: number): boolean {
+  return !!catalog && now - catalog.fetchedAt < CATALOG_CURRENT_MS
+    && catalog.apps.some(a => a.id === id && a.releases.length > 0);
+}
+
 const cacheFile = () => new File(Paths.document, 'catalog.json');
 
 /** The catalog read last time, if any. */

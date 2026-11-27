@@ -44,7 +44,8 @@ flowchart TD
   size and SHA-256; betas (pre-releases) show only when chosen, and a release the chosen
   car already runs (or an older one) is tagged *Up to date*. The car page tags an
   application *Update online* when the catalog has a newer release than the library, and
-  NBT Manager *Up to date* when neither has a newer one.
+  NBT Manager *Up to date* when neither has a newer one and the catalog was read
+  within a day (`listsNewest`); an application's page says so on the same terms.
 - An application's description takes two lines at most, in Get apps' list and on
   a package's page (`src/ui/about.ts`); *More details* opens the rest: in Get apps
   what is new in that release (the catalog's `notes`, from the release's page), then

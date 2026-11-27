@@ -9,7 +9,7 @@ import { compareU64 } from '../protocol/bytes';
 import { PERM } from '../protocol/permissions';
 import type { Autostart, Setting } from '../protocol/replies';
 import type { CarRecord } from '../store/cars';
-import { onlineUpdate } from '../store/catalog';
+import { listsNewest, onlineUpdate } from '../store/catalog';
 import { appLabel, managerChoice, type LibraryEntry } from '../store/library';
 import { useBetas } from '../store/preferences';
 import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
@@ -34,6 +34,7 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
   const [problem, setProblem] = useState<string>();
   const [busy, setBusy] = useState<string>();
   const [versions, setVersions] = useState(false);
+  const [opened] = useState(() => Date.now());
   /** An install or update followed in a modal. */
   const [following, setFollowing] = useState<number>();
   const installed = car.apps?.find(a => a.id === appId);
@@ -108,7 +109,8 @@ export function AppScreen({ state, car, appId }: { state: AppState; car: CarReco
           onPress={() => void update(latest)} />
         <Body muted>{t('app.confirmOnCar')}</Body>
       </> : <>
-        <Body muted>{t(known && !offerOnline ? 'common.upToDate' : packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
+        <Body muted>{t(known && !offerOnline && listsNewest(state.catalog, appId, opened) ? 'common.upToDate'
+          : packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
         <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />
       </>}
       {offerOnline ? <>
