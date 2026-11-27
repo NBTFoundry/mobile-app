@@ -405,6 +405,7 @@ export const en = {
   'op.updateTitle': 'Update {app} {version}',
   'op.sending': 'Sending the package.',
   'op.managerAccepted': 'Done. It starts next time App Manager opens.',
+  'op.managerRestarts': 'Done. NBT Manager restarts with it now.',
   'op.uninstallTitle': 'Uninstall {app}',
   'op.wifiLost': 'Wi-Fi lost.',
 

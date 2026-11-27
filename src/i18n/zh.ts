@@ -403,6 +403,7 @@ export const zh: Messages = {
   'op.updateTitle': '更新 {app} {version}',
   'op.sending': '正在发送软件包。',
   'op.managerAccepted': '已完成。下次打开 App Manager 时启动。',
+  'op.managerRestarts': '已完成。NBT Manager 正在以新版本重新启动。',
   'op.uninstallTitle': '卸载 {app}',
   'op.wifiLost': 'Wi-Fi 已断开。',
 

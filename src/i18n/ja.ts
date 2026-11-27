@@ -403,6 +403,7 @@ export const ja: Messages = {
   'op.updateTitle': '{app} {version} にアップデート',
   'op.sending': 'パッケージを送信中です。',
   'op.managerAccepted': '完了しました。次に App Manager を開いたときに起動します。',
+  'op.managerRestarts': '完了しました。NBT Manager は新しいバージョンで再起動します。',
   'op.uninstallTitle': '{app} をアンインストール',
   'op.wifiLost': 'Wi-Fi が切断されました。',
 

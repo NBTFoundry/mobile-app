@@ -403,6 +403,7 @@ export const de: Messages = {
   'op.updateTitle': '{app} {version} aktualisieren',
   'op.sending': 'Paket wird gesendet.',
   'op.managerAccepted': 'Erledigt. Er startet beim nächsten Öffnen von App Manager.',
+  'op.managerRestarts': 'Erledigt. NBT Manager startet jetzt damit neu.',
   'op.uninstallTitle': '{app} deinstallieren',
   'op.wifiLost': 'WLAN verloren.',
 

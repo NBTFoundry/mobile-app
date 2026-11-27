@@ -15,7 +15,7 @@ import { forgetCar, loadCars, newCarId, saveCar, rememberApps, type CarRecord } 
 import { appLabel, packageFile, type LibraryEntry } from '../store/library';
 import { t, tn } from '../i18n';
 import { setConnection } from './connection';
-import { describeError, describeOpening, describeStatus } from './messages';
+import { describeError, describeManagerAccepted, describeOpening, describeStatus } from './messages';
 import { createKey, deviceSigner, linkCode, nativeLink, removeKey } from './nativeLink';
 import { busy, serialized } from './queue';
 import { IDLE_RELEASE_MS, releaseDelay } from './networkHold';
@@ -338,8 +338,11 @@ export function install(car: CarRecord, entry: LibraryEntry,
       updateActivity(id, { detail: t('op.sending'), progress: 0 });
       return installPackage(worker, { uri: packageFile(entry.sha256).uri, size: entry.size, sha256: entry.sha256 },
         (sent, total) => updateActivity(id, { progress: total ? sent / total : 0 }), follow(id, cancel));
-    // The car keeps an approved manager release and starts it at the next opening.
-    }).then(result => (manager && result.phase === 'done' ? { ...result, detail: t('op.managerAccepted') } : result)), id),
+    // The car keeps an approved manager release: a manager from 0.5.2 starts it at once
+    // ("… starts in a moment"), an older one at the next opening.
+    }).then(result => (manager && result.phase === 'done'
+      ? { ...result, detail: describeManagerAccepted(result.value) }
+      : result)), id),
   onStarted);
 }
 

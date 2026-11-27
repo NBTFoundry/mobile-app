@@ -12,7 +12,7 @@ jest.mock('expo-file-system', () => ({
 jest.mock('../modules/car-link', () => ({ CarLink: {} }));
 jest.mock('../modules/device-key', () => ({ DeviceKey: {} }));
 
-import { describeError, describeOpening, describeStatus } from '../src/car/messages';
+import { describeError, describeManagerAccepted, describeOpening, describeStatus } from '../src/car/messages';
 import {
   LANGUAGES, catalogs, currentChoice, currentLanguage, languageFor, setChoice, setSystemLocale, t, tn,
 } from '../src/i18n';
@@ -90,6 +90,11 @@ describe('languages', () => {
     expect(describeError(new Error('raw native text'))).toBe('Une erreur s’est produite.');
     expect(describeStatus({ state: 'failed', message: 'Update failed; previous application restored' }))
       .toBe('La voiture a signalé un échec. Update failed; previous application restored.');
+    // An approved manager release: restarted at once from 0.5.2, else at the next opening.
+    expect(describeManagerAccepted({ state: 'installed', message: 'NBT Manager 0.5.3 starts in a moment' }))
+      .toBe('Terminé. NBT Manager redémarre maintenant avec cette version.');
+    expect(describeManagerAccepted({ state: 'installed', message: 'NBT Manager 0.5.2 starts when App Manager opens again' }))
+      .toBe('Terminé. Il démarre à la prochaine ouverture d’App Manager.');
     expect(describeOpening({ kind: 'by-hand', reason: 'moving' }))
       .toBe('Arrêtez d’abord la voiture. Ouvrez App Manager sur la voiture ; l’action continue dès son ouverture.');
     expect(describeError(new CarError(413, 'phone-size')))

@@ -112,6 +112,12 @@ export function describeStatus(status: Status): string {
     ? t('status.failedBecause', { base, reason: status.message }) : base;
 }
 
+/** A manager release the driver approved: from 0.5.2 the car starts it at once
+ * ("NBT Manager <version> starts in a moment"), before that at the next opening. */
+export function describeManagerAccepted(status: Status): string {
+  return t(status.message.endsWith(' starts in a moment') ? 'op.managerRestarts' : 'op.managerAccepted');
+}
+
 export function describeOpening(event: OpeningEvent): string {
   if (event.kind === 'waking') return t('opening.waking');
   if (event.kind === 'opening') return t('opening.opening');
