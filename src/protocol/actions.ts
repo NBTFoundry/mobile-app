@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 /** One flow per action. The car confirms pairing, installs and uninstalls; the phone only follows. */
 import { ProtocolError, fromAscii } from './bytes';
-import { parseApps, parseAutostart, parseCrashes, parseKeys, parseManager, parseOk, parsePair, parseSettings,
-  parseStatus, parseWake, type Autostart, type CarApp, type CarCrash, type CarKey, type CarManager, type Setting,
+import { parseApps, parseAutostart, parseCrashes, parseKeys, parseManager, parseOk, parsePair, parseSettings, parseTheme,
+  parseStatus, parseWake, type Autostart, type CarApp, type CarCrash, type CarKey, type CarManager, type CarTheme, type Setting,
   type Status, type StatusState, type WakeState } from './replies';
 import { parseCompanion, type CompanionPage } from './companion';
 import { keyAddBody, type DeveloperKey } from './developerKey';
@@ -153,6 +153,16 @@ export async function readAutostart(session: CarSession, app: string): Promise<A
     if (error instanceof CarError && (error.status === 404 || error.status === 400 && error.code === 'route')) {
       return null;
     }
+    throw error;
+  }
+}
+
+/** The theme the car's screen shows; null from a manager without the route. */
+export async function readTheme(session: CarSession): Promise<CarTheme | null> {
+  try {
+    return parseTheme((await session.ok('/v1/theme')).body);
+  } catch (error) {
+    if (unknownRoute(error)) return null;
     throw error;
   }
 }

@@ -77,8 +77,9 @@ class Device:
         raise SystemExit('uiautomator gave no window hierarchy')
 
     def find(self, label):
+        # Whatever the case: labels and tags are shown in capitals.
         for node in self.nodes():
-            if label in (node.get('text'), node.get('content-desc')):
+            if label.lower() in ((node.get('text') or '').lower(), (node.get('content-desc') or '').lower()):
                 return node
         return None
 
@@ -207,7 +208,7 @@ def approve(car, timeout=30.0):
 def open_app(dev, metro_port):
     url = f'http://127.0.0.1:{metro_port}'.replace(':', '%3A').replace('/', '%2F')
     dev.shell('am', 'start', '-a', 'android.intent.action.VIEW', '-d',
-              f'exp+nbt-manager://expo-development-client/?url={url}', PACKAGE)
+              f'exp+manager://expo-development-client/?url={url}', PACKAGE)
     # The development build's menu introduces itself on first launch; its
     # floating tools button is turned off so that no capture shows it.
     dev.tap('Continue', timeout=180)

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 /** Paired cars, one SecureStore entry each, plus an index. Stored data is checked when read. */
 import * as SecureStore from 'expo-secure-store';
-import { parseApps, parseManager, type CarApp, type CarManager } from '../protocol/replies';
+import { isCarTheme, parseApps, parseManager, type CarApp, type CarManager, type CarTheme } from '../protocol/replies';
 import { isHostPort } from '../protocol/signing';
 import type { Protection } from '../../modules/device-key';
 import { CarLink } from '../../modules/car-link';
@@ -22,6 +22,8 @@ export type CarRecord = {
   appsSeenAt?: number;
   /** Read with the apps; null: its manager predates `GET /v1/manager` (reads releases up to NBTRLS2). */
   manager?: CarManager | null;
+  /** Read with the apps: the theme its screen shows; unset from a manager without `GET /v1/theme` (BMW's). */
+  theme?: CarTheme;
 };
 
 type Index = { ids: string[]; selected?: string };
@@ -66,6 +68,7 @@ export function checkRecord(raw: unknown): CarRecord | undefined {
       // Read again with the apps.
     }
   }
+  if (isCarTheme(r.theme)) record.theme = r.theme;
   return record;
 }
 
@@ -136,7 +139,7 @@ export function newCarId(): string {
 }
 
 /** Merge delayed results into the latest record, never recreating a forgotten car. */
-function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | 'appsSeenAt' | 'manager'>>): Promise<CarRecord | undefined> {
+function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | 'appsSeenAt' | 'manager' | 'theme'>>): Promise<CarRecord | undefined> {
   return mutate(async () => {
     const { cars } = await loadCars();
     const current = cars.find(car => car.id === id);
@@ -147,6 +150,6 @@ function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | '
   });
 }
 export const renameCar = (id: string, name: string) => patchCar(id, { name });
-/** `manager` undefined: not read this time, the stored one stays. */
-export const rememberApps = (id: string, apps: CarApp[], manager?: CarManager | null) =>
-  patchCar(id, { apps, appsSeenAt: Date.now(), ...(manager !== undefined ? { manager } : {}) });
+/** `manager` or `theme` undefined: not read this time, the stored one stays. */
+export const rememberApps = (id: string, apps: CarApp[], manager?: CarManager | null, theme?: CarTheme) =>
+  patchCar(id, { apps, appsSeenAt: Date.now(), ...(manager !== undefined ? { manager } : {}), ...(theme ? { theme } : {}) });

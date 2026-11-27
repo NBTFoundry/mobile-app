@@ -26,6 +26,7 @@ export function Dialog({ title, children, onClose, closeLabel }: {
 }
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: '#00000080', justifyContent: 'center', padding: 24 },
-  sheet: { backgroundColor: colors.panel, borderRadius: 24, maxHeight: '90%' },
+  sheet: { backgroundColor: colors.panel, borderRadius: colors.card + 4, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line,
+    maxHeight: '90%' },
   content: { padding: 24, gap: 16 },
 });

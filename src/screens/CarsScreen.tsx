@@ -35,7 +35,7 @@ function CarDetails({ car, state, onDone }: { car: CarRecord; state: AppState; o
     } finally { setSaving(false); }
   };
   return <Dialog title={t('cars.manage')} onClose={onDone}>
-    <Label>{t('cars.name')}</Label>
+    <Label plain>{t('cars.name')}</Label>
     <TextInput value={name} onChangeText={setName} maxLength={40} style={styles.input}
       placeholderTextColor={colors.muted} accessibilityLabel={t('cars.nameLabel')} autoFocus />
     <Button label={t('cars.saveName')} disabled={saving || !name.trim()} onPress={() => void rename()} />
@@ -97,7 +97,7 @@ export function CarsScreen({ state }: { state: AppState }) {
 }
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
   page: { padding: 24, paddingBottom: 40, gap: 24 },
-  input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: 12,
+  input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: Math.min(colors.corner, 12),
     paddingHorizontal: 16, minHeight: 48, fontSize: 16 },
   manage: { alignItems: 'flex-start' },
 });

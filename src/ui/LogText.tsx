@@ -44,7 +44,7 @@ export function LogText({ text }: { text: string }) {
 }
 
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
-  frame: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, overflow: 'hidden' },
+  frame: { borderWidth: 1, borderColor: colors.line, borderRadius: Math.min(colors.corner, 8), overflow: 'hidden' },
   box: { maxHeight: 360 },
   // Padding on the content, not the box, or scrolling to the end stops short of it.
   content: { padding: 10, paddingBottom: 30 },

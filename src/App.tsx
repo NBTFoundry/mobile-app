@@ -13,6 +13,7 @@ import { loadPreferences } from './store/preferences';
 import { parsePairLink } from './protocol/pairLink';
 import type { WifiCode } from './protocol/wifiCode';
 import { Button, useColors, useStyles } from './ui/kit';
+import { setCarTheme } from './ui/theme';
 import { ActivityScreen } from './screens/ActivityScreen';
 import { AppScreen } from './screens/AppScreen';
 import { CarScreen } from './screens/CarScreen';
@@ -128,10 +129,13 @@ export default function App() {
   }, [route]);
 
   const car = cars.find(c => c.id === selected);
+  // The selected car's theme, as its own screen shows; BMW's without a car.
+  useEffect(() => setCarTheme(car?.theme), [car?.theme]);
   const state: AppState = {
     cars, car, library, libraryReady, setLibrary, reloadCars, catalog, setCatalog,
     go: next => setRoute({ ...next, ...(next.app ? { carId: car?.id } : {}) }),
-    updateCar: updated => setCars(list => list.map(c => (c.id === updated.id ? { ...c, apps: updated.apps, appsSeenAt: updated.appsSeenAt } : c))),
+    updateCar: updated => setCars(list => list.map(c => (c.id === updated.id
+      ? { ...c, apps: updated.apps, appsSeenAt: updated.appsSeenAt, theme: updated.theme ?? c.theme } : c))),
   };
 
   let screen;
@@ -162,7 +166,7 @@ export default function App() {
       {!isPage(route) ? <View style={styles.tabs} accessibilityRole="tablist">
         {TABS.map(item => (
           <Pressable key={item.tab} accessibilityRole="tab" accessibilityState={{ selected: route.tab === item.tab }}
-            onPress={() => setRoute({ tab: item.tab })} style={[styles.tab, route.tab === item.tab && { borderTopColor: colors.accent }]}>
+            onPress={() => setRoute({ tab: item.tab })} style={[styles.tab, route.tab === item.tab && { borderTopColor: colors.glow }]}>
             <Text style={[styles.tabText, route.tab === item.tab && styles.tabActive]}>
               {t(item.label)}{item.tab === 'activity' && running ? ` (${running})` : ''}
             </Text>
@@ -182,5 +186,5 @@ const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
     backgroundColor: colors.panel },
   tab: { borderTopWidth: 3, borderTopColor: 'transparent', paddingHorizontal: 8, flex: 1, minHeight: 64, alignItems: 'center', justifyContent: 'center' },
   tabText: { color: colors.muted, fontSize: 13, fontWeight: '600' },
-  tabActive: { color: colors.accent },
+  tabActive: { color: colors.text },
 });

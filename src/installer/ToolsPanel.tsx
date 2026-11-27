@@ -62,7 +62,7 @@ export function ToolsPanel({ ready, testApp, example }: { ready: boolean; testAp
 
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
   buttons: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
-  config: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 12,
+  config: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: Math.min(colors.corner, 12), padding: 12,
     minHeight: 140, fontSize: 14, fontFamily: 'monospace', textAlignVertical: 'top' },
   confirm: { gap: 12 },
 });

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-/** Shared typography, surfaces and large touch targets in either system theme. */
+/** Shared typography, surfaces and large touch targets, in the selected car's theme (theme.ts). */
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
@@ -28,9 +28,17 @@ export function Body({ children, muted }: { children: ReactNode; muted?: boolean
   return <Text style={[styles.body, muted && styles.muted]}>{children}</Text>;
 }
 
-export function Label({ children }: { children: ReactNode }) {
+/** A small heading over a title or a section, after the theme's slanted bar; `plain` for a
+ * sentence (a question, a value), which keeps its case and has no bar. */
+export function Label({ children, plain }: { children: ReactNode; plain?: boolean }) {
   const styles = useStyles(makeStyles);
-  return <Text style={styles.label}>{children}</Text>;
+  if (plain) return <Text style={styles.label}>{children}</Text>;
+  return (
+    <View style={styles.eyebrow}>
+      <View style={styles.eyebrowBar} />
+      <Text style={[styles.label, styles.eyebrowText]}>{children}</Text>
+    </View>
+  );
 }
 
 type ButtonProps = { label: string; onPress: () => void; kind?: 'primary' | 'plain' | 'danger'; disabled?: boolean; expanded?: boolean };
@@ -82,29 +90,34 @@ export function Progress({ value }: { value: number }) {
 }
 
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
-  title: { color: colors.text, fontSize: 30, fontWeight: '700', letterSpacing: -0.8 },
+  title: { color: colors.text, fontSize: 30, fontWeight: '700', letterSpacing: -0.8, lineHeight: 35 },
   heading: { color: colors.text, fontSize: 22, fontWeight: '600', letterSpacing: -0.3 },
   body: { color: colors.text, fontSize: 16, lineHeight: 23 },
   muted: { color: colors.muted },
   label: { color: colors.muted, fontSize: 13, fontWeight: '600', letterSpacing: 0.2 },
-  button: { minHeight: 48, borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, justifyContent: 'center', alignItems: 'center' },
-  primary: { backgroundColor: colors.accent },
+  eyebrow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  eyebrowBar: { width: 20, height: 3, backgroundColor: colors.glow, transform: [{ skewX: '-24deg' }] },
+  eyebrowText: { flexShrink: 1, fontSize: 12, fontWeight: '700', letterSpacing: 1.6, textTransform: 'uppercase' },
+  button: { minHeight: 48, borderRadius: colors.corner, paddingVertical: 12, paddingHorizontal: 20, justifyContent: 'center', alignItems: 'center' },
+  primary: { backgroundColor: colors.fill },
   plain: { backgroundColor: 'transparent' },
   danger: { backgroundColor: 'transparent' },
   disabled: { opacity: 0.4 },
   pressed: { opacity: 0.75 },
   buttonText: { color: colors.accent, fontSize: 15, fontWeight: '600', textAlign: 'center' },
-  primaryText: { color: colors.accentText },
+  primaryText: { color: colors.fillText },
   dangerText: { color: colors.bad },
-  panel: { backgroundColor: colors.panel, borderRadius: 20, padding: 20, gap: 12 },
+  panel: { backgroundColor: colors.panel, borderRadius: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line,
+    padding: 20, gap: 12 },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   rowText: { flex: 1, minWidth: 140, gap: 4 },
   rowTitle: { color: colors.text, fontSize: 17, fontWeight: '600' },
   chevron: { color: colors.muted, fontSize: 24 },
   rowDetail: { color: colors.muted, fontSize: 14 },
-  tag: { fontSize: 12, fontWeight: '600', flexShrink: 1 },
+  tag: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', flexShrink: 1,
+    borderWidth: 1, borderRadius: Math.min(colors.corner, 10), paddingHorizontal: 7, paddingVertical: 2 },
   busy: { flexDirection: 'row', gap: 10, alignItems: 'center' },
-  track: { height: 8, borderRadius: 4, backgroundColor: colors.line, overflow: 'hidden' },
-  fill: { height: 8, backgroundColor: colors.accent },
+  track: { height: 6, borderRadius: Math.min(colors.corner, 3), backgroundColor: colors.line, overflow: 'hidden' },
+  fill: { height: 6, backgroundColor: colors.accent },
 });

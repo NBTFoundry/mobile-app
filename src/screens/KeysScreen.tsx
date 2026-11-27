@@ -80,10 +80,10 @@ export function KeysScreen({ state }: { state: AppState }) {
         {problem ? <Body>{problem}</Body> : null}
       </Panel> : null}
       {picked ? <Dialog title={t('keys.confirmTitle')} onClose={() => setPicked(undefined)}>
-        <Label>{t('keys.name')}</Label>
+        <Label plain>{t('keys.name')}</Label>
         <TextInput value={picked.name} onChangeText={name => setPicked({ ...picked, name })} maxLength={32}
           autoCorrect={false} style={styles.input} accessibilityLabel={t('keys.name')} placeholderTextColor={colors.muted} />
-        <Label>{t('keys.fingerprint')}</Label>
+        <Label plain>{t('keys.fingerprint')}</Label>
         <Heading>{picked.key.fingerprint}</Heading>
         <Body muted>{t('keys.compare')}</Body>
         <Body muted>{t('keys.warning')}</Body>
@@ -99,6 +99,6 @@ export function KeysScreen({ state }: { state: AppState }) {
 
 const makeStyles = (colors: Palette) => StyleSheet.create({
   page: { flexGrow: 1, padding: 24, paddingBottom: 40, gap: 24 },
-  input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: 8, paddingHorizontal: 12,
+  input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: Math.min(colors.corner, 12), paddingHorizontal: 12,
     minHeight: 48, fontSize: 16 },
 });

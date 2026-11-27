@@ -13,7 +13,7 @@ import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 import { addKey, changeAutostart, changeSetting, clearAppLog, clearCrashes, installPackage, listApps, listCrashes, listKeys, pairPhone,
-  readAppLog, readAutostart, readCompanion, readCrash, readManager, readSelfTest, readSettings, readSystemLog, removeApp, removeKey,
+  readAppLog, readAutostart, readCompanion, readCrash, readManager, readSelfTest, readTheme, readSettings, readSystemLog, removeApp, removeKey,
   sendCompanionEvent, wake,
   type Follow } from '../src/protocol/actions';
 import { readDeveloperKey } from '../src/protocol/developerKey';
@@ -123,6 +123,8 @@ async function main() {
       const manager = await readManager(session);
       check(manager?.version === 'v1' && manager.sequence === '1' && manager.formats.join() === '1',
         'the car names its manager and the release formats it takes');
+      // The host car reports no make and its Theme setting is Automatic: BMW's.
+      check(await readTheme(session) === 'bmw', 'the car names the theme its screen shows');
       // No self test run on this car yet (Settings › Self test).
       const selfTest = await readSelfTest(session);
       check(selfTest !== null && 'none' in selfTest, 'the car says no self test has run yet');

@@ -42,6 +42,11 @@ class RouteGuardTest {
       assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "GET", "/v1/selftest", null))
       refused("172.16.222.1:$port", "POST", "/v1/selftest")
     }
+    // The theme the car shows, from either listener.
+    for (port in listOf(8080, 8081)) {
+      assertEquals(Target("172.16.222.1", port, false), RouteGuard.check("172.16.222.1:$port", "GET", "/v1/theme", null))
+      refused("172.16.222.1:$port", "POST", "/v1/theme")
+    }
     // Crash reports, from either listener.
     for (port in listOf(8080, 8081)) {
       for (route in listOf("/v1/crashes", "/v1/crashes/read", "/v1/crashes/clear")) {

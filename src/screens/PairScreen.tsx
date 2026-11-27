@@ -106,7 +106,7 @@ export function PairScreen({ state, code }: { state: AppState; code?: WifiCode }
 
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
   page: { flexGrow: 1, padding: 24, paddingBottom: 40, gap: 24 },
-  camera: { flex: 1, minHeight: 280, borderRadius: 12, overflow: 'hidden', backgroundColor: colors.panel },
+  camera: { flex: 1, minHeight: 280, borderRadius: Math.min(colors.card, 12), overflow: 'hidden', backgroundColor: colors.panel },
   digits: { color: colors.text, fontSize: 48, fontWeight: '700', letterSpacing: 6, textAlign: 'center',
     fontVariant: ['tabular-nums'] },
 });

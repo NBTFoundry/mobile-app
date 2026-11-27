@@ -57,7 +57,7 @@ export function LibraryScreen({ state }: { state: AppState }) {
       <Body>{entry.fileName}</Body>
       <PackageAbout info={entry.info} />
       <Body muted>{t('library.sizeAdded', { size: formatSize(entry.size), date: formatDate(entry.addedAt) })}</Body>
-      <Label>{t('app.sequence', { sequence: entry.info.sequence })}</Label>
+      <Label plain>{t('app.sequence', { sequence: entry.info.sequence })}</Label>
       <Body muted>{t('library.verifies')}</Body>
       <Body muted>{t('library.removeNote')}</Body>
       <Button label={t('library.remove')} kind="danger" disabled={busy} onPress={() => void remove(entry.sha256)} />

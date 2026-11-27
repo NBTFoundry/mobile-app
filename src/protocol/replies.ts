@@ -110,6 +110,18 @@ export function parseManager(text: string): CarManager {
   return { version: head[1]!, sequence: head[2]!, formats: formats.map(f => Number(f.slice(6))) };
 }
 
+/** The theme the car's screen shows: its make, or the one chosen in its Settings
+ * (PROTOCOL.md, "Manager settings"). */
+export const CAR_THEMES = ['bmw', 'mini', 'supra'] as const;
+export type CarTheme = (typeof CAR_THEMES)[number];
+export const isCarTheme = (value: unknown): value is CarTheme => CAR_THEMES.includes(value as CarTheme);
+
+export function parseTheme(text: string): CarTheme {
+  const m = /^THEME\t([a-z]{1,8})\n$/.exec(text);
+  if (!m || !isCarTheme(m[1])) bad();
+  return m![1] as CarTheme;
+}
+
 /** Start with the car: the preference, and whether failed starts paused it (PROTOCOL.md, "Autostart"). */
 export type Autostart = { on: boolean; paused: boolean };
 

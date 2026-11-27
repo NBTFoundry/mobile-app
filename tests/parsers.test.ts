@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 import { createHash } from 'node:crypto';
-import { parseApps, parseAutostart, parseCrashes, parseManager, parsePair, parseSettings, parseStatus, parseWake, errorCode } from '../src/protocol/replies';
+import { parseApps, parseAutostart, parseCrashes, parseManager, parsePair, parseSettings, parseStatus, parseTheme, parseWake, errorCode } from '../src/protocol/replies';
 import { parseWifiCode } from '../src/protocol/wifiCode';
 import { parsePackageHead } from '../src/protocol/packageHeader';
 
@@ -182,6 +182,16 @@ describe('parseManager', () => {
     'MANAGER\tv2\t-1\tNBTRLS1\n', 'MANAGER\tv2\t2\tNBTRLS1,NBTRLS1\n', 'MANAGER\tv2\t2\tNBTMGR1\n',
     'MANAGER\tv2\t2\t\n', 'MANAGER\tv2\t2\tNBTRLS1\textra\n',
   ])('rejects malformed replies %#', text => expect(() => parseManager(text)).toThrow());
+});
+
+describe('parseTheme', () => {
+  it('reads the theme the car shows', () => {
+    expect(parseTheme('THEME\tbmw\n')).toBe('bmw');
+    expect(parseTheme('THEME\tmini\n')).toBe('mini');
+    expect(parseTheme('THEME\tsupra\n')).toBe('supra');
+  });
+  it.each(['', 'THEME\tbmw', 'THEME\tauto\n', 'THEME\tBMW\n', 'THEME\tbmw\tmini\n', 'THEME\t\n', 'THEME\trolls\n',
+    'THEME\tbmw\n\n'])('rejects malformed replies %#', text => expect(() => parseTheme(text)).toThrow());
 });
 
 describe('parseAutostart', () => {

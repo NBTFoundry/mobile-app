@@ -44,3 +44,14 @@ it('keeps both pairings when storage writes overlap', async () => {
   expect(loaded.cars.map(item => item.id)).toEqual([car.id, other.id]);
   expect(loaded.selected).toBe(other.id);
 });
+it('keeps the theme the car showed last, and drops one it cannot read', async () => {
+  await saveCar(car, true);
+  await rememberApps(car.id, apps, undefined, 'supra');
+  expect((await loadCars()).cars[0]!.theme).toBe('supra');
+  // A read that did not get the theme (an older manager, a failure) leaves it.
+  await rememberApps(car.id, apps);
+  expect((await loadCars()).cars[0]!.theme).toBe('supra');
+  storage.set(`car.${car.id}`, JSON.stringify({ ...car, theme: 'rolls' }));
+  expect((await loadCars()).cars[0]).toMatchObject({ name: 'My car' });
+  expect((await loadCars()).cars[0]!.theme).toBeUndefined();
+});

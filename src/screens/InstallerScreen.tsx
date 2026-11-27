@@ -26,7 +26,7 @@ function Field({ label, value, onChange, numeric, secret, placeholder }: {
   const styles = useStyles(makeStyles);
   return (
     <View style={styles.field}>
-      <Label>{label}</Label>
+      <Label plain>{label}</Label>
       <TextInput value={value} onChangeText={onChange} autoCapitalize="none" autoCorrect={false}
         secureTextEntry={secret} keyboardType={numeric ? 'number-pad' : 'default'} style={styles.input} accessibilityLabel={label}
         placeholderTextColor={colors.muted} placeholder={placeholder} />
@@ -74,7 +74,7 @@ export function InstallerScreen() {
 
       {state.ask ? (
         <Panel style={styles.ask}>
-          <Label>{t('installer.sshQuestion')}</Label>
+          <Label plain>{t('installer.sshQuestion')}</Label>
           <Body>{t('installer.sshBody')}</Body>
           <View style={styles.buttons}>
             <Button label={t('common.cancel')} kind="plain" onPress={() => answerActivation(false)} />
@@ -90,7 +90,7 @@ export function InstallerScreen() {
 
       {state.restart && ready ? (
         <Panel style={styles.ask}>
-          <Label>{t('installer.restartQuestion')}</Label>
+          <Label plain>{t('installer.restartQuestion')}</Label>
           <Body>{t('installer.restartBody')}</Body>
           <View style={styles.buttons}>
             <Button label={t('common.later')} kind="plain" onPress={dismissRestart} />
@@ -139,7 +139,7 @@ const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
   page: { padding: 24, paddingBottom: 40, gap: 24 },
   steps: { gap: 6 },
   field: { gap: 6 },
-  input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: 8, paddingHorizontal: 12,
+  input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: Math.min(colors.corner, 12), paddingHorizontal: 12,
     minHeight: 48, fontSize: 16 },
   buttons: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   ask: { borderWidth: 1, borderColor: colors.warn },
