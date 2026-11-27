@@ -172,10 +172,7 @@ export const zh: Messages = {
   'pair.useCode': "与 {ssid} 配对",
   'pair.scanInstead': "改为扫描代码",
   'whatsNew.title': "新功能",
-  'whatsNew.phonePage': "应用可以在手机上有一个页面：车辆 › 应用 › 手机页面。",
-  'whatsNew.permissions': "软件包详情会列出应用可执行的操作，与车辆安装前显示的一致。",
-  'whatsNew.keys': "开发者密钥：车辆可以安装您信任的开发者签名的应用（车辆 › 管理）。",
-  'whatsNew.pairLink': "其他应用可以将车辆的 Wi-Fi 代码传给本应用进行配对。",
+  'whatsNew.themes': "全新外观，并按车型提供主题：BMW、MINI 或 Supra。应用跟随车辆显示的主题（在车上：设置 › 主题）。",
   'whatsNew.ok': "确定",
 
   'perm.uses': "使用：{list}",

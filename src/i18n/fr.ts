@@ -172,10 +172,7 @@ export const fr: Messages = {
   'pair.useCode': "Associer avec {ssid}",
   'pair.scanInstead': "Scanner un code à la place",
   'whatsNew.title': "Nouveautés",
-  'whatsNew.phonePage': "Les applications peuvent avoir une page sur le téléphone : Voiture › l’application › Page sur le téléphone.",
-  'whatsNew.permissions': "Les détails d’un paquet listent ce qu’une application peut faire, comme la voiture le montre avant l’installation.",
-  'whatsNew.keys': "Clés de développeur : votre voiture peut installer des applications signées par un développeur de confiance (Voiture › Gérer).",
-  'whatsNew.pairLink': "Une autre application peut transmettre le code Wi-Fi de votre voiture pour l’association.",
+  'whatsNew.themes': "Nouvelle apparence, avec un thème selon votre voiture : BMW, MINI ou Supra. L’application suit celui de la voiture (sur la voiture : Réglages › Thème).",
   'whatsNew.ok': "OK",
 
   'perm.uses': "Utilise : {list}",

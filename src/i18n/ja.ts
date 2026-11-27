@@ -172,10 +172,7 @@ export const ja: Messages = {
   'pair.useCode': "{ssid} とペアリング",
   'pair.scanInstead': "コードをスキャンする",
   'whatsNew.title': "新機能",
-  'whatsNew.phonePage': "アプリはスマホにページを持てます：車両 › アプリ › スマホのページ。",
-  'whatsNew.permissions': "パッケージの詳細に、車がインストール前に表示するのと同じく、アプリができることが表示されます。",
-  'whatsNew.keys': "開発者キー：信頼する開発者が署名したアプリを車にインストールできます（車両 › 管理）。",
-  'whatsNew.pairLink': "別のアプリから車の Wi-Fi コードを受け取ってペアリングできます。",
+  'whatsNew.themes': "新しいデザインと、車に合わせたテーマ：BMW、MINI、Supra。アプリは車が表示しているテーマに従います（車側：設定 › テーマ）。",
   'whatsNew.ok': "OK",
 
   'perm.uses': "使用：{list}",

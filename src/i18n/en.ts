@@ -174,10 +174,7 @@ export const en = {
   'pair.useCode': "Pair with {ssid}",
   'pair.scanInstead': "Scan a code instead",
   'whatsNew.title': "What’s new",
-  'whatsNew.phonePage': "Applications can have a page on the phone: Car › the application › Phone page.",
-  'whatsNew.permissions': "Package details list what an application may do, as the car shows before it installs.",
-  'whatsNew.keys': "Developer keys: your car can install applications signed by a developer you trust (Car › Manage).",
-  'whatsNew.pairLink': "Another app can hand this app your car’s Wi-Fi code to pair.",
+  'whatsNew.themes': "A new look, with a theme for your car: BMW, MINI or Supra. The app follows the one the car shows (on the car: Settings › Theme).",
   'whatsNew.ok': "OK",
 
   'perm.uses': "Uses: {list}",
