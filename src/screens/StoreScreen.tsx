@@ -93,16 +93,15 @@ export function StoreScreen({ state, open }: { state: AppState; open?: string })
     <View>{offered.map(({ app, release }) => {
       const tag = tagFor(app, release.sequence)
         ?? (release.prerelease ? { text: t('store.beta'), color: colors.warn } : undefined);
-      return <Row key={app.id} title={app.name} detail={`${release.version} · ${app.summary}`}
+      return <Row key={app.id} title={app.name} detail={`${release.version} · ${app.summary}`} detailLines={2}
         tag={tag?.text} tagColor={tag?.color} onPress={() => { setMessage(undefined); setSelected(app.id); }} />;
     })}</View>
     <Row title={t('store.betas')} detail={t(betas ? 'store.betasOn' : 'store.betasOff')}
       tag={betas ? t('common.selected') : undefined} onPress={() => void chooseBetas(!betas)} />
     {chosen ? <Dialog title={`${chosen.app.name} ${chosen.release.version}`}
       onClose={() => { if (!progress) setSelected(undefined); }}>
-      <Body>{chosen.app.summary}</Body>
       {chosen.release.prerelease ? <Label>{t('store.beta')}</Label> : null}
-      <PackageAbout info={chosen.release} />
+      <PackageAbout info={chosen.release} summary={chosen.app.summary} />
       <Body muted>{t('store.licence', { licence: chosen.app.license })}</Body>
       <Body muted>{t('store.details', { size: formatSize(chosen.release.files.reduce((s, f) => s + f.size, 0)),
         date: chosen.release.date ? formatDate(chosen.release.date) : '–' })}</Body>

@@ -23,9 +23,10 @@ export function Heading({ children }: { children: ReactNode }) {
   return <Text style={styles.heading} accessibilityRole="header">{children}</Text>;
 }
 
-export function Body({ children, muted }: { children: ReactNode; muted?: boolean }) {
+/** `lines`: no more than that many, the last one ending in an ellipsis. */
+export function Body({ children, muted, lines }: { children: ReactNode; muted?: boolean; lines?: number }) {
   const styles = useStyles(makeStyles);
-  return <Text style={[styles.body, muted && styles.muted]}>{children}</Text>;
+  return <Text numberOfLines={lines} style={[styles.body, muted && styles.muted]}>{children}</Text>;
 }
 
 /** A small heading over a title or a section, after the theme's slanted bar; `plain` for a
@@ -60,8 +61,8 @@ export function Panel({ children, style }: { children: ReactNode; style?: ViewSt
   return <View style={[styles.panel, style]}>{children}</View>;
 }
 
-export function Row({ title, detail, tag, tagColor, onPress, expanded }: {
-  title: string; detail?: string; tag?: string; tagColor?: string; onPress?: () => void; expanded?: boolean;
+export function Row({ title, detail, detailLines, tag, tagColor, onPress, expanded }: {
+  title: string; detail?: string; detailLines?: number; tag?: string; tagColor?: string; onPress?: () => void; expanded?: boolean;
 }) {
   const colors = useColors();
   const styles = useStyles(makeStyles);
@@ -70,7 +71,7 @@ export function Row({ title, detail, tag, tagColor, onPress, expanded }: {
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
       <View style={styles.rowText}>
         <Text style={styles.rowTitle}>{title}</Text>
-        {detail ? <Text style={styles.rowDetail}>{detail}</Text> : null}
+        {detail ? <Text numberOfLines={detailLines} style={styles.rowDetail}>{detail}</Text> : null}
       </View>
       {tag ? <Text style={[styles.tag, { color: tagColor ?? colors.muted, borderColor: tagColor ?? colors.line }]}>{tag}</Text> : null}
       {onPress ? <Text accessibilityElementsHidden importantForAccessibility="no" style={styles.chevron}>›</Text> : null}

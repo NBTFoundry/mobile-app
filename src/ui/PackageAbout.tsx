@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
 /** What a package says about itself for people (`property=` and `text=` lines),
  * and what it may do to the car (its permissions, protocol/permissions.ts):
- * shown as the package declares them, before the car has verified it. */
+ * shown as the package declares them, before the car has verified it. Two lines
+ * of description at first; "More details" opens the rest. */
+import { useState } from 'react';
 import { View } from 'react-native';
 import { t, type Key } from '../i18n';
 import { permissionLabels } from '../protocol/permissions';
 import type { PackageInfo } from '../protocol/packageHeader';
-import { Body } from './kit';
+import { aboutText, hasMore } from './about';
+import { Body, Button } from './kit';
 
 function permissionLines(bits: number | undefined): string[] {
   if (!bits) return [];
@@ -21,15 +24,24 @@ function permissionLines(bits: number | undefined): string[] {
   return lines;
 }
 
-export function PackageAbout({ info }: { info: Pick<PackageInfo, 'properties' | 'text' | 'permissions'> }) {
+/** `summary`: the catalog's line about the application, shown first. */
+export function PackageAbout({ info, summary }: {
+  info: Pick<PackageInfo, 'properties' | 'text' | 'permissions'>; summary?: string;
+}) {
+  const [open, setOpen] = useState(false);
   const properties = info.properties ?? [];
   const permissions = permissionLines(info.permissions);
-  // An empty text line separates paragraphs.
-  const paragraphs = (info.text ?? []).join('\n').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-  if (!properties.length && !paragraphs.length && !permissions.length) return null;
+  const about = aboutText(info.text, summary);
+  const more = hasMore(about, properties.length + permissions.length);
+  if (!about.lead && !more) return null;
   return <View style={{ gap: 4 }}>
-    {properties.map((p, i) => <Body key={`p${i}`}>{`${p.label}: ${p.value}`}</Body>)}
-    {permissions.map((line, i) => <Body key={`r${i}`}>{line}</Body>)}
-    {paragraphs.map((p, i) => <Body key={`t${i}`} muted>{p}</Body>)}
+    {about.lead ? <Body lines={open ? undefined : 2}>{about.lead}</Body> : null}
+    {open ? <>
+      {about.rest.map((p, i) => <Body key={`t${i}`} muted>{p}</Body>)}
+      {properties.map((p, i) => <Body key={`p${i}`}>{`${p.label}: ${p.value}`}</Body>)}
+      {permissions.map((line, i) => <Body key={`r${i}`}>{line}</Body>)}
+    </> : null}
+    {more ? <Button label={t(open ? 'log.fewer' : 'log.more')} kind="plain" expanded={open}
+      onPress={() => setOpen(!open)} /> : null}
   </View>;
 }
