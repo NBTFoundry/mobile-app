@@ -51,7 +51,8 @@ flowchart TD
 - App details offer the newest eligible package as the main install or update
   action. Equal and older sequences are shown for information. The car still
   checks its own high-water mark and decides whether to accept a file. NBT
-  Manager releases use their own update flow.
+  Manager releases use their own update flow: a release in a format the car
+  does not read sends the user to the installer once.
 - Settings load on request. Current values appear in rows, with the choices in a
   modal. Package details show file name, version, size, sequence and date added.
 - Phone page (an installed application whose Library package declares

@@ -89,7 +89,7 @@ it('reads the published catalog', () => {
   const catalog = parseCatalog(real, 5);
   expect(catalog.apps.map(a => a.id)).toEqual(expect.arrayContaining(['manager', 'doom']));
   const manager = catalog.apps.find(a => a.id === 'manager')!;
-  expect(manager.releases[0]!.files.map(f => f.format)).toEqual([3, 2]);
+  expect(manager.releases[0]!.files.map(f => f.name)).toEqual(['nbt-manager-0.3.1.nbtr']);
   expect(catalog.fetchedAt).toBe(5);
 });
 

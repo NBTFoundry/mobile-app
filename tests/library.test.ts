@@ -104,16 +104,12 @@ it('keeps the newest of each application from an older library', async () => {
 });
 
 
-it('keeps a manager step release beside the release it leads to', async () => {
-  const full = await add([], 'manager dev126 126 3');
-  const step = await add(full.entries, 'manager dev126-step 125 2');
-  expect(step.outcome).toBe('added');
-  expect(step.entries.map(e => e.info.version)).toEqual(['dev126', 'dev126-step']);
-  // A newer release replaces the one of its format only.
-  const next = await add(step.entries, 'manager dev127 127 3');
+it('keeps one manager release, the newest', async () => {
+  const old = await add([], 'manager dev125 125 2');
+  const next = await add(old.entries, 'manager dev126 126 3');
   expect(next.outcome).toBe('replaced');
-  expect(next.entries.map(e => e.info.version).sort()).toEqual(['dev126-step', 'dev127']);
-  expect(stored()).toHaveLength(2);
+  expect(next.entries.map(e => e.info.version)).toEqual(['dev126']);
+  expect(stored()).toHaveLength(1);
 });
 
 describe('managerChoice', () => {
@@ -122,26 +118,20 @@ describe('managerChoice', () => {
     info: { app: 'manager', version, sequence, compat: '', payloadSize: 0, payloadSha256: '', settings: [], format },
   });
   const full = entry('dev126', '126', 3);
-  const step = entry('dev126-step', '125', 2);
-  const library = [full, step, entry('dev120', '120', 2)];
+  const car = { version: 'dev123', sequence: '123', formats: [1, 2, 3] };
 
-  it('sends the step first to a manager that predates the route', () => {
-    expect(managerChoice([full, step], null)).toEqual({ next: step, then: full });
+  it('sends the newest release when the car reads its format', () => {
+    expect(managerChoice([entry('dev120', '120', 2), full], car)).toEqual({ next: full });
   });
-  it('sends the release itself once the car reads its format', () => {
-    const car = { version: 'dev126-step', sequence: '125', formats: [1, 2, 3] };
-    expect(managerChoice([full, step], car)).toEqual({ next: full });
-    expect(managerChoice([full, step], { ...car, version: 'dev123', sequence: '123' })).toEqual({ next: full });
-  });
-  it('uses the step for a car whose launcher lists only older formats', () => {
-    const car = { version: 'dev123', sequence: '123', formats: [1, 2] };
-    expect(managerChoice(library, car)).toEqual({ next: step, then: full });
-  });
-  it('says when the car reads nothing newer it holds', () => {
+  it('says when the car does not read its format', () => {
     expect(managerChoice([full], null)).toEqual({ unreadable: full });
-    expect(managerChoice([full, step], { version: 'dev126', sequence: '126', formats: [1, 2, 3] })).toEqual({});
+    expect(managerChoice([full], { ...car, formats: [1, 2] })).toEqual({ unreadable: full });
+  });
+  it('offers nothing when the car runs it or newer', () => {
+    expect(managerChoice([full], { ...car, version: 'dev126', sequence: '126' })).toEqual({});
+    expect(managerChoice([], car)).toEqual({});
   });
   it('offers the newest when the car is unknown', () => {
-    expect(managerChoice([step, full], undefined)).toEqual({ next: full });
+    expect(managerChoice([full], undefined)).toEqual({ next: full });
   });
 });

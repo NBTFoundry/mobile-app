@@ -17,7 +17,7 @@ const TIMEOUT_MS = 20_000;
 export const CATALOG_FRESH_MS = 10 * 60_000;
 
 export type CatalogFile = { name: string; url: string; size: number; sha256: string; version: string;
-  sequence: string; format?: number };
+  sequence: string };
 export type CatalogRelease = { version: string; sequence: string; prerelease: boolean; date?: number;
   page?: string; compat: string; bridge?: string; properties: PackageProperty[]; text: string[];
   files: CatalogFile[] };
@@ -65,8 +65,7 @@ function parseFile(raw: unknown, repo: string, app: string): CatalogFile {
   const version = text(f.version, 48);
   const sequence = text(f.sequence, 20);
   if (!VERSION.test(version) || !isU64(sequence)) bad();
-  const format = optional(f.format, v => (typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 9 ? v : bad()));
-  return { name, url, size, sha256, version, sequence, ...(format ? { format } : {}) };
+  return { name, url, size, sha256, version, sequence };
 }
 
 function parseRelease(raw: unknown, repo: string, app: string): CatalogRelease {
@@ -74,8 +73,8 @@ function parseRelease(raw: unknown, repo: string, app: string): CatalogRelease {
   const version = text(r.version, 48);
   const sequence = text(r.sequence, 20);
   if (!VERSION.test(version) || !isU64(sequence) || typeof r.prerelease !== 'boolean') bad();
-  const files = list(r.files, 4).map(f => parseFile(f, repo, app));
-  if (!files.length || (app !== 'manager' && files.length !== 1)) bad();
+  const files = list(r.files, 1).map(f => parseFile(f, repo, app));
+  if (files.length !== 1) bad();
   const page = optional(r.page, v => text(v, 300));
   return {
     version, sequence, prerelease: r.prerelease as boolean, files,
