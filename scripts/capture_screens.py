@@ -92,6 +92,14 @@ class Device:
             time.sleep(0.4)
         raise SystemExit(f'"{label}" did not appear')
 
+    def wait_prefix(self, prefix, timeout=20.0):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if any((n.get('text') or '').startswith(prefix) for n in self.nodes()):
+                return
+            time.sleep(0.4)
+        raise SystemExit(f'nothing starting with "{prefix}" appeared')
+
     def tap(self, label, timeout=20.0, after=0.6):
         self.tap_node(self.wait(label, timeout), after)
 
@@ -179,18 +187,15 @@ def make_packages(car, folder):
     return paths
 
 
-PHASES = ('In progress', 'Done', 'Not done', 'Failed')
-
-
 def result(dev, title, timeout=60.0):
-    """Waits until the activity `title` (the newest one) finishes; returns its phase."""
+    """Waits until the action `title` finishes in its dialog; returns what it says, and closes it."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         texts = [n.get('text') for n in dev.nodes() if n.get('text')]
-        if title in texts:
-            phase = next((t for t in texts[texts.index(title) + 1:] if t in PHASES), None)
-            if phase and phase != 'In progress':
-                return phase
+        if title in texts and 'Close' in texts:
+            detail = texts[texts.index(title) + 1]
+            dev.tap('Close')
+            return detail
         time.sleep(0.4)
     raise SystemExit(f'"{title}" did not finish')
 
@@ -247,27 +252,25 @@ def rename(dev, name):
     dev.tap('‹ Back')
 
 
-def import_packages(dev, files):
+def import_packages(dev, files, first=True):
+    """Adds `files` to the library; a newer version of an application replaces the one there."""
     dev.tap('Library')
     for i, file in enumerate(files):
-        dev.tap('Add a file' if i == 0 else 'Add file', after=1.5)
+        dev.tap('Add a file' if first and i == 0 else 'Add file', after=1.5)
         dev.tap(file.name, timeout=30, after=1.0)
-        dev.wait('Package added.')
+        dev.wait_prefix('Package added.')
 
 
-def install(dev, car, app, version, row=None):
-    """Installs `app` from its page: the newest package, or the versions list's `row`."""
+def install(dev, car, app, version):
+    """Installs `app` from its page, the package in the library, and returns to the tabs."""
     dev.tap('Car')
     dev.tap(app)
-    if row:
-        dev.tap('Package versions')
-        dev.tap(row)
-    else:
-        dev.tap(f'Install {version}')
-    dev.wait('Confirm on the car.', timeout=60)
+    dev.tap(f'Install {version}')
+    dev.wait_prefix('Confirm on the car', timeout=60)
     approve(car)
-    if result(dev, f'Install {app} {version}') != 'Done':
+    if result(dev, f'Install {app} {version}') != 'Installed.':
         raise SystemExit(f'installing {app} {version} failed on the desk car')
+    dev.tap('‹ Back')
 
 
 def frame_parts(tmp):
@@ -316,13 +319,14 @@ def record_install(dev, car, tmp, body, dst):
                                            '--size', '1080x2400', '--bit-rate', '8000000', remote])
     time.sleep(1.8)
     dev.tap('Install 0.4.2', after=0.2)
-    dev.wait('Confirm on the car.', timeout=60)
+    dev.wait_prefix('Confirm on the car', timeout=60)
     time.sleep(2.5)                                  # the driver looks at the car
     approve(car)
-    if result(dev, 'Install media-player 0.4.2') != 'Done':
+    time.sleep(2.5)                                  # the result, read
+    if result(dev, 'Install media-player 0.4.2') != 'Installed.':
         raise SystemExit('installing media-player failed on the desk car')
-    time.sleep(1.8)
-    dev.tap('Car', after=2.5)
+    time.sleep(1.2)
+    dev.tap('‹ Back', after=2.5)
     dev.shell('pkill', '-INT', 'screenrecord')
     recorder.wait(timeout=20)
     time.sleep(1)
@@ -386,12 +390,16 @@ def main():
                 open_app(dev, args.metro_port)
                 pair(dev, car, shots)
                 rename(dev, 'My car')
-                import_packages(dev, files)
+                # doom 1.0.19 comes last: it replaces 1.0.18 in the library, as an update to install.
+                newer = [file for file in files if file.name == 'doom-1.0.19.nbt']
+                import_packages(dev, [file for file in files if file not in newer])
                 dev.screenshot(shots / 'library.png')
-                install(dev, car, 'doom', '1.0.18', row='1.0.18, Sequence 18, Install')
+                install(dev, car, 'doom', '1.0.18')
                 install(dev, car, 'test', 'v1')
                 record_install(dev, car, tmp, frame_parts(tmp), args.out / 'mobile-install.webp')
+                import_packages(dev, newer, first=False)
 
+                dev.tap('Car')
                 dev.wait('Update available')
                 dev.screenshot(shots / 'car-light.png')
                 dev.night(True)
