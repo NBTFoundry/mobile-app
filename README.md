@@ -248,6 +248,8 @@ update for the builds whose native side it matches; phones download it by themse
 next time the app opens.
 A native change takes a store build ([docs/updates.md](docs/updates.md)).
 
+iOS is planned, not built: [docs/ios.md](docs/ios.md) says what it takes.
+
 ## Layout
 
 | Path | Contents |

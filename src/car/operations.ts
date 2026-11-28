@@ -29,7 +29,9 @@ export function stopFollowing(activityId: number): void {
   if (cancel) cancel.cancelled = true;
 }
 
+/** Android asks here; another system asks by itself when the Wi-Fi is joined. */
 async function wifiPermission(): Promise<void> {
+  if (Platform.OS !== 'android') return;
   const permission = Number(Platform.Version) >= 33
     ? 'android.permission.NEARBY_WIFI_DEVICES' as const
     : PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION;
@@ -227,7 +229,8 @@ async function remember(car: CarRecord, session: CarSession): Promise<CarRecord>
 /** `desk` is a debug-only workstation `ip` or `ip:port` (worker port; the door is the next one). */
 export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: number) => void): Promise<CarRecord | undefined> {
   const [desk, deskPort = '8080'] = deskTarget ? deskTarget.split(':') : [];
-  const name = cleanPhoneName(String((Platform.constants as { Model?: string }).Model ?? 'Android phone'));
+  const name = cleanPhoneName(String((Platform.constants as { Model?: string }).Model
+    ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android phone')));
   return act(wifi.ssid, t('pair.title'), t('common.joining'), async (id, cancel) => {
     const carId = newCarId();
     const alias = `car-${carId}`;
