@@ -26,7 +26,6 @@ import { AppsScreen } from './screens/AppsScreen';
 import { CarScreen } from './screens/CarScreen';
 import { CarToolScreen } from './screens/CarToolScreen';
 import { CarsScreen } from './screens/CarsScreen';
-import { DiagnosticsSheet } from './screens/DiagnosticsSheet';
 import { DownloadsScreen } from './screens/DownloadsScreen';
 import { InstallerScreen } from './screens/InstallerScreen';
 import { KeysScreen } from './screens/KeysScreen';
@@ -197,7 +196,6 @@ function App() {
       ) : null}
       <Enter key={`${screenKey(route)}:${car?.id ?? ''}`} from={shown.from} style={styles.content}>{screen}</Enter>
       <WhatsNewSheet ready={ready} usedBefore={cars.length > 0 || library.length > 0} />
-      <DiagnosticsSheet ready={ready} usedBefore={cars.length > 0 || library.length > 0} />
       {route.page === 'activity' || route.page === 'pairing' ? null
         : <ActivityBar onOpen={() => state.go({ page: 'activity' })} />}
       {paged ? null : <TabBar tab={route.tab} onTab={tab => show({ tab })} />}

@@ -25,7 +25,7 @@ type Values = {
   /** When the app opens: read the selected car's applications, and look online for new versions. */
   autoConnect: boolean;
   autoCheck: boolean;
-  /** Unset: not asked yet. */
+  /** Unset: never changed, which is on. */
   diagnostics?: boolean;
   whatsNew?: number;
 };

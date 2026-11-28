@@ -18,6 +18,8 @@ const THEME_NAMES: Record<Exclude<ThemeChoice, 'car'>, string> = { bmw: 'BMW', m
 
 export function MoreScreen({ state }: { state: AppState }) {
   const { appearance, theme, betas, diagnostics, autoConnect, autoCheck } = usePreferences();
+  // On unless the user turned them off.
+  const sharing = diagnostics !== false;
   const latest = useActivities()[0];
   const stored = state.library.reduce((sum, entry) => sum + entry.size, 0);
   return (
@@ -34,8 +36,8 @@ export function MoreScreen({ state }: { state: AppState }) {
           onPress={() => void chooseBetas(!betas)}
           right={<Toggle on={betas} label={t('more.betas')} onChange={on => void chooseBetas(on)} />} />
         <Row compact icon={<IconTile small name="chart" />} title={t('diag.title')} detail={t('diag.detail')}
-          onPress={() => void chooseDiagnostics(!diagnostics)}
-          right={<Toggle on={!!diagnostics} label={t('diag.title')} onChange={on => void chooseDiagnostics(on)} />} />
+          onPress={() => void chooseDiagnostics(!sharing)}
+          right={<Toggle on={sharing} label={t('diag.title')} onChange={on => void chooseDiagnostics(on)} />} />
       </Section>
       <Section title={t('start.title')}>
         <Row compact icon={<IconTile small name="car" />} title={t('start.connect')} detail={t('start.connectDetail')}

@@ -33,9 +33,9 @@ yarn ota "What changed" preview
 
 Start-up times, unhandled errors and crashes, sent to Expo with the same installation id.
 
-- Off until the user agrees: the build starts with `consent: 'not-granted'` (`app.config.ts`);
-  the app asks once (`DiagnosticsSheet`), and More › Settings › Share diagnostics changes it
-  (`src/store/diagnostics.ts`). Turning it off deletes what was not sent.
+- On from the first launch (`consent: 'granted'`, `app.config.ts`); More › Settings › Share
+  diagnostics turns them off (`src/store/diagnostics.ts`), which also deletes what was not
+  sent. "What's new" and the privacy page say so.
 - Nothing about the car, packages or files is logged: no custom events, no network traces.
 - Read them in the Expo dashboard's Observe tab, or `npx eas-cli observe:metrics-summary`.
 - Source maps go up with store builds (`uploadSourceMaps`) and with `yarn ota`.

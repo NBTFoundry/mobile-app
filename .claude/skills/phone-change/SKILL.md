@@ -29,8 +29,8 @@ Rules:
   synchronous `setState` in an effect: start the state from a `useState`
   initializer and set it only in promise callbacks.
 - Nothing goes online or to the car on its own: only after a user action, or
-  the start-up choices in More (off by default). Diagnostics only with the
-  user's agreement. Anything new the app sends goes in the privacy page and
+  the start-up choices in More (off by default). Diagnostics are the one
+  exception, on until turned off in More. Anything new the app sends goes in the privacy page and
   `store/listing.md` first (`AGENTS.md`).
 - A setting is a line of `preferences.ts` (validated when read, a default not
   written) and a row in `MoreScreen`. Keep them few.

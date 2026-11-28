@@ -31,8 +31,9 @@ native module. Test fixtures do not establish compatibility with a car.
   that path unavailable in release builds.
 - Nothing goes online or to the car by itself. The catalog and the app's own
   update (expo-updates, never checked on launch) follow a user action, or the
-  start-up choices in More, which are off by default. Diagnostics (Expo Observe)
-  are sent only after the user agreed; log no car, package or file data in them.
+  start-up choices in More, which are off by default. The one exception is
+  diagnostics (Expo Observe): on until the user turns them off in More; log no
+  car, package or file data in them.
   The privacy page (NBTFoundry.github.io `site/privacy.html`) and
   `store/listing.md` must say what the app sends: change them with it.
 - An update between store builds (`yarn ota`) carries JavaScript only. Native

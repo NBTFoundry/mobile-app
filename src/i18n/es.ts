@@ -519,10 +519,6 @@ export const es: Messages = {
   'theme.hint': "«Como el coche» sigue el tema que muestra la pantalla de tu coche.",
   'diag.title': "Compartir diagnósticos",
   'diag.detail': "Tiempos de arranque y fallos, a Expo",
-  'diag.question': "¿Ayudar a mejorar NBT Manager?",
-  'diag.body': "Comparte lo rápido que arranca la app y sus fallos. Van a Expo, el servicio con el que se construye esta app, con un número aleatorio para esta instalación. Nada sobre tu coche, tus archivos o lo que haces con ellos. Puedes cambiarlo en Más › Ajustes.",
-  'diag.yes': "Compartir",
-  'diag.no': "No, gracias",
   'about.tagline': "NBTFoundry · código abierto",
   'about.app': "Esta app",
   'about.update': "Actualización de la app",
@@ -544,4 +540,5 @@ export const es: Messages = {
   'whatsNew.layout': "Tres pestañas: Aplicaciones lista lo que ejecuta tu coche y lo que puedes añadir, Coche reúne su conexión, estado y herramientas, Más el resto.",
   'whatsNew.settings': "Ajustes en Más: claro u oscuro, tema, idioma y lo que hace la app al abrirse.",
   'whatsNew.updates': "Pueden llegar pequeñas actualizaciones de la app entre versiones de la tienda: pídelas en Más › Acerca de.",
+  'whatsNew.diagnostics': "Para ayudar a corregir problemas, la app comparte con Expo sus tiempos de arranque y sus fallos. Desactívalo en Más › Ajustes.",
 };

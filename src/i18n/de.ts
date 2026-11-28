@@ -519,10 +519,6 @@ export const de: Messages = {
   'theme.hint': "„Wie das Fahrzeug“ folgt dem Design, das der Bildschirm Ihres Fahrzeugs zeigt.",
   'diag.title': "Diagnosedaten teilen",
   'diag.detail': "Startzeiten und Abstürze, an Expo",
-  'diag.question': "NBT Manager verbessern helfen?",
-  'diag.body': "Teilen Sie, wie schnell die App startet, und ihre Abstürze. Sie gehen an Expo, den Dienst, mit dem diese App gebaut wird, mit einer Zufallsnummer für diese Installation. Nichts über Ihr Fahrzeug, Ihre Dateien oder was Sie damit tun. Ändern können Sie das unter Mehr › Einstellungen.",
-  'diag.yes': "Teilen",
-  'diag.no': "Nein danke",
   'about.tagline': "NBTFoundry · Open Source",
   'about.app': "Diese App",
   'about.update': "App-Update",
@@ -544,4 +540,5 @@ export const de: Messages = {
   'whatsNew.layout': "Drei Tabs: Anwendungen zeigt, was Ihr Fahrzeug ausführt und was Sie hinzufügen können, Fahrzeug seine Verbindung, seinen Zustand und Werkzeuge, Mehr den Rest.",
   'whatsNew.settings': "Einstellungen unter Mehr: hell oder dunkel, Design, Sprache und was die App beim Öffnen tut.",
   'whatsNew.updates': "Kleine Updates dieser App können zwischen Store-Versionen kommen: fragen Sie unter Mehr › Info danach.",
+  'whatsNew.diagnostics': "Um Probleme zu beheben, teilt die App ihre Startzeiten und Abstürze mit Expo. Ausschalten unter Mehr › Einstellungen.",
 };

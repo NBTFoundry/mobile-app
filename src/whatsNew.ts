@@ -4,7 +4,7 @@
 import type { Key } from './i18n';
 
 export const WHATS_NEW_ID = 4;
-export const WHATS_NEW_ITEMS: readonly Key[] = ['whatsNew.layout', 'whatsNew.settings', 'whatsNew.updates'];
+export const WHATS_NEW_ITEMS: readonly Key[] = ['whatsNew.layout', 'whatsNew.settings', 'whatsNew.updates', 'whatsNew.diagnostics'];
 
 /** An older list seen: show this one. None seen: only for someone who used the app before
  * this sheet existed (cars or packages); a new install starts from this list. */

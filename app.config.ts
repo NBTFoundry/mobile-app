@@ -51,8 +51,8 @@ const config: ExpoConfig = {
     // Expo SDK 58's modules require compiling against 37, which changes no runtime behaviour.
     ['expo-build-properties', { android: { minSdkVersion: 29, compileSdkVersion: 37,
       targetSdkVersion: 36, buildArchs: ['arm64-v8a'] } }],
-    // Diagnostics (src/store/diagnostics.ts): nothing is collected until the user agrees.
-    ['expo-observe', { consent: 'not-granted' }],
+    // Diagnostics (src/store/diagnostics.ts): on, until the user turns them off in More › Settings.
+    ['expo-observe', { consent: 'granted' }],
     './plugins/withCarApp',
   ],
 };

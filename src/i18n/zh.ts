@@ -519,10 +519,6 @@ export const zh: Messages = {
   'theme.hint': "“跟随车辆”使用车辆屏幕显示的主题。",
   'diag.title': "分享诊断数据",
   'diag.detail': "启动时间和崩溃，发送给 Expo",
-  'diag.question': "帮助改进 NBT Manager？",
-  'diag.body': "分享应用的启动速度和崩溃信息。它们会发送给 Expo（构建此应用所用的服务），并附带此安装的一个随机编号。不包含您的车辆、文件或使用方式的任何信息。可在“更多 › 设置”中更改。",
-  'diag.yes': "分享",
-  'diag.no': "不用了",
   'about.tagline': "NBTFoundry · 开源",
   'about.app': "此应用",
   'about.update': "应用更新",
@@ -544,4 +540,5 @@ export const zh: Messages = {
   'whatsNew.layout': "三个标签页：“应用”列出车辆上运行的和可以添加的应用，“车辆”包含连接、状态和工具，“更多”包含其余内容。",
   'whatsNew.settings': "“更多”中的设置：浅色或深色、主题、语言，以及应用打开时的操作。",
   'whatsNew.updates': "应用可在商店版本之间收到小更新：在“更多 › 关于”中检查。",
+  'whatsNew.diagnostics': "为帮助修复问题，应用会与 Expo 分享启动时间和崩溃信息。可在“更多 › 设置”中关闭。",
 };

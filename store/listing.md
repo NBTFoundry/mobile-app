@@ -24,7 +24,7 @@ NBT Manager puts new apps on the iDrive 6 screen of a BMW, a MINI or a Toyota GR
 • First install: put NBT Manager on a car over a Wi-Fi ENET adapter.
 • English, French, German, Italian, Spanish, Chinese and Japanese.
 
-Requires a car with a BMW NBT Evo head unit (iDrive 6, the home screen of large tiles). Not tested on a Supra yet. No account, no ads. Diagnostics are shared only if you agree.
+Requires a car with a BMW NBT Evo head unit (iDrive 6, the home screen of large tiles). Not tested on a Supra yet. No account, no ads. Start-up times and crashes are shared to fix problems; one switch turns that off.
 
 Warning: installing or modifying head-unit software can brick your head unit. Recovery may require professional service or replacement, at your expense. Provided as is; use at your own risk. Use applications only while parked.
 
@@ -45,7 +45,7 @@ NBTFoundry is not affiliated with or endorsed by BMW AG, Toyota Motor Corporatio
 - **Data safety** (changed with 0.2.0: app updates and optional diagnostics through Expo):
   collects data: yes. Encrypted in transit: yes. Deletion request: no.
   - App info and performance → Crash logs: collected, not shared, optional (Share diagnostics,
-    off by default), purpose Analytics.
+    on by default, a switch in More › Settings), purpose Analytics.
   - App info and performance → Diagnostics: collected, not shared, purpose Analytics. Required
     for Google's ML Kit (the QR scanner sends device information); the app's own start-up
     times are optional.

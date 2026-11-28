@@ -37,7 +37,7 @@ Expo SDK 58, React Native 0.88, Android 10 and later, application id
 `org.nbtfoundry.manager`. In English, French, German, Italian, Spanish, Chinese and
 Japanese, following the phone's language (English for any other); More › Language
 chooses one ([docs/ui.md](docs/ui.md)). Small updates reach the app between store builds,
-when its user asks; diagnostics are sent only after its user agreed
+when its user asks; diagnostics (start-up times, crashes) can be turned off in More
 ([docs/updates.md](docs/updates.md)).
 
 **Supported head units:** BMW NBT Evo (iDrive 6). Support for the earlier NBT

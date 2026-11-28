@@ -64,8 +64,8 @@ flowchart TD
   the activity bar's line), the installer's steps.
 - Going online: never by itself. The catalog and the app's own update are read when the user
   asks (Apps › Check for new versions or a pull on the list; More › About), or at start-up
-  when the user turned that on. Diagnostics go out only after the user agreed
-  ([updates.md](updates.md)).
+  when the user turned that on. Diagnostics are the exception: on until turned off in
+  More › Settings ([updates.md](updates.md)).
 - The car: opening the app makes no connection. Reading its applications, an install, a
   setting or a tool page requests the network; Connect at start-up is the user's choice.
 - A package's details list its permissions as the car's review does: "Uses: …" and
@@ -82,7 +82,7 @@ flowchart TD
 - A Wi-Fi code another app hands over (`nbtmanager://pair?wifi=…`) opens Pair a car with it;
   nothing starts until the user taps.
 - "What's new" (`src/whatsNew.ts`): once after an update that brings something, and again
-  from About. The question about diagnostics comes after it, once.
+  from About.
 - Touch targets are at least 48 dp. Labels wrap, dialogs scroll, status always includes text.
 - Seven languages (`src/i18n/`), following the phone's, English for any other; More ›
   Language chooses one. Each language is typed against the English keys; counts have a

@@ -521,10 +521,6 @@ export const en = {
   'theme.hint': "Like the car follows the theme your car’s screen shows.",
   'diag.title': "Share diagnostics",
   'diag.detail': "Start-up times and crashes, to Expo",
-  'diag.question': "Help improve NBT Manager?",
-  'diag.body': "Share how fast the app starts and its crashes. They go to Expo, the service this app is built with, with a random number for this installation. Nothing about your car, your files or what you do with them. You can change this in More › Settings.",
-  'diag.yes': "Share",
-  'diag.no': "No thanks",
   'about.tagline': "NBTFoundry · open source",
   'about.app': "This app",
   'about.update': "App update",
@@ -546,4 +542,5 @@ export const en = {
   'whatsNew.layout': "Three tabs: Apps lists what your car runs and what you can add, Car has its link, health and tools, More has the rest.",
   'whatsNew.settings': "Settings in More: light or dark, theme, language, and what the app does when it opens.",
   'whatsNew.updates': "Small updates of this app can arrive between store releases: ask in More › About.",
+  'whatsNew.diagnostics': "To help fix problems, the app shares its start-up times and crashes with Expo. Turn it off in More › Settings.",
 } as const;

@@ -519,10 +519,6 @@ export const fr: Messages = {
   'theme.hint': "« Comme la voiture » suit le thème affiché par l’écran de votre voiture.",
   'diag.title': "Partager les diagnostics",
   'diag.detail': "Temps de démarrage et plantages, vers Expo",
-  'diag.question': "Aider à améliorer NBT Manager ?",
-  'diag.body': "Partagez la vitesse de démarrage de l’application et ses plantages. Ils sont envoyés à Expo, le service avec lequel cette application est construite, avec un numéro aléatoire propre à cette installation. Rien sur votre voiture, vos fichiers ou ce que vous en faites. Vous pouvez changer d’avis dans Plus › Réglages.",
-  'diag.yes': "Partager",
-  'diag.no': "Non merci",
   'about.tagline': "NBTFoundry · open source",
   'about.app': "Cette application",
   'about.update': "Mise à jour de l’application",
@@ -544,4 +540,5 @@ export const fr: Messages = {
   'whatsNew.layout': "Trois onglets : Applications liste ce que votre voiture exécute et ce que vous pouvez ajouter, Voiture regroupe sa liaison, son état et ses outils, Plus contient le reste.",
   'whatsNew.settings': "Réglages dans Plus : clair ou sombre, thème, langue, et ce que fait l’application à l’ouverture.",
   'whatsNew.updates': "De petites mises à jour de l’application peuvent arriver entre deux versions du Store : demandez-les dans Plus › À propos.",
+  'whatsNew.diagnostics': "Pour aider à corriger les problèmes, l’application partage ses temps de démarrage et ses plantages avec Expo. Désactivez-le dans Plus › Réglages.",
 };

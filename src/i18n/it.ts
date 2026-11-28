@@ -519,10 +519,6 @@ export const it: Messages = {
   'theme.hint': "«Come l’auto» segue il tema mostrato dallo schermo della tua auto.",
   'diag.title': "Condividi la diagnostica",
   'diag.detail': "Tempi di avvio e arresti anomali, a Expo",
-  'diag.question': "Vuoi aiutare a migliorare NBT Manager?",
-  'diag.body': "Condividi la velocità di avvio dell’app e i suoi arresti anomali. Vanno a Expo, il servizio con cui questa app è costruita, con un numero casuale per questa installazione. Niente sulla tua auto, sui tuoi file o su ciò che ne fai. Puoi cambiare idea in Altro › Impostazioni.",
-  'diag.yes': "Condividi",
-  'diag.no': "No grazie",
   'about.tagline': "NBTFoundry · open source",
   'about.app': "Questa app",
   'about.update': "Aggiornamento dell’app",
@@ -544,4 +540,5 @@ export const it: Messages = {
   'whatsNew.layout': "Tre schede: Applicazioni elenca ciò che l’auto esegue e ciò che puoi aggiungere, Auto raccoglie collegamento, stato e strumenti, Altro il resto.",
   'whatsNew.settings': "Impostazioni in Altro: chiaro o scuro, tema, lingua e cosa fa l’app all’apertura.",
   'whatsNew.updates': "Piccoli aggiornamenti dell’app possono arrivare tra una versione dello store e l’altra: chiedili in Altro › Informazioni.",
+  'whatsNew.diagnostics': "Per aiutare a risolvere i problemi, l’app condivide con Expo i tempi di avvio e gli arresti anomali. Puoi disattivarlo in Altro › Impostazioni.",
 };

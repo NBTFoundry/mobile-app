@@ -241,11 +241,9 @@ def open_app(dev, metro_port):
     url = f'http://127.0.0.1:{metro_port}'.replace(':', '%3A').replace('/', '%2F')
     dev.shell('am', 'start', '-a', 'android.intent.action.VIEW', '-d',
               f'exp+manager://expo-development-client/?url={url}', PACKAGE)
-    # The app asks once about diagnostics, over everything else.
-    dev.tap('No thanks', timeout=180)
     # The development build's menu introduces itself on first launch; its
     # floating tools button is turned off so that no capture shows it.
-    dev.tap('Continue', timeout=30)
+    dev.tap('Continue', timeout=180)
     dev.shell('input', 'swipe', '540', '2200', '540', '900', '400')
     time.sleep(1)
     dev.tap('Tools button')
