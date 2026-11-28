@@ -12,7 +12,7 @@ description: The online application catalog and the phone's Apps tab (what can b
 
 The workflow runs on push, when a release run starts it (the manager's
 `update-catalog` action, last job of `release.yml` and `app-release.yml`, with
-the `CATALOG_TOKEN` of the repository's `catalog` environment), every 30
+the catalog application's secrets in the repository's `catalog` environment), every 30
 minutes when GitHub's schedule allows, and by hand. It lists, per app,
 the newest stable release and a newer pre-release (a `0.x` tag is one),
 verifying every file against the manager's `release/*.pem` on its `main`.
