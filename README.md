@@ -58,7 +58,7 @@ NBT are trademarks of BMW AG; QNX is a trademark of BlackBerry Limited.
   <tr>
     <td width="20%" align="center"><img src="docs/assets/mobile-install.webp" alt="Installing media-player: the request, the car's approval, then the Apps tab lists it"><br>
       <sub>Install: requested on the phone, approved on the car</sub></td>
-    <td width="20%" align="center"><img src="docs/assets/mobile-app.png" alt="Doom's page: the version on the car, the update to download, and rows for settings, files, about and troubleshooting"><br>
+    <td width="20%" align="center"><img src="docs/assets/mobile-app.png" alt="Doom's page: the version on the car, the update ready to install, and rows for settings, files, about and troubleshooting"><br>
       <sub>An application: its next step, the rest behind rows</sub></td>
     <td width="20%" align="center"><img src="docs/assets/mobile-car.png" alt="The Car tab: the link to the car, NBT Manager, health and tools"><br>
       <sub>Car: link, health, tools</sub></td>

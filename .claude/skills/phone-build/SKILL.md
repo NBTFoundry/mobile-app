@@ -43,7 +43,8 @@ yarn test:contract                                # protocol against the manager
   terminal: `PHONE OPEN`, `confirm`, `approve`, `pack <app> <version> <sequence>`.
 - README screenshots: `python3 scripts/capture_screens.py` (emulator plus desk car;
   it reads the screen with `uiautomator`, which the Device panel's helper holds:
-  close the device there first).
+  close the device there first). `--themes <folder>` adds the Apps tab in each theme, for
+  the website's slides (`../NBTFoundry.github.io/tools/phone_car.py`).
 
 ## Store builds (EAS)
 

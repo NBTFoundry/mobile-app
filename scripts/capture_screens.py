@@ -14,6 +14,8 @@ Writes, framed as a phone on a transparent background:
   mobile-more.png     More: settings, this phone, About (light)
   mobile-pairing.png  pairing: the code to compare with the car (light)
   mobile-install.webp an install, from the request to the car's approval
+With --themes <folder>, also theme-bmw.png, theme-mini.png and theme-supra.png there: the
+Apps tab (dark) in each make's theme, for the website's slides.
 
 Starts Metro (`yarn start`'s port) when nothing listens on it. Clears the app's
 data on the emulator first. Needs adb, ffmpeg (with libwebp), ImageMagick
@@ -39,15 +41,17 @@ from host_car import MANAGER, HostCar, elf  # noqa: E402
 APP_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'org.nbtfoundry.manager'
 CAR_PORT, DOOR_PORT = 18080, 18081
+THEMES = ('BMW', 'MINI', 'Supra')                  # as More > Theme names them
 ADDRESS_HINT = '10.0.2.2:18080'                    # the desk pairing field's placeholder
 SCREEN_W, SCREEN_H = 540, 1200                     # half of the Pixel 6's 1080x2400
 BEZEL, BODY_RADIUS, SCREEN_RADIUS = 16, 64, 46
 BODY = '#1b1e24'
-# (file, app, version, sequence, size in bytes, settings)
+# (file, app, version, sequence, size in bytes, settings). Doom's sequences are above the online
+# catalog's, which the app reads when it opens: the page then offers these packages, not a download.
 PACKAGES = [
-    ('doom-1.0.18.nbt', 'doom', '1.0.18', 18, 6_100_000,
+    ('doom-1.0.18.nbt', 'doom', '1.0.18', 9_000_018, 6_100_000,
      ['sound|Sound|on|on,off', 'turn|Sensitivity|normal|low,normal,high', 'run|Run|always|always,hold']),
-    ('doom-1.0.19.nbt', 'doom', '1.0.19', 19, 6_120_000,
+    ('doom-1.0.19.nbt', 'doom', '1.0.19', 9_000_019, 6_120_000,
      ['sound|Sound|on|on,off', 'turn|Sensitivity|normal|low,normal,high', 'run|Run|always|always,hold']),
     ('media-player-0.4.2.nbt', 'media-player', '0.4.2', 7, 1_400_000, ['source|Source|usb|usb,bluetooth']),
     ('test-v1.nbt', 'test', 'v1', 1, 52_000, ['background|Background|blue|blue,red,green,black']),
@@ -309,6 +313,19 @@ def install(dev, car, app, version):
     dev.tap('‹ Back')
 
 
+def theme_shots(dev, shots):
+    """The Apps tab (dark) in each make's theme; leaves More open, in the light."""
+    dev.night(True)
+    for theme in (*THEMES, 'Like the car'):
+        dev.tab('More')
+        dev.tap('Theme')
+        dev.tap(theme)
+        if theme in THEMES:
+            dev.tab('Apps')
+            dev.screenshot(shots / f'theme-{theme.lower()}.png')
+    dev.night(False)
+
+
 def frame_parts(tmp):
     """The phone body with a hole for the screen, and the screen's rounded mask."""
     w, h = SCREEN_W + 2 * BEZEL, SCREEN_H + 2 * BEZEL
@@ -383,6 +400,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--serial', help='the emulator (default: the only one attached)')
     parser.add_argument('--out', type=Path, default=APP_ROOT / 'docs' / 'assets')
+    parser.add_argument('--themes', type=Path, help='also the Apps tab in each theme, into this folder')
     parser.add_argument('--metro-port', type=int, default=8082)
     parser.add_argument('--build', type=Path, default=Path(os.environ.get('NBT_MANAGER_BUILD', MANAGER / 'build')))
     args = parser.parse_args()
@@ -435,15 +453,13 @@ def main():
                 import_packages(dev, newer, first=False)
 
                 dev.tab('Apps')
-                dev.wait('1 update')
-                # With the online catalog when the emulator reaches it: icons, names, more to get.
-                dev.reach('Read the list')
+                dev.wait_prefix('1.0.18 ')           # doom's update: from 1.0.18 to 1.0.19
+                # With the online catalog, read when the app opened if the emulator reaches it:
+                # icons, names, more to get.
                 try:
                     dev.wait_prefix('Checked ', timeout=25)
                 except SystemExit:
                     print('no catalog: the Apps tab is captured without it')
-                dev.tab('Car')                       # and back: the list from its top
-                dev.tab('Apps')
                 dev.screenshot(shots / 'apps-light.png')
                 dev.night(True)
                 dev.screenshot(shots / 'apps-dark.png')
@@ -458,6 +474,8 @@ def main():
                 dev.tab('More')
                 dev.wait('Appearance')
                 dev.screenshot(shots / 'more.png')
+                if args.themes:
+                    theme_shots(dev, shots)
             finally:
                 dev.demo_mode(False)
                 dev.shell('cmd', 'uimode', 'night', 'yes' if night.endswith('yes') else 'no')
@@ -477,6 +495,10 @@ def main():
             shutil.copy(tmp / f'framed-{name}.png', args.out / f'mobile-{name}.png')
         for name in ('apps', 'car', 'app', 'more', 'pairing'):
             optimise(args.out / f'mobile-{name}.png')
+        if args.themes:
+            args.themes.mkdir(parents=True, exist_ok=True)
+            for theme in THEMES:
+                frame_still(shots / f'theme-{theme.lower()}.png', body, args.themes / f'theme-{theme.lower()}.png')
     print(f'captures in {args.out}')
 
 
