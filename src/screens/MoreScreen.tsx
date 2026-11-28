@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import type { AppState } from '../App';
 import { useActivities } from '../store/activity';
 import { chooseDiagnostics } from '../store/diagnostics';
-import { APPEARANCES, THEME_CHOICES, chooseAppearance, chooseAutoCheck, chooseAutoConnect, chooseBetas, chooseTheme, usePreferences,
+import { APPEARANCES, THEME_CHOICES, chooseAppearance, chooseAutoConnect, chooseBetas, chooseTheme, usePreferences,
   type Appearance, type ThemeChoice } from '../store/preferences';
 import { ChoiceRow } from '../ui/ChoiceRow';
 import { IconTile, Row, Section, Title, Toggle, formatSize } from '../ui/kit';
@@ -17,7 +17,7 @@ const APPEARANCE_KEYS: Record<Appearance, Key> = { auto: 'appearance.auto', ligh
 const THEME_NAMES: Record<Exclude<ThemeChoice, 'car'>, string> = { bmw: 'BMW', mini: 'MINI', supra: 'Supra' };
 
 export function MoreScreen({ state }: { state: AppState }) {
-  const { appearance, theme, betas, diagnostics, autoConnect, autoCheck } = usePreferences();
+  const { appearance, theme, betas, diagnostics, autoConnect } = usePreferences();
   // On unless the user turned them off.
   const sharing = diagnostics !== false;
   const latest = useActivities()[0];
@@ -43,9 +43,6 @@ export function MoreScreen({ state }: { state: AppState }) {
         <Row compact icon={<IconTile small name="car" />} title={t('start.connect')} detail={t('start.connectDetail')}
           onPress={() => void chooseAutoConnect(!autoConnect)}
           right={<Toggle on={autoConnect} label={t('start.connect')} onChange={on => void chooseAutoConnect(on)} />} />
-        <Row compact icon={<IconTile small name="refresh" />} title={t('start.check')} detail={t('start.checkDetail')}
-          onPress={() => void chooseAutoCheck(!autoCheck)}
-          right={<Toggle on={autoCheck} label={t('start.check')} onChange={on => void chooseAutoCheck(on)} />} />
       </Section>
       <Section title={t('more.phone')}>
         <Row compact icon={<IconTile small name="activity" />} title={t('activity.title')} value={latest?.title}

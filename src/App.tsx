@@ -144,12 +144,12 @@ function App() {
   // Dialogs, the keyboard and the system bars follow the appearance chosen.
   useEffect(() => Appearance.setColorScheme(appearance === 'auto' ? 'unspecified' : appearance), [appearance]);
   const ready = preferencesReady && carsReady && libraryReady;
-  // What the app does when it opens (More): reading the catalog is on until turned off,
-  // connecting to the car off until chosen; failures stay quiet.
+  // When the app opens: the catalog is read, always, and the car's applications when the
+  // user chose that (More); failures stay quiet.
   const opened = useEffectEvent(() => {
-    const { autoConnect, autoCheck } = preferences();
+    const { autoConnect } = preferences();
     if (autoConnect && car) void refreshApps(car).then(() => reloadCars());
-    if (autoCheck) void fetchCatalog().then(setCatalog, () => undefined);
+    void fetchCatalog().then(setCatalog, () => undefined);
   });
   useEffect(() => {
     if (!ready) return;

@@ -510,8 +510,6 @@ export const en = {
   'start.title': "When the app opens",
   'start.connect': "Connect to the car",
   'start.connectDetail': "Reads its applications at once",
-  'start.check': "Check for new versions",
-  'start.checkDetail': "Online: applications",
   'appearance.title': "Appearance",
   'appearance.auto': "As the phone",
   'appearance.light': "Light",

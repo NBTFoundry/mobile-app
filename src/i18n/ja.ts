@@ -508,8 +508,6 @@ export const ja: Messages = {
   'start.title': "アプリを開いたとき",
   'start.connect': "車両に接続",
   'start.connectDetail': "すぐに車両のアプリを読み込みます",
-  'start.check': "新しいバージョンを確認",
-  'start.checkDetail': "オンライン：アプリ",
   'appearance.title': "外観",
   'appearance.auto': "スマートフォンに合わせる",
   'appearance.light': "ライト",

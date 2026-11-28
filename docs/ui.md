@@ -37,7 +37,7 @@ flowchart TD
   Self test and Crash reports show what was read last (`CarRecord.health`). The car's name
   opens Your cars.
 - **More** (`MoreScreen`, `AboutCard`): Settings (language, appearance, theme, betas,
-  analytics), When the app opens (connect to the car, off; check for new versions of the applications, on),
+  analytics), When the app opens (connect to the car, off),
   This phone (Activity, Downloads, Your cars, the installer), About (versions, the app's own
   update, links, Share details).
 - **Activity bar** (`ActivityBar`): over the tabs while an action runs (its picture, a line
@@ -63,10 +63,9 @@ flowchart TD
   the button filling), an install or a file being sent (the dialog's bar and percentage,
   the activity bar's line), the installer's steps.
 - Going online: the app's own update is looked for when the app opens or comes back to the
-  front, with no switch. The catalog is read when the app opens, until More › When the app
-  opens turns that off, and when the user asks (Apps › Check for new versions or a pull on
-  the list). Analytics are on until turned off in More › Settings ([updates.md](updates.md)).
-  Nothing else goes online by itself.
+  front, with no switch. So is the catalog when the app opens, and when the user asks
+  (Apps › Check for new versions or a pull on the list). Analytics are on until turned off
+  in More › Settings ([updates.md](updates.md)). Nothing else goes online by itself.
 - An app update that is downloaded shows a bar over the tabs (`UpdateBar`): Later, or Restart,
   which starts it now. Not while something runs with the car.
 - The car: opening the app makes no connection. Reading its applications, an install, a

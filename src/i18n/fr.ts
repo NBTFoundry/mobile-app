@@ -508,8 +508,6 @@ export const fr: Messages = {
   'start.title': "À l’ouverture de l’application",
   'start.connect': "Se connecter à la voiture",
   'start.connectDetail': "Lit aussitôt ses applications",
-  'start.check': "Chercher de nouvelles versions",
-  'start.checkDetail': "En ligne : les applications",
   'appearance.title': "Apparence",
   'appearance.auto': "Comme le téléphone",
   'appearance.light': "Clair",

@@ -22,16 +22,14 @@ type Values = {
   betas: boolean;
   appearance: Appearance;
   theme: ThemeChoice;
-  /** When the app opens: read the selected car's applications (off until chosen), and look
-   * online for new versions of the applications (on until turned off). */
+  /** When the app opens: read the selected car's applications. */
   autoConnect: boolean;
-  autoCheck: boolean;
   /** Unset: never changed, which is on. */
   diagnostics?: boolean;
   whatsNew?: number;
 };
 
-const DEFAULTS: Values = { betas: false, appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: true };
+const DEFAULTS: Values = { betas: false, appearance: 'auto', theme: 'car', autoConnect: false };
 let values: Values = DEFAULTS;
 const listeners = new Set<() => void>();
 
@@ -55,7 +53,6 @@ export async function loadPreferences(): Promise<void> {
       appearance: one(APPEARANCES, raw?.appearance) ?? values.appearance,
       theme: one(THEME_CHOICES, raw?.theme) ?? values.theme,
       autoConnect: raw?.autoConnect === true,
-      autoCheck: typeof raw?.autoCheck === 'boolean' ? raw.autoCheck : values.autoCheck,
       diagnostics: typeof raw?.diagnostics === 'boolean' ? raw.diagnostics : values.diagnostics,
       whatsNew: typeof raw?.whatsNew === 'number' && Number.isSafeInteger(raw.whatsNew) ? raw.whatsNew : values.whatsNew,
     });
@@ -66,12 +63,12 @@ export async function loadPreferences(): Promise<void> {
 
 /** A default is not written: the file says what was chosen. */
 async function save(): Promise<boolean> {
-  const { betas, appearance, theme, autoConnect, autoCheck, diagnostics, whatsNew } = values;
+  const { betas, appearance, theme, autoConnect, diagnostics, whatsNew } = values;
   try {
     await file().write(JSON.stringify({ language: currentChoice(), betas, whatsNew, diagnostics,
       appearance: appearance === DEFAULTS.appearance ? undefined : appearance,
       theme: theme === DEFAULTS.theme ? undefined : theme,
-      autoConnect: autoConnect || undefined, autoCheck: autoCheck ? undefined : false }));
+      autoConnect: autoConnect || undefined }));
     return true;
   } catch {
     return false;
@@ -93,7 +90,6 @@ export const chooseBetas = (betas: boolean) => keep({ betas });
 export const chooseAppearance = (appearance: Appearance) => keep({ appearance });
 export const chooseTheme = (theme: ThemeChoice) => keep({ theme });
 export const chooseAutoConnect = (autoConnect: boolean) => keep({ autoConnect });
-export const chooseAutoCheck = (autoCheck: boolean) => keep({ autoCheck });
 export const keepDiagnostics = (diagnostics: boolean) => keep({ diagnostics });
 export const markWhatsNewSeen = (whatsNew: number) => keep({ whatsNew });
 /** Shows the list again (About): as if an older one had been seen. */

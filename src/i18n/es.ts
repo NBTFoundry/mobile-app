@@ -508,8 +508,6 @@ export const es: Messages = {
   'start.title': "Al abrir la app",
   'start.connect': "Conectar con el coche",
   'start.connectDetail': "Lee sus aplicaciones al momento",
-  'start.check': "Buscar versiones nuevas",
-  'start.checkDetail': "En línea: aplicaciones",
   'appearance.title': "Apariencia",
   'appearance.auto': "Como el teléfono",
   'appearance.light': "Claro",

@@ -18,7 +18,7 @@ import {
 } from '../src/i18n';
 import { connectError, initialState, reduce } from '../src/installer/state';
 import { CarError, LinkError } from '../src/protocol/session';
-import { chooseAppearance, chooseAutoCheck, chooseBetas, chooseLanguage, chooseTheme, loadPreferences, preferences, showBetas } from '../src/store/preferences';
+import { chooseAppearance, chooseAutoConnect, chooseBetas, chooseLanguage, chooseTheme, loadPreferences, preferences, showBetas } from '../src/store/preferences';
 
 /** A count's singular may name {count} or not (French uses it for 0 too); tn always gives it. */
 const placeholders = (text: string, key: string) =>
@@ -135,22 +135,23 @@ describe('languages', () => {
   it('keeps the appearance, the theme and the start-up choices; a default is not written', async () => {
     await chooseAppearance('dark');
     await chooseTheme('supra');
-    await chooseAutoCheck(false);
+    await chooseAutoConnect(true);
     expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual(
-      { language: 'auto', betas: false, appearance: 'dark', theme: 'supra', autoCheck: false });
+      { language: 'auto', betas: false, appearance: 'dark', theme: 'supra', autoConnect: true });
     await chooseAppearance('auto');
     await chooseTheme('car');
-    await chooseAutoCheck(true);
+    await chooseAutoConnect(false);
     expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual({ language: 'auto', betas: false });
-    // A saved value this app does not know leaves the default: connecting off, looking for new versions on.
-    files.set('doc/preferences.json', '{"appearance":"sepia","theme":"rolls","autoConnect":"yes","autoCheck":0,"diagnostics":1}');
+    // A saved value this app does not know leaves the default; a switch that is gone is ignored.
+    files.set('doc/preferences.json', '{"appearance":"sepia","theme":"rolls","autoConnect":"yes","autoCheck":false,"diagnostics":1}');
     await loadPreferences();
-    expect(preferences()).toMatchObject({ appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: true });
+    expect(preferences()).toMatchObject({ appearance: 'auto', theme: 'car', autoConnect: false });
+    expect(preferences()).not.toHaveProperty('autoCheck');
     expect(preferences().diagnostics).toBeUndefined();
-    files.set('doc/preferences.json', '{"appearance":"light","theme":"mini","autoConnect":true,"autoCheck":false,"diagnostics":false}');
+    files.set('doc/preferences.json', '{"appearance":"light","theme":"mini","autoConnect":true,"diagnostics":false}');
     await loadPreferences();
-    expect(preferences()).toMatchObject({ appearance: 'light', theme: 'mini', autoConnect: true, autoCheck: false, diagnostics: false });
-    await chooseAutoCheck(true);
+    expect(preferences()).toMatchObject({ appearance: 'light', theme: 'mini', autoConnect: true, diagnostics: false });
+    await chooseAutoConnect(false);
     await chooseAppearance('auto');
     await chooseTheme('car');
   });

@@ -508,8 +508,6 @@ export const zh: Messages = {
   'start.title': "打开应用时",
   'start.connect': "连接车辆",
   'start.connectDetail': "立即读取车辆上的应用",
-  'start.check': "检查新版本",
-  'start.checkDetail': "联网：应用",
   'appearance.title': "外观",
   'appearance.auto': "跟随手机",
   'appearance.light': "浅色",
