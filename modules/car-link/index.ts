@@ -24,6 +24,8 @@ type CarLinkNative = {
   release(): void;
   setDeskIp(ip: string | null): void;
   randomHex(bytes: number): string;
+  /** The app as installed (an update between store builds leaves both as they were). */
+  appVersion(): { name: string; code: number };
   /** Stops the upload of a request in flight (its progress id): it fails with `stopped`. */
   cancel(progressId: string): void;
   inspect(uri: string, headSize: number): Promise<{ size: number; sha256: string; head: string }>;

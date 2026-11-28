@@ -41,7 +41,9 @@ yarn test:contract                                # protocol against the manager
 - Desk car: `yarn desk` (the manager's host worker, `make test` in
   `../manager` first); the emulator reaches it at `10.0.2.2`; commands in its
   terminal: `PHONE OPEN`, `confirm`, `approve`, `pack <app> <version> <sequence>`.
-- README screenshots: `python3 scripts/capture_screens.py` (emulator plus desk car).
+- README screenshots: `python3 scripts/capture_screens.py` (emulator plus desk car;
+  it reads the screen with `uiautomator`, which the Device panel's helper holds:
+  close the device there first).
 
 ## Store builds (EAS)
 
@@ -58,6 +60,17 @@ goes up with `npx eas-cli submit -p android --profile production --id <build>
 `eas/build-core.sh` shows in the "Run post-install hook" step. `eas/pins.env`
 moves with a store release (the installer commit, the manager release and its
 SHA-256). Testers and production are the user's, in Play Console.
+
+## Updates between store builds
+
+`yarn ota "What changed"` (channel `production`; `preview` as a second
+argument) publishes the committed JavaScript: clean tree, checks, then `eas
+update`. It reaches only the builds on the runtime it prints
+(`plugins/runtimeVersion.js`; `npx eas-cli build:list` shows each build's). A
+native change gives another runtime: release it with `yarn play:closed`
+instead. Only when the user asks, like a store build. Phones take an update
+when their user asks (More › About), never by themselves (`docs/updates.md`).
+Diagnostics: the Expo dashboard's Observe tab, `npx eas-cli observe:metrics-summary`.
 
 ## Release APK
 

@@ -7,9 +7,11 @@ paired with the desk car (scripts/host_car.py), driven through uiautomator.
     python3 scripts/capture_screens.py [--serial emulator-5554] [--out docs/assets]
 
 Writes, framed as a phone on a transparent background:
-  mobile-car.png      the Car tab, light and dark side by side
-  mobile-library.png  Library (light)
-  mobile-app.png      an application's page with its settings (dark)
+  mobile-apps.png     the Apps tab, light and dark side by side (with the online catalog
+                      when the emulator reaches it)
+  mobile-car.png      the Car tab (dark)
+  mobile-app.png      an application's page with its update (dark)
+  mobile-more.png     More: settings, this phone, About (light)
   mobile-pairing.png  pairing: the code to compare with the car (light)
   mobile-install.webp an install, from the request to the car's approval
 
@@ -82,6 +84,31 @@ class Device:
             if label.lower() in ((node.get('text') or '').lower(), (node.get('content-desc') or '').lower()):
                 return node
         return None
+
+    def tab(self, label, after=0.8, timeout=15.0):
+        """Taps a tab: the lowest thing on screen with that label (a page's title can carry it too).
+        Waits for the tabs, which a dialog or the keyboard may still cover."""
+        deadline = time.monotonic() + timeout
+        while True:
+            found = [n for n in self.nodes()
+                     if label.lower() in ((n.get('text') or '').lower(), (n.get('content-desc') or '').lower())]
+            if found:
+                break
+            if time.monotonic() > deadline:
+                raise SystemExit(f'no tab "{label}"')
+            time.sleep(0.4)
+        self.tap_node(max(found, key=lambda n: int(re.findall(r'\d+', n.get('bounds'))[1])), after)
+
+    def reach(self, label, swipes=4):
+        """Taps `label`, scrolling down to it when it is below the screen."""
+        for _ in range(swipes):
+            node = self.find(label)
+            if node is not None:
+                self.tap_node(node, 0.6)
+                return
+            self.shell('input', 'swipe', '540', '1700', '540', '900', '300')
+            time.sleep(0.6)
+        self.tap(label)
 
     def wait(self, label, timeout=20.0):
         deadline = time.monotonic() + timeout
@@ -214,9 +241,11 @@ def open_app(dev, metro_port):
     url = f'http://127.0.0.1:{metro_port}'.replace(':', '%3A').replace('/', '%2F')
     dev.shell('am', 'start', '-a', 'android.intent.action.VIEW', '-d',
               f'exp+manager://expo-development-client/?url={url}', PACKAGE)
+    # The app asks once about diagnostics, over everything else.
+    dev.tap('No thanks', timeout=180)
     # The development build's menu introduces itself on first launch; its
     # floating tools button is turned off so that no capture shows it.
-    dev.tap('Continue', timeout=180)
+    dev.tap('Continue', timeout=30)
     dev.shell('input', 'swipe', '540', '2200', '540', '900', '400')
     time.sleep(1)
     dev.tap('Tools button')
@@ -236,34 +265,43 @@ def pair(dev, car, shots):
     dev.screenshot(shots / 'pairing.png')
     assert car.pending('YES').startswith('OK')
     dev.wait('Paired.')
+    dev.tap('‹ Back')
 
 
 def rename(dev, name):
-    dev.tap('Car')
-    dev.tap('Manage')
-    dev.tap('Switch or manage cars')
-    dev.tap('Manage car', after=1.0)
+    dev.tab('Car')
+    dev.reach('Rename or forget')
+    time.sleep(1.0)
     dev.shell('input', 'keycombination', '113', '29')   # Ctrl+A
     dev.key(67)                                         # Delete
     time.sleep(0.5)
     dev.text(name)
     time.sleep(0.5)
-    dev.tap('Save name')
-    dev.tap('‹ Back')
+    # The first tap may only reach the keyboard's old layout: until the dialog closes.
+    deadline = time.monotonic() + 15
+    while True:
+        node = dev.find('Save name')
+        if node is None:
+            break
+        if time.monotonic() > deadline:
+            raise SystemExit('the name was not saved')
+        dev.tap_node(node, 1.5)
 
 
 def import_packages(dev, files, first=True):
-    """Adds `files` to the library; a newer version of an application replaces the one there."""
-    dev.tap('Library')
+    """Adds `files` to Downloads; a newer version of an application replaces the one there."""
+    dev.tab('More')
+    dev.reach('Downloads')
     for i, file in enumerate(files):
         dev.tap('Add a file' if first and i == 0 else 'Add file', after=1.5)
         dev.tap(file.name, timeout=30, after=1.0)
         dev.wait_prefix('Package added.')
+    dev.tap('‹ Back')
 
 
 def install(dev, car, app, version):
-    """Installs `app` from its page, the package in the library, and returns to the tabs."""
-    dev.tap('Car')
+    """Installs `app` from its page, the package in Downloads, and returns to the tabs."""
+    dev.tab('Apps')
     dev.tap(app)
     dev.tap(f'Install {version}')
     dev.wait_prefix('Confirm on the car', timeout=60)
@@ -310,9 +348,9 @@ def optimise(path):
 
 def record_install(dev, car, tmp, body, dst):
     """Records installing media-player from its page, to the car's approval and the
-    Car tab that lists it."""
+    Apps tab that lists it."""
     remote = '/sdcard/nbt-capture.mp4'
-    dev.tap('Car')
+    dev.tab('Apps')
     dev.tap('media-player', after=1.0)
     dev.sync_clock()
     recorder = subprocess.Popen(dev.adb + ['shell', 'screenrecord', '--time-limit', '40',
@@ -393,22 +431,35 @@ def main():
                 # doom 1.0.19 comes last: it replaces 1.0.18 in the library, as an update to install.
                 newer = [file for file in files if file.name == 'doom-1.0.19.nbt']
                 import_packages(dev, [file for file in files if file not in newer])
-                dev.screenshot(shots / 'library.png')
                 install(dev, car, 'doom', '1.0.18')
                 install(dev, car, 'test', 'v1')
                 record_install(dev, car, tmp, frame_parts(tmp), args.out / 'mobile-install.webp')
                 import_packages(dev, newer, first=False)
 
-                dev.tap('Car')
-                dev.wait('Update available')
-                dev.screenshot(shots / 'car-light.png')
+                dev.tab('Apps')
+                dev.wait('1 update')
+                # With the online catalog when the emulator reaches it: icons, names, more to get.
+                dev.reach('Read the list')
+                try:
+                    dev.wait_prefix('Checked ', timeout=25)
+                except SystemExit:
+                    print('no catalog: the Apps tab is captured without it')
+                dev.tab('Car')                       # and back: the list from its top
+                dev.tab('Apps')
+                dev.screenshot(shots / 'apps-light.png')
                 dev.night(True)
-                dev.screenshot(shots / 'car-dark.png')
+                dev.screenshot(shots / 'apps-dark.png')
                 dev.tap('doom')
-                dev.tap('Read settings')
-                dev.wait('Sensitivity')
+                dev.wait('Troubleshoot')
                 dev.screenshot(shots / 'app.png')
+                dev.tap('‹ Back')
+                dev.tab('Car')
+                dev.wait('Health')
+                dev.screenshot(shots / 'car.png')
                 dev.night(False)
+                dev.tab('More')
+                dev.wait('Appearance')
+                dev.screenshot(shots / 'more.png')
             finally:
                 dev.demo_mode(False)
                 dev.shell('cmd', 'uimode', 'night', 'yes' if night.endswith('yes') else 'no')
@@ -421,12 +472,12 @@ def main():
                     metro.wait(timeout=10)
 
         body = frame_parts(tmp)
-        for name in ('car-light', 'car-dark', 'library', 'app', 'pairing'):
+        for name in ('apps-light', 'apps-dark', 'car', 'app', 'more', 'pairing'):
             frame_still(shots / f'{name}.png', body, tmp / f'framed-{name}.png')
-        side_by_side([tmp / 'framed-car-light.png', tmp / 'framed-car-dark.png'], args.out / 'mobile-car.png')
-        for name in ('library', 'app', 'pairing'):
+        side_by_side([tmp / 'framed-apps-light.png', tmp / 'framed-apps-dark.png'], args.out / 'mobile-apps.png')
+        for name in ('car', 'app', 'more', 'pairing'):
             shutil.copy(tmp / f'framed-{name}.png', args.out / f'mobile-{name}.png')
-        for name in ('car', 'library', 'app', 'pairing'):
+        for name in ('apps', 'car', 'app', 'more', 'pairing'):
             optimise(args.out / f'mobile-{name}.png')
     print(f'captures in {args.out}')
 

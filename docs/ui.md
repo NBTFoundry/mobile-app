@@ -1,108 +1,99 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 # User interface
 
-Four labelled tabs: **Car**, **Get apps**, **Library** and **Activity**. Car combines the paired
-car and its applications. Car management, application details, pairing and the
-manager installer open as pages with a header Back action. Android Back closes a
-modal first, then returns to the parent page. The installer session keeps working
-while its page is closed.
+Three tabs, each an icon over a label: **Apps**, **Car**, **More**. Everything else is a
+page over a tab, with a Back button; an application's page opens further pages. Android
+Back closes a dialog first, then goes up one page, then to Apps, then leaves the app.
+Without a paired car the app opens on Car, which pairs one.
 
 ```mermaid
 flowchart TD
-  CAR["Car tab<br/>paired car · installed apps · updates"] --> APP["App details<br/>install / update · settings · logs · remove"]
-  CAR --> MANAGE["Car management<br/>rename · forget · logs"]
-  CAR --> SELFTEST["Self test panel<br/>the car's last run · failed, skipped, passed · share"]
-  MANAGE --> KEYS["Developer keys<br/>list · add a public key file · remove"]
+  APPS["Apps<br/>updates · on the car · more to get"] --> APP["An application<br/>its next step: download, install, update"]
+  APP --> SET["Settings<br/>values · Start with the car"]
+  APP --> FILES["Files<br/>list · add · delete"]
+  APP --> PAGE["Phone page<br/>(an application that has one)"]
+  APP --> ABOUT["About<br/>description · permissions · versions"]
+  APP --> HELP["Troubleshoot<br/>log · crash reports · uninstall"]
+  CAR["Car<br/>link · NBT Manager · health · tools"] --> TOOL["Self test · Crash reports · Logs"]
+  CAR --> KEYS["Developer keys"]
+  CAR --> CARS["Your cars<br/>choose · pair another · rename · forget"]
   CAR --> PAIR["Pair a car<br/>scan the car's code · confirm digits"]
-  CAR --> INSTALLER["Install NBT Manager on a car<br/>SSH over a Wi-Fi ENET adapter"]
-  STORE["Get apps tab<br/>online catalog · betas"] --> REL["Release details<br/>download to the library"]
-  REL --> APP
-  LIB["Library tab<br/>imported packages"] --> PKG["Package details<br/>file · version · size · sequence"]
-  PKG --> APP
-  ACT["Activity tab<br/>results of every action"]
+  MORE["More<br/>settings · this phone · About"] --> ACT["Activity<br/>every action and its result"]
+  MORE --> DL["Downloads<br/>packages on this phone"]
+  MORE --> INST["Install NBT Manager on a car<br/>SSH over a Wi-Fi ENET adapter"]
 ```
+
+## The screens
+
+- **Apps** (`AppsScreen`, `store/appList.ts`): one list from the car, the downloads and the
+  catalog. Each application appears once with its next step as a button: *Get* (download the
+  newer release), *Install*, *Update*. Sections: updates (NBT Manager's too), on the car,
+  more to get (downloaded ones first). The row opens the application's page.
+- **An application** (`AppScreen`, `AppSections`): its icon, where it stands on the car, and
+  one panel for the next step. The rest is behind rows. Settings, files and the phone page
+  are read when their page opens.
+- **Car** (`CarScreen`, `CarToolScreen`): the link (a drawing that moves while it is made),
+  when the applications were read, NBT Manager's version and update, then Health and Tools.
+  Self test and Crash reports show what was read last (`CarRecord.health`). The car's name
+  opens Your cars.
+- **More** (`MoreScreen`, `AboutCard`): Settings (language, appearance, theme, betas,
+  diagnostics), When the app opens (connect to the car, check for new versions; both off),
+  This phone (Activity, Downloads, Your cars, the installer), About (versions, the app's own
+  update, links, Share details).
+- **Activity bar** (`ActivityBar`): over the tabs while an action runs (its picture, a line
+  for its progress) and after one failed, until Activity is opened.
 
 ## Conventions
 
-- The look is nbtfoundry.github.io's: near-black or light surfaces after the
-  system appearance, one accent for actions and available updates, small
-  capital labels after a slanted bar. Shared semantic colours cover text,
-  input fields, logs, status and dialogs (`src/ui/palettes.ts`).
-- Three themes, one per make: BMW (blue, an orange bar, square corners), MINI
-  (blue, round) and Supra (orange-red, sharp). The app takes the selected car's, the
-  one its own screen shows (the car's Settings › Theme, Automatic by its
-  make): read with the application list (`GET /v1/theme`) and kept with the
-  car. BMW's without a car, or with a manager that does not say.
-- Each page gives its main action priority. Logs, rename, forget and application
-  removal sit in context menus. Advanced installer tools stay folded.
-- Cars and their cached applications load independently from package
-  verification. Opening the app or Library makes no connection attempt; selecting
-  a car, Connect, Refresh and car actions request the network.
-- Get apps reads `https://nbtfoundry.github.io/catalog.json` over the phone's internet
-  connection when it opens (kept 10 minutes) or on Refresh; nothing else goes online.
-  A download lands in the library like a picked file, checked against the catalog's
-  size and SHA-256; betas (pre-releases) show only when chosen, and a release the chosen
-  car already runs (or an older one) is tagged *Up to date*. The car page tags an
-  application *Update online* when the catalog has a newer release than the library, and
-  NBT Manager *Up to date* when neither has a newer one and the catalog was read
-  within a day (`listsNewest`); an application's page says so on the same terms.
-- An application's description takes two lines at most, in Get apps' list and on
-  a package's page (`src/ui/about.ts`); *More details* opens the rest: in Get apps
-  what is new in that release (the catalog's `notes`, from the release's page), then
-  the other paragraphs, the package's properties and its permissions.
-- A package's details list its permissions as the car's review does: "Uses: …"
-  and "Can: …" (`src/protocol/permissions.ts`, the manager's `docs/permissions.md`).
-- An application list that could not be read has its own message; a successful
-  empty list says that no applications are installed. The car page shows when the
-  list was last read.
-- App details offer the newest eligible package as the main install or update
-  action. Equal and older sequences are shown for information. The car still
-  checks its own high-water mark and decides whether to accept a file. NBT
-  Manager releases use their own update flow, compared with the release the car
-  said it runs; after an update the car starts at once (0.5.2), the phone reads
-  that release again some seconds later.
-- Settings load on request. Current values appear in rows, with the choices in a
-  modal. Package details show file name, version, size, sequence and date added.
-- Phone page (an installed application whose Library package declares
-  `companion`): opened on request as an activity, then read every 2 s while
-  shown, without an activity entry each; titles, texts, buttons, toggles,
-  choices (in a modal) and progress bars as the application describes them
-  (`src/protocol/companion.ts`, the manager's `docs/companion-bridge.md`). A
-  malformed widget is left out. Taps go to the application, which decides what
-  changes; the next read shows it.
-- A Wi-Fi code another app hands over (`nbtmanager://pair?wifi=…`,
-  `src/protocol/pairLink.ts`) opens Pair a car with it: "Pair with <network>"
-  or "Scan a code instead"; nothing starts until the user taps.
-- "What's new" (`src/whatsNew.ts`): a sheet once after an update whose list is
-  newer than the last seen, kept in `preferences.json`; a new install starts
-  without it.
-- Pairing digits appear only while confirmation is pending. If the camera
-  permission is denied for good, the app offers its settings page. Application
-  installs and removals require approval on the car. The SSH manager installer
-  keeps explicit SSH consent, a removal confirmation and one visible restart
-  action.
-- Developer keys (car management) list the keys the car trusts with their
-  fingerprint. Adding one reads a public key file (PEM, RSA-3072) and shows the
-  fingerprint the car will show; a file with a private key is refused before
-  anything is sent. Adding and removing are confirmed on the car.
-- Touch targets are at least 48 dp. Labels wrap, dialogs scroll, inputs stay
-  reachable with the keyboard open, and status always includes text.
-- English, French, German, Italian, Spanish, Chinese (Simplified) and Japanese
-  (`src/i18n/`). Automatic follows the phone's language (React Native's
-  `I18nManager` locale): Traditional Chinese shows Simplified, a language the
-  app lacks (Dutch, Korean, ...) English. The Language row, on the Car tab
-  before a car is paired and on Your cars, chooses one, kept in
-  `preferences.json` in the app's storage. Each language is typed against the
-  English keys; texts take `{name}` placeholders and counts a `.one` and an
-  `.other` form (`tn`). Dates use the language shown. Activity entries keep the
-  language they were written in. Application names, their settings and the
-  car's own messages are shown as sent; the installer core's log stays English.
+- The look is nbtfoundry.github.io's: near-black or light surfaces, one accent for actions
+  and updates, small capital labels after a slanted bar (`src/ui/palettes.ts`).
+- Three themes, one per make: BMW (blue, an orange bar, square corners), MINI (blue, round)
+  and Supra (orange-red, sharp). Theme "Like the car" takes the selected car's
+  (`GET /v1/theme`, kept with the car), BMW's without one; or the user picks one.
+  Appearance follows the phone, or is light or dark.
+- Pictures: application icons are the website's, bundled (`yarn icons`, `src/ui/appIcons.ts`);
+  an application without one shows its first letter. Line icons are drawn in `src/ui/icons.tsx`.
+  Nothing is fetched for them.
+- Motion (`src/ui/motion.tsx`, `src/ui/Lottie.tsx`): each movement says a state. Lottie
+  animations (drawn by `yarn lottie`, painted in the theme's colours) show what an action is
+  at: joining the car, sending, waiting for the driver, the car working, done, failed.
+  Screens slide in; a list being read shows placeholder rows. With Android's "Remove
+  animations", nothing moves.
+- Progress is measured wherever there is something to measure: a download (the row's bar,
+  the button filling), an install or a file being sent (the dialog's bar and percentage,
+  the activity bar's line), the installer's steps.
+- Going online: never by itself. The catalog and the app's own update are read when the user
+  asks (Apps › Check for new versions or a pull on the list; More › About), or at start-up
+  when the user turned that on. Diagnostics go out only after the user agreed
+  ([updates.md](updates.md)).
+- The car: opening the app makes no connection. Reading its applications, an install, a
+  setting or a tool page requests the network; Connect at start-up is the user's choice.
+- A package's details list its permissions as the car's review does: "Uses: …" and
+  "Can: …" (`src/protocol/permissions.ts`).
+- The catalog (`https://nbtfoundry.github.io/catalog.json`) is kept; one read within a day
+  can say *Up to date* (`listsNewest`). Betas (pre-releases) show only when chosen. A
+  download is checked against the catalog's size and SHA-256 and lands in Downloads like a
+  picked file; downloads run one at a time (`store/downloads.ts`).
+- Installs, removals, pairing and developer keys are approved on the car, never on the
+  phone. NBT Manager releases use their own update flow; from 0.5.2 the car starts the new
+  one at once.
+- Phone page (an installed application whose package declares `companion`): read every 2 s
+  while shown; a malformed widget is left out (`src/protocol/companion.ts`).
+- A Wi-Fi code another app hands over (`nbtmanager://pair?wifi=…`) opens Pair a car with it;
+  nothing starts until the user taps.
+- "What's new" (`src/whatsNew.ts`): once after an update that brings something, and again
+  from About. The question about diagnostics comes after it, once.
+- Touch targets are at least 48 dp. Labels wrap, dialogs scroll, status always includes text.
+- Seven languages (`src/i18n/`), following the phone's, English for any other; More ›
+  Language chooses one. Each language is typed against the English keys; counts have a
+  `.one` and an `.other` form (`tn`). Application names, their settings and the car's own
+  messages are shown as sent; the installer core's log stays English.
 
 ## State
 
-Routing is local to `App.tsx`. Application pages keep their car id and reset local
-state when the target changes. Car writes are serialized. Late application reads
-merge into the current record, keeping a name change and never recreating a
-forgotten pairing. A requested network release waits for the current action to
-finish. Signed requests are queued; the car's network is held for 2 minutes after
-the app goes to the background and 5 minutes without an action.
+The route is state in `App.tsx` (`src/route.ts`: tab, page, application, section, tool).
+A screen starts afresh when its route or the selected car changes. Car writes are
+serialized; late reads merge into the current record and never recreate a forgotten
+pairing. Signed requests are queued; the car's network is held for 2 minutes after the app
+goes to the background and 5 minutes without an action. Preferences live in
+`preferences.json`; a default is not written.

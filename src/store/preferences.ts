@@ -1,40 +1,85 @@
 // SPDX-License-Identifier: MPL-2.0
-/** The app's own preferences, in its storage: the language chosen (i18n), whether Get apps
- * offers betas (pre-releases) and the last "What's new" list seen (whatsNew.ts). */
+/** The app's own preferences, in its storage: the language chosen (i18n), light or dark, the
+ * theme, whether betas (pre-releases) are offered, what the app does when it opens, the answer
+ * about diagnostics
+ * (diagnostics.ts) and the last "What's new" list seen (whatsNew.ts). No React Native here:
+ * tests use it. */
 import { File, Paths } from 'expo-file-system';
 import { useSyncExternalStore } from 'react';
 import { currentChoice, isChoice, setChoice, type Choice } from '../i18n';
+import { CAR_THEMES, type CarTheme } from '../protocol/replies';
 
 const file = () => new File(Paths.document, 'preferences.json');
 
-let betas = false;
-let whatsNew: number | undefined;
+/** `auto`: as the phone. */
+export const APPEARANCES = ['auto', 'light', 'dark'] as const;
+export type Appearance = (typeof APPEARANCES)[number];
+/** `car`: the selected car's own theme. */
+export const THEME_CHOICES = ['car', ...CAR_THEMES] as const;
+export type ThemeChoice = CarTheme | 'car';
+
+type Values = {
+  betas: boolean;
+  appearance: Appearance;
+  theme: ThemeChoice;
+  /** When the app opens: read the selected car's applications, and look online for new versions. */
+  autoConnect: boolean;
+  autoCheck: boolean;
+  /** Unset: not asked yet. */
+  diagnostics?: boolean;
+  whatsNew?: number;
+};
+
+const DEFAULTS: Values = { betas: false, appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: false };
+let values: Values = DEFAULTS;
 const listeners = new Set<() => void>();
 
-/** Applies the saved preferences; the defaults (Automatic, no betas) when there are none or they cannot be read. */
+function set(change: Partial<Values>): void {
+  values = { ...values, ...change };
+  listeners.forEach(listener => listener());
+}
+
+const one = <T>(allowed: readonly T[], value: unknown): T | undefined =>
+  (allowed.includes(value as T) ? value as T : undefined);
+
+/** Applies the saved preferences; the defaults when there are none or they cannot be read. */
 export async function loadPreferences(): Promise<void> {
   try {
     const stored = file();
     if (!stored.exists) return;
-    const raw = JSON.parse(await stored.text()) as { language?: unknown; betas?: unknown; whatsNew?: unknown } | null;
+    const raw = JSON.parse(await stored.text()) as Record<string, unknown> | null;
     if (isChoice(raw?.language)) setChoice(raw.language);
-    if (typeof raw?.whatsNew === 'number' && Number.isSafeInteger(raw.whatsNew)) whatsNew = raw.whatsNew;
-    if (typeof raw?.betas === 'boolean' && raw.betas !== betas) {
-      betas = raw.betas;
-      listeners.forEach(listener => listener());
-    }
+    set({
+      betas: typeof raw?.betas === 'boolean' ? raw.betas : values.betas,
+      appearance: one(APPEARANCES, raw?.appearance) ?? values.appearance,
+      theme: one(THEME_CHOICES, raw?.theme) ?? values.theme,
+      autoConnect: raw?.autoConnect === true,
+      autoCheck: raw?.autoCheck === true,
+      diagnostics: typeof raw?.diagnostics === 'boolean' ? raw.diagnostics : values.diagnostics,
+      whatsNew: typeof raw?.whatsNew === 'number' && Number.isSafeInteger(raw.whatsNew) ? raw.whatsNew : values.whatsNew,
+    });
   } catch {
     // Unreadable: the defaults.
   }
 }
 
+/** A default is not written: the file says what was chosen. */
 async function save(): Promise<boolean> {
+  const { betas, appearance, theme, autoConnect, autoCheck, diagnostics, whatsNew } = values;
   try {
-    await file().write(JSON.stringify({ language: currentChoice(), betas, whatsNew }));
+    await file().write(JSON.stringify({ language: currentChoice(), betas, whatsNew, diagnostics,
+      appearance: appearance === DEFAULTS.appearance ? undefined : appearance,
+      theme: theme === DEFAULTS.theme ? undefined : theme,
+      autoConnect: autoConnect || undefined, autoCheck: autoCheck || undefined }));
     return true;
   } catch {
     return false;
   }
+}
+
+function keep(change: Partial<Values>): Promise<boolean> {
+  set(change);
+  return save();
 }
 
 /** Shows `choice` at once and keeps it; false when it could not be kept. */
@@ -43,24 +88,26 @@ export async function chooseLanguage(choice: Choice): Promise<boolean> {
   return save();
 }
 
-export async function chooseBetas(on: boolean): Promise<boolean> {
-  betas = on;
-  listeners.forEach(listener => listener());
-  return save();
-}
+export const chooseBetas = (betas: boolean) => keep({ betas });
+export const chooseAppearance = (appearance: Appearance) => keep({ appearance });
+export const chooseTheme = (theme: ThemeChoice) => keep({ theme });
+export const chooseAutoConnect = (autoConnect: boolean) => keep({ autoConnect });
+export const chooseAutoCheck = (autoCheck: boolean) => keep({ autoCheck });
+export const keepDiagnostics = (diagnostics: boolean) => keep({ diagnostics });
+export const markWhatsNewSeen = (whatsNew: number) => keep({ whatsNew });
+/** Shows the list again (About): as if an older one had been seen. */
+export const showWhatsNewAgain = () => keep({ whatsNew: 0 });
 
-export const showBetas = (): boolean => betas;
+export const showBetas = (): boolean => values.betas;
+export const whatsNewSeen = (): number | undefined => values.whatsNew;
+export const preferences = (): Readonly<Values> => values;
 
-export const whatsNewSeen = (): number | undefined => whatsNew;
-
-export function markWhatsNewSeen(id: number): Promise<boolean> {
-  whatsNew = id;
-  return save();
-}
-
-export function useBetas(): boolean {
+/** Re-renders when a preference changes. */
+export function usePreferences(): Readonly<Values> {
   return useSyncExternalStore(listener => {
     listeners.add(listener);
     return () => listeners.delete(listener);
-  }, showBetas);
+  }, preferences);
 }
+
+export const useBetas = (): boolean => usePreferences().betas;

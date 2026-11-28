@@ -99,6 +99,12 @@ export function tn(key: CountKey, count: number, params?: Params): string {
 export const formatDateTime = (ms: number) => new Date(ms).toLocaleString(LOCALES[shown]);
 export const formatDate = (ms: number) => new Date(ms).toLocaleDateString(LOCALES[shown]);
 export const formatTime = (ms: number) => new Date(ms).toLocaleTimeString(LOCALES[shown]);
+/** Short, for a status line: the time when it was today, else the date. */
+export function formatWhen(ms: number, now = Date.now()): string {
+  const date = new Date(ms);
+  return date.toDateString() === new Date(now).toDateString()
+    ? date.toLocaleTimeString(LOCALES[shown], { hour: '2-digit', minute: '2-digit' }) : date.toLocaleDateString(LOCALES[shown]);
+}
 
 /** For tests: every catalog. */
 export const catalogs = (): Readonly<Record<Language, Messages>> => CATALOGS;

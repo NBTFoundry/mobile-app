@@ -1,173 +1,107 @@
 // SPDX-License-Identifier: MPL-2.0
-/** An application's packages, settings and maintenance on a specific car. */
+/** An application on a car: its one next step on top (download, install, update), and the
+ * rest behind a few rows, each a page of its own (AppSections.tsx). */
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import type { AppState } from '../App';
-import { clearLog, fetchAppLog, type CarLog } from '../car/logs';
-import { applyAutostart, applySetting, install, loadSettings, uninstall } from '../car/operations';
-import { compareU64 } from '../protocol/bytes';
+import { install } from '../car/operations';
 import { PERM } from '../protocol/permissions';
-import type { Autostart, Setting } from '../protocol/replies';
+import type { AppSection } from '../route';
+import { appItem, type AppItem } from '../store/appList';
 import type { CarRecord } from '../store/cars';
-import { listsNewest, onlineUpdate } from '../store/catalog';
-import { appLabel, managerChoice, type LibraryEntry } from '../store/library';
+import { listsNewest } from '../store/catalog';
+import { isDownloading, startDownload, useDownloads } from '../store/downloads';
 import { useBetas } from '../store/preferences';
-import { Body, Busy, Button, Label, Panel, Row, Title } from '../ui/kit';
-import { Dialog } from '../ui/Dialog';
-import { PackageAbout } from '../ui/PackageAbout';
+import { aboutText } from '../ui/about';
+import { AppIcon } from '../ui/AppIcon';
+import { Body, Button, IconTile, Panel, ProgressButton, Row, Strong, Title, formatSize } from '../ui/kit';
+import { Lottie } from '../ui/Lottie';
+import { t } from '../i18n';
 import { ActivityDialog } from './ActivityDialog';
-import { CompanionPanel } from './CompanionPanel';
-import { CrashesPanel } from './CrashesPanel';
-import { FilesPanel } from './FilesPanel';
-import { LogView } from './LogView';
-import { t, tn } from '../i18n';
+import { AppSectionScreen } from './AppSections';
 
-export function AppScreen({ state, car, appId }: { state: AppState; car: CarRecord; appId: string }) {
-  const [settings, setSettings] = useState<Setting[]>();
-  const [autostart, setAutostart] = useState<Autostart | null>(null);
-  const [choosing, setChoosing] = useState<Setting>();
-  const [menu, setMenu] = useState(false);
-  const [confirmRemove, setConfirmRemove] = useState(false);
-  const [log, setLog] = useState<CarLog>();
-  const [crashes, setCrashes] = useState(false);
-  const [companion, setCompanion] = useState(false);
-  const [problem, setProblem] = useState<string>();
-  const [busy, setBusy] = useState<string>();
-  const [versions, setVersions] = useState(false);
-  const [opened] = useState(() => Date.now());
+/** What the step brings, in two lines: what is new in that release, else what the application is. */
+function leadOf(item: AppItem): string | undefined {
+  const notes = item.entry?.releases.find(r => r.version === item.target)?.notes ?? [];
+  const lines = notes.filter(line => !line.startsWith('### ')).map(line => line.replace(/^- /, ''));
+  if (item.onCar && lines.length) return lines.slice(0, 2).join(' ');
+  return aboutText(item.held?.info.text, item.entry?.summary).lead;
+}
+
+export function AppScreen({ state, car, appId, section }: {
+  state: AppState; car?: CarRecord; appId: string; section?: AppSection;
+}) {
+  const betas = useBetas();
+  const download = useDownloads()[appId];
   /** An install or update followed in a modal. */
   const [following, setFollowing] = useState<number>();
-  const installed = car.apps?.find(a => a.id === appId);
+  const [opened] = useState(() => Date.now());
+  const item = appItem(appId, car, state.library, state.catalog, betas);
+  if (section) return <AppSectionScreen state={state} car={car} item={item} section={section} />;
+
   const manager = appId === 'manager';
-  const packages = state.library.filter(e => e.info.app === appId)
-    .sort((a, b) => compareU64(b.info.sequence, a.info.sequence));
-  // The manager: the newest release, when newer than the car runs (managerChoice).
-  const latest = manager ? managerChoice(state.library, car.manager) : packages[0];
-  const canInstall = latest && (manager || !installed || compareU64(latest.info.sequence, installed.sequence) > 0);
-  const known = installed ?? (manager && car.manager ? car.manager : undefined);
-  const betas = useBetas();
-  const online = state.catalog?.apps.some(a => a.id === appId)
-    ? onlineUpdate(state.catalog, { id: appId, version: '', sequence: known?.sequence ?? '0', running: false }, betas)
-    : undefined;
-  const offerOnline = online && !packages.some(e => compareU64(e.info.sequence, online.sequence) >= 0);
-  // A page on the phone, when a package of it in the Library declares one.
-  const hasPage = !!installed && !manager && packages.some(e => (e.info.permissions ?? 0) & PERM.companion);
-  const after = async (run: Promise<unknown>) => {
-    state.go({ tab: 'activity' });
-    await run;
-    await state.reloadCars();
+  const installedApp = !!car && item.onCar && !manager;
+  // A page on the phone, when a package of it on this phone declares one.
+  const hasPage = installedApp && state.library.some(e => e.info.app === appId && (e.info.permissions ?? 0) & PERM.companion);
+  const size = item.online?.files.reduce((sum, f) => sum + f.size, 0) ?? 0;
+  const lead = leadOf(item);
+  const send = () => {
+    if (car && item.held) void install(car, item.held, setFollowing).then(() => state.reloadCars());
   };
-  const update = async (entry: LibraryEntry) => {
-    await install(car, entry, setFollowing);
-    await state.reloadCars();
-  };
-  const readSettings = async () => {
-    setBusy(t('app.readingSettings')); setProblem(undefined);
-    const result = await loadSettings(car, appId);
-    setSettings(result?.settings);
-    setAutostart(result?.autostart ?? null);
-    if (!result) setProblem(t('app.readSettingsFailed'));
-    setBusy(undefined);
-  };
-  const readLog = async () => {
-    setMenu(false); setBusy(t('common.gettingLog')); setProblem(undefined);
-    const result = await fetchAppLog(car, appId);
-    setLog('log' in result ? result.log : undefined);
-    setProblem('problem' in result ? result.problem : undefined);
-    setBusy(undefined);
-  };
-  const emptyLog = async () => {
-    setBusy(t('app.clearingLog'));
-    if (log && await clearLog(car, appId)) setLog({ ...log, size: 0, tail: '' });
-    else setProblem(t('app.clearLogFailed'));
-    setBusy(undefined);
-  };
-  const switchAutostart = async (on: boolean) => {
-    setBusy(t('app.saving')); setProblem(undefined);
-    if (await applyAutostart(car, appId, on)) setAutostart(a => a && { ...a, on, paused: on && a.paused });
-    else setProblem(t('app.saveFailed'));
-    setBusy(undefined);
-  };
-  const choose = async (setting: Setting, value: string) => {
-    setChoosing(undefined); setBusy(t('app.saving')); setProblem(undefined);
-    if (await applySetting(car, appId, setting, value)) {
-      setSettings(list => list?.map(s => s.key === setting.key ? { ...s, value } : s));
-    } else setProblem(t('app.saveFailed'));
-    setBusy(undefined);
-  };
+  const open = (next: AppSection) => state.go({ app: appId, carId: car?.id, section: next });
+
   return <ScrollView contentContainerStyle={styles.page}>
-    <View style={styles.header}>
-      <View style={{ flex: 1, minWidth: 200 }}><Label>{car.name}</Label><Title>{appLabel(appId)}</Title></View>
-      {installed && !manager ? <Button label={t('app.more')} kind="plain" onPress={() => setMenu(true)} /> : null}
+    <View style={styles.hero}>
+      <AppIcon id={appId} name={item.name} size={60} />
+      <View style={styles.heroText}>
+        <Title>{item.name}</Title>
+        <Body muted>{!car ? t('app.noCar') : !item.onCar ? t('app.notOnCar', { car: car.name })
+          : item.installed ? t('app.onCar', { car: car.name, version: item.installed.version }) : car.name}</Body>
+      </View>
     </View>
-    <Panel>
-      <Body muted>{known ? t('app.installedVersion', { version: known.version }) : t(manager ? 'app.managerUpdate' : 'app.ready')}</Body>
-      {canInstall ? <>
-        <Body>{t('app.available', { version: latest.info.version })}</Body>
-        <PackageAbout info={latest.info} />
-        <Button label={t(manager || installed ? 'app.updateTo' : 'app.installVersion', { version: latest.info.version })}
-          onPress={() => void update(latest)} />
-        <Body muted>{t('app.confirmOnCar')}</Body>
-      </> : <>
-        <Body muted>{t(known && !offerOnline && listsNewest(state.catalog, appId, opened) ? 'common.upToDate'
-          : packages.length && known ? 'app.noNewer' : 'app.addPackage')}</Body>
-        <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'library' })} />
-      </>}
-      {offerOnline ? <>
-        <Body>{t('app.online', { version: online.version })}</Body>
-        <Button label={t('app.getOnline')} kind="plain" onPress={() => state.go({ tab: 'store', storeApp: appId })} />
+    {item.step === 'get' && item.entry && item.online ? <Panel>
+      <View style={styles.lead}><Strong>{t('app.online', { version: item.online.version })}</Strong>
+        {lead ? <Body lines={2} muted>{lead}</Body> : null}</View>
+      {isDownloading(download)
+        ? <ProgressButton value={download.fraction} label={t('store.downloading', { percent: Math.floor(download.fraction * 100) })} />
+        : <Button label={t('store.download', { size: formatSize(size) })} onPress={() => startDownload(item.entry!, item.online!)} />}
+      {download && !isDownloading(download) ? <Body>{download.problem}</Body> : null}
+    </Panel> : item.step !== 'none' && item.held ? <Panel>
+      <View style={styles.lead}><Strong>{t('app.isReady', { version: item.held.info.version })}</Strong>
+        {lead ? <Body lines={2} muted>{lead}</Body> : null}</View>
+      <Button label={t(item.step === 'update' ? 'app.updateTo' : 'app.installVersion', { version: item.held.info.version })}
+        onPress={send} />
+    </Panel> : !car ? <Panel>
+      {lead ? <Body lines={3} muted>{lead}</Body> : null}
+      <Body>{t('app.pairToInstall')}</Body>
+      <Button label={t('common.pairCar')} onPress={() => state.go({ tab: 'car', page: 'pairing' })} />
+    </Panel> : item.onCar ? (listsNewest(state.catalog, appId, opened) ? <View style={styles.done}>
+      <Lottie name="done" size={32} /><Body muted>{t('common.upToDate')}</Body>
+    </View> : null) : <Panel>
+      <Body muted>{t('app.addPackage')}</Body>
+      <Button label={t('app.openLibrary')} kind="plain" onPress={() => state.go({ tab: 'more', page: 'downloads' })} />
+    </Panel>}
+    <View>
+      {installedApp ? <>
+        <Row icon={<IconTile name="sliders" />} title={t('app.settings')} detail={t('app.settingsDetail')} onPress={() => open('settings')} />
+        <Row icon={<IconTile name="folder" />} title={t('files.title')} detail={t('app.filesDetail')} onPress={() => open('files')} />
       </> : null}
-    </Panel>
-    {packages.length ? <>
-      <Row title={t('app.versions')} expanded={versions} detail={tn('app.versionsCount', packages.length)}
-        onPress={() => setVersions(!versions)} />
-      {versions ? <View>{packages.map(entry => {
-        // The manager is not in the car's list: its release, when the car said it, stands in.
-        const order = known ? compareU64(entry.info.sequence, known.sequence) : 1;
-        const eligible = order > 0;
-        return <Row key={entry.sha256} title={entry.info.version}
-          detail={t('app.sequence', { sequence: entry.info.sequence })}
-          tag={t(eligible ? (known || manager ? 'app.tagUpdate' : 'app.tagInstall') : order === 0 ? 'app.tagInstalled' : 'app.tagOlder')}
-          onPress={eligible ? () => void update(entry) : undefined} />;
-      })}</View> : null}
-    </> : null}
-    {installed && !manager ? <>
-      <Label>{t('app.settings')}</Label>
-      {settings === undefined ? <Row title={t('app.readSettings')} detail={t('app.readSettingsDetail')}
-        onPress={!busy ? () => void readSettings() : undefined} />
-        : settings.length === 0 ? <Body muted>{t('app.noSettings')}</Body>
-          : <View>{settings.map(setting => <Row key={setting.key} title={setting.label} detail={setting.value}
-            onPress={!busy ? () => setChoosing(setting) : undefined} />)}</View>}
-      {settings !== undefined && autostart ? <Row title={t('app.startWithCar')}
-        detail={t(autostart.paused ? 'app.autostartPaused' : autostart.on ? 'app.autostartOn' : 'app.autostartOff')}
-        onPress={!busy ? () => void switchAutostart(!autostart.on) : undefined} /> : null}
-      <FilesPanel car={car} appId={appId} />
-      {hasPage && !companion ? <Row title={t('companion.title')} detail={t('companion.openDetail')}
-        onPress={() => setCompanion(true)} /> : null}
-      {companion ? <CompanionPanel car={car} app={appId} onClose={() => setCompanion(false)} /> : null}
-    </> : null}
-    {busy ? <Busy text={busy} /> : null}
-    {problem ? <><Body>{problem}</Body><Button label={t('common.viewActivity')} kind="plain" onPress={() => state.go({ tab: 'activity' })} /></> : null}
-    {log ? <LogView log={log} onClose={() => setLog(undefined)} onClear={!busy ? () => void emptyLog() : undefined} /> : null}
-    {crashes ? <CrashesPanel car={car} app={appId} onClose={() => setCrashes(false)} /> : null}
-    {choosing ? <Dialog title={choosing.label} onClose={() => setChoosing(undefined)}>
-      {choosing.choices.map(value => <Row key={value} title={value} tag={value === choosing.value ? t('common.selected') : undefined}
-        onPress={() => void choose(choosing, value)} />)}
-    </Dialog> : null}
-    {menu ? <Dialog title={appLabel(appId)} onClose={() => setMenu(false)}>
-      <Row title={t('app.showLog')} onPress={!busy ? () => void readLog() : undefined} />
-      <Row title={t('crash.title')} onPress={() => { setMenu(false); setCrashes(true); }} />
-      <Row title={t('app.uninstall')} onPress={() => { setMenu(false); setConfirmRemove(true); }} />
-    </Dialog> : null}
+      {hasPage ? <Row icon={<IconTile name="phone" />} title={t('companion.title')} detail={t('companion.openDetail')}
+        onPress={() => open('page')} /> : null}
+      {item.held || item.entry ? <Row icon={<IconTile name="info" />} title={t('app.about')} detail={t('app.aboutDetail')}
+        onPress={() => open('about')} /> : null}
+      {installedApp ? <Row icon={<IconTile name="help" />} title={t('app.help')} detail={t('app.helpDetail')}
+        onPress={() => open('help')} /> : null}
+    </View>
     {following !== undefined ? <ActivityDialog id={following} onClose={() => setFollowing(undefined)}
       note={manager ? t('app.managerFinish') : undefined} /> : null}
-    {confirmRemove ? <Dialog title={t('app.uninstallQuestion')} onClose={() => setConfirmRemove(false)}>
-      <Body>{t('app.uninstallBody', { app: appLabel(appId) })}</Body>
-      <Button label={t('app.requestUninstall')} kind="danger" onPress={() => void after(uninstall(car, appId))} />
-    </Dialog> : null}
   </ScrollView>;
 }
+
 const styles = StyleSheet.create({
-  page: { flexGrow: 1, padding: 24, paddingBottom: 40, gap: 24 },
-  header: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
+  page: { flexGrow: 1, padding: 20, paddingBottom: 32, gap: 20 },
+  hero: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  heroText: { flex: 1, gap: 2 },
+  done: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  lead: { gap: 4 },
 });

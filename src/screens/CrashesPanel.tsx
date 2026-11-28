@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 /** Crash reports kept on the car: the list, one report to read and share, all of them in one
  * file to share, and clearing. `app`: only that application's. */
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { clearCrashReports, crashTitle, fetchAllCrashes, fetchCrash, fetchCrashes, type CrashList } from '../car/crashes';
 import type { CarLog } from '../car/logs';
@@ -11,17 +11,23 @@ import { Body, Busy, Button, Label, Panel, Row } from '../ui/kit';
 import { t } from '../i18n';
 import { LogView, share } from './LogView';
 
-export function CrashesPanel({ car, app, onClose }: { car: CarRecord; app?: string; onClose: () => void }) {
+/** `onRead`: the reports were listed, or cleared; how many the car holds. */
+export function CrashesPanel({ car, app, onClose, onRead }: {
+  car: CarRecord; app?: string; onClose: () => void; onRead?: (count: number) => void;
+}) {
   const [list, setList] = useState<CrashList>();
   const [report, setReport] = useState<CarLog>();
   const [problem, setProblem] = useState<string>();
   const [busy, setBusy] = useState<string>();
   /** Read when the panel opens, and again on Refresh. */
   const [round, setRound] = useState(0);
+  const tell = useEffectEvent((count: number) => onRead?.(count));
   useEffect(() => {
     let live = true;
     void fetchCrashes(car, app).then(result => {
-      if (live) setList(result);
+      if (!live) return;
+      setList(result);
+      if ('crashes' in result) tell(result.crashes.length);
     });
     return () => {
       live = false;
@@ -50,6 +56,7 @@ export function CrashesPanel({ car, app, onClose }: { car: CarRecord; app?: stri
     if (await clearCrashReports(car, app)) {
       setReport(undefined);
       setList({ crashes: [] });
+      onRead?.(0);
     } else setProblem(t('crash.clearFailed'));
     setBusy(undefined);
   };

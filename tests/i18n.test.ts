@@ -18,7 +18,7 @@ import {
 } from '../src/i18n';
 import { connectError, initialState, reduce } from '../src/installer/state';
 import { CarError, LinkError } from '../src/protocol/session';
-import { chooseBetas, chooseLanguage, loadPreferences, showBetas } from '../src/store/preferences';
+import { chooseAppearance, chooseAutoCheck, chooseBetas, chooseLanguage, chooseTheme, loadPreferences, preferences, showBetas } from '../src/store/preferences';
 
 /** A count's singular may name {count} or not (French uses it for 0 too); tn always gives it. */
 const placeholders = (text: string, key: string) =>
@@ -56,9 +56,9 @@ describe('languages', () => {
     expect(languageFor(undefined)).toBe('en');
     setSystemLocale('it_IT');
     expect(currentLanguage()).toBe('it');
-    expect(t('tab.library')).toBe('Libreria');
+    expect(t('tab.more')).toBe('Altro');
     setSystemLocale('nl_BE');
-    expect(t('tab.library')).toBe('Library');
+    expect(t('tab.more')).toBe('More');
   });
 
   it('shows a chosen language whatever the phone’s', () => {
@@ -74,7 +74,7 @@ describe('languages', () => {
 
   it('fills placeholders and picks a count’s form', () => {
     expect(t('app.updateTo', { version: 'v2' })).toBe('Update to v2');
-    expect(t('car.lastRead')).toBe('Last read {time}');
+    expect(t('car.readAt')).toBe('read {time}');
     expect(tn('cars.apps', 1)).toBe('1 application');
     expect(tn('cars.apps', 0)).toBe('0 applications');
     setChoice('fr');
@@ -130,5 +130,27 @@ describe('languages', () => {
     await loadPreferences();
     expect(showBetas()).toBe(true);
     await chooseBetas(false);
+  });
+
+  it('keeps the appearance, the theme and the start-up choices; a default is not written', async () => {
+    await chooseAppearance('dark');
+    await chooseTheme('supra');
+    await chooseAutoCheck(true);
+    expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual(
+      { language: 'auto', betas: false, appearance: 'dark', theme: 'supra', autoCheck: true });
+    await chooseAppearance('auto');
+    await chooseTheme('car');
+    await chooseAutoCheck(false);
+    expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual({ language: 'auto', betas: false });
+    // A saved value this app does not know leaves the default; nothing is on unless it says true.
+    files.set('doc/preferences.json', '{"appearance":"sepia","theme":"rolls","autoConnect":"yes","diagnostics":1}');
+    await loadPreferences();
+    expect(preferences()).toMatchObject({ appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: false });
+    expect(preferences().diagnostics).toBeUndefined();
+    files.set('doc/preferences.json', '{"appearance":"light","theme":"mini","autoConnect":true,"diagnostics":false}');
+    await loadPreferences();
+    expect(preferences()).toMatchObject({ appearance: 'light', theme: 'mini', autoConnect: true, diagnostics: false });
+    await chooseAppearance('auto');
+    await chooseTheme('car');
   });
 });

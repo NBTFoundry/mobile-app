@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: MPL-2.0
-/** An application's files on the car: listed, added from this phone, deleted after a question here. */
+/** An application's files on the car: listed when the page opens, added from this phone,
+ * deleted after a question here. */
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { deleteFile, loadFiles, uploadFile } from '../car/files';
 import { PHONE_FILE_MAX, extensionOf, isFolderEntry, storedName, type CarFile, type FileListing } from '../protocol/files';
 import { Stop } from '../protocol/session';
 import type { CarRecord } from '../store/cars';
-import { Body, Busy, Button, Label, Progress, Row, formatSize } from '../ui/kit';
+import { Body, Busy, Button, Progress, Row, formatSize } from '../ui/kit';
+import { Lottie } from '../ui/Lottie';
+import { Skeleton } from '../ui/motion';
 import { Dialog } from '../ui/Dialog';
 import { t, tn } from '../i18n';
 
@@ -28,6 +31,7 @@ function SendingDialog({ sending }: { sending: Sending }) {
   const { index, count, name, sent, total, stop } = sending;
   const fraction = total ? sent / total : 0;
   return <Dialog title={t('files.sendingTitle')} closeLabel={t('common.cancel')} onClose={() => stop.stop()}>
+    <View style={{ alignItems: 'center' }}><Lottie name="transfer" size={104} /></View>
     <Body>{t('files.progressFile', { index, count, name })}</Body>
     <Progress value={fraction} />
     <Body muted>{stop.stopped ? t('files.stopping')
@@ -42,6 +46,20 @@ export function FilesPanel({ car, appId }: { car: CarRecord; appId: string }) {
   const [notes, setNotes] = useState<string[]>([]);
   const [deleting, setDeleting] = useState<CarFile>();
   const [sending, setSending] = useState<Sending>();
+  /** Read when the page opens, and again on Retry. */
+  const [round, setRound] = useState(0);
+  const [unread, setUnread] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void loadFiles(car, appId).then(result => {
+      if (!live) return;
+      if (result !== undefined) setListing(result);
+      else setUnread(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [car, appId, round]);
   const reload = async (out: string[]) => {
     setBusy(t('files.reading'));
     const result = await loadFiles(car, appId);
@@ -99,9 +117,10 @@ export function FilesPanel({ car, appId }: { car: CarRecord; appId: string }) {
   const usage = (l: FileListing) =>
     `${tn('files.count', l.count)} · ${t('files.usage', { used: formatSize(l.used), quota: formatSize(l.quota) })}`;
   return <>
-    <Label>{t('files.title')}</Label>
-    {listing === undefined ? <Row title={t('files.read')} detail={t('files.readDetail')}
-      onPress={!busy ? () => void reload([]) : undefined} />
+    {listing === undefined ? (unread ? <>
+      <Body>{t('files.readFailed')}</Body>
+      <Button label={t('companion.retry')} kind="plain" onPress={() => { setUnread(false); setRound(r => r + 1); }} />
+    </> : <Skeleton />)
       : listing === null ? <Body muted>{t('files.none')}</Body>
         : <>
           <Body muted>{usage(listing)}</Body>

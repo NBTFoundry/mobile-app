@@ -2,7 +2,7 @@
 /** What a package says about itself for people (`property=` and `text=` lines),
  * and what it may do to the car (its permissions, protocol/permissions.ts):
  * shown as the package declares them, before the car has verified it. Two lines
- * of description at first; "More details" opens the rest. */
+ * of description at first; "More details" opens the rest (`expanded`: all of it at once). */
 import { useState } from 'react';
 import { View } from 'react-native';
 import { t, type Key } from '../i18n';
@@ -32,10 +32,11 @@ function Note({ line }: { line: string }) {
 
 /** `summary`: the catalog's line about the application, shown first; `notes`: what is
  * new in this release (the catalog's, from the release's page). */
-export function PackageAbout({ info, summary, notes = [] }: {
+export function PackageAbout({ info, summary, notes = [], expanded }: {
   info: Pick<PackageInfo, 'properties' | 'text' | 'permissions'>; summary?: string; notes?: readonly string[];
+  expanded?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!expanded);
   const properties = info.properties ?? [];
   const permissions = permissionLines(info.permissions);
   const about = aboutText(info.text, summary);
@@ -52,7 +53,7 @@ export function PackageAbout({ info, summary, notes = [] }: {
       {properties.map((p, i) => <Body key={`p${i}`}>{`${p.label}: ${p.value}`}</Body>)}
       {permissions.map((line, i) => <Body key={`r${i}`}>{line}</Body>)}
     </> : null}
-    {more ? <Button label={t(open ? 'log.fewer' : 'log.more')} kind="plain" expanded={open}
+    {more && !expanded ? <Button label={t(open ? 'log.fewer' : 'log.more')} kind="plain" expanded={open}
       onPress={() => setOpen(!open)} /> : null}
   </View>;
 }

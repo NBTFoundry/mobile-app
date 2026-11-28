@@ -9,6 +9,7 @@ import { pairCar, stopFollowing } from '../car/operations';
 import { parseWifiCode, type WifiCode } from '../protocol/wifiCode';
 import { useActivities } from '../store/activity';
 import { Body, Busy, Button, Panel, Title, useColors, useStyles } from '../ui/kit';
+import { Lottie } from '../ui/Lottie';
 import { t } from '../i18n';
 
 export function PairScreen({ state, code }: { state: AppState; code?: WifiCode }) {
@@ -44,17 +45,21 @@ export function PairScreen({ state, code }: { state: AppState; code?: WifiCode }
         <Title>{t('pair.title')}</Title>
         {activity.digits && activity.phase === 'running' ? (
           <Panel>
+            <View style={styles.picture}><Lottie name="confirm" size={104} /></View>
             <Body>{t('pair.confirmIf')}</Body>
             <Text style={styles.digits} accessibilityLabel={t('pair.code', { digits: activity.digits.split('').join(' ') })}>
               {`${activity.digits.slice(0, 3)} ${activity.digits.slice(3)}`}
             </Text>
           </Panel>
         ) : null}
-        {activity.phase === 'running' ? <Busy text={activity.detail} /> : <Body>{activity.detail}</Body>}
+        {activity.phase === 'running' ? <Busy text={activity.detail} /> : <View style={styles.result}>
+          <Lottie name={activity.phase === 'done' ? 'done' : 'failed'} size={40} />
+          <View style={{ flex: 1 }}><Body>{activity.detail}</Body></View>
+        </View>}
         {activity.phase === 'running' && activity.digits
           ? <Button label={t('pair.stopWaiting')} kind="plain" onPress={() => stopFollowing(activity.id)} /> : null}
         {activity.phase === 'done'
-          ? <Button label={t('pair.showApps')} onPress={() => state.go({ tab: 'car' })} /> : null}
+          ? <Button label={t('pair.showApps')} onPress={() => state.go({ tab: 'apps' })} /> : null}
         {activity.phase !== 'running' && activity.phase !== 'done'
           ? <Button label={t('pair.scanAgain')} onPress={() => {
             scanned.current = false;
@@ -105,7 +110,9 @@ export function PairScreen({ state, code }: { state: AppState; code?: WifiCode }
 }
 
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
-  page: { flexGrow: 1, padding: 24, paddingBottom: 40, gap: 24 },
+  page: { flexGrow: 1, padding: 20, paddingBottom: 32, gap: 20 },
+  picture: { alignItems: 'center' },
+  result: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   camera: { flex: 1, minHeight: 280, borderRadius: Math.min(colors.card, 12), overflow: 'hidden', backgroundColor: colors.panel },
   digits: { color: colors.text, fontSize: 48, fontWeight: '700', letterSpacing: 6, textAlign: 'center',
     fontVariant: ['tabular-nums'] },

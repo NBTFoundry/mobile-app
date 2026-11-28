@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-/** Package files stored on this phone and shared by all cars. */
+/** Downloads: the package files on this phone, shared by all cars. They come from Apps (the
+ * catalog) or from a file picked here; the newest of each application stays. */
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -8,10 +9,11 @@ import { describeError } from '../car/messages';
 import { addPackage, appLabel, removePackage } from '../store/library';
 import { Body, Busy, Button, Heading, Label, Panel, Row, Title, formatSize } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
+import { AppIcon } from '../ui/AppIcon';
 import { PackageAbout } from '../ui/PackageAbout';
 import { formatDate, t } from '../i18n';
 
-export function LibraryScreen({ state }: { state: AppState }) {
+export function DownloadsScreen({ state }: { state: AppState }) {
   const [message, setMessage] = useState<string>();
   const [selected, setSelected] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -37,6 +39,7 @@ export function LibraryScreen({ state }: { state: AppState }) {
   };
   if (!state.libraryReady) return <View style={styles.page}><Title>{t('library.title')}</Title><Busy text={t('library.reading')} /></View>;
   const entry = state.library.find(item => item.sha256 === selected);
+  const name = (app: string) => state.catalog?.apps.find(a => a.id === app)?.name ?? appLabel(app);
   return <ScrollView contentContainerStyle={styles.page}>
     <View style={styles.header}>
       <Title>{t('library.title')}</Title>
@@ -44,7 +47,8 @@ export function LibraryScreen({ state }: { state: AppState }) {
     </View>
     <Body muted>{t('library.intro')}</Body>
     {state.library.length ? <View>{state.library.map(item => (
-      <Row key={item.sha256} title={appLabel(item.info.app)} detail={`${item.info.version} · ${formatSize(item.size)}`}
+      <Row key={item.sha256} icon={<AppIcon id={item.info.app} name={name(item.info.app)} />} title={name(item.info.app)}
+        detail={`${item.info.version} · ${formatSize(item.size)}`}
         onPress={() => setSelected(item.sha256)} />
     ))}</View> : <Panel>
       <Heading>{t('library.emptyHeading')}</Heading>
@@ -53,7 +57,7 @@ export function LibraryScreen({ state }: { state: AppState }) {
     </Panel>}
     {busy ? <Busy text={t('library.updating')} /> : null}
     {message ? <Body>{message}</Body> : null}
-    {entry ? <Dialog title={`${appLabel(entry.info.app)} ${entry.info.version}`} onClose={() => setSelected(undefined)}>
+    {entry ? <Dialog title={`${name(entry.info.app)} ${entry.info.version}`} onClose={() => setSelected(undefined)}>
       <Body>{entry.fileName}</Body>
       <PackageAbout info={entry.info} />
       <Body muted>{t('library.sizeAdded', { size: formatSize(entry.size), date: formatDate(entry.addedAt) })}</Body>
@@ -65,6 +69,6 @@ export function LibraryScreen({ state }: { state: AppState }) {
   </ScrollView>;
 }
 const styles = StyleSheet.create({
-  page: { flexGrow: 1, padding: 24, paddingBottom: 40, gap: 24 },
+  page: { flexGrow: 1, padding: 20, paddingBottom: 32, gap: 20 },
   header: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
 });

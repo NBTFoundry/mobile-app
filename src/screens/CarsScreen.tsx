@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-/** Car selection and management, separate from the applications dashboard. */
+/** Your cars: choosing one, pairing another, a car's name, forgetting it. */
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import type { AppState } from '../App';
@@ -8,10 +8,9 @@ import { removeKey } from '../car/nativeLink';
 import { forgetCar, renameCar, type CarRecord } from '../store/cars';
 import { Body, Button, Label, Panel, Row, Title, useColors, useStyles } from '../ui/kit';
 import { Dialog } from '../ui/Dialog';
-import { LanguageRow } from '../ui/LanguageRow';
 import { t, tn } from '../i18n';
 
-function CarDetails({ car, state, onDone }: { car: CarRecord; state: AppState; onDone: () => void }) {
+export function CarDetails({ car, state, onDone }: { car: CarRecord; state: AppState; onDone: () => void }) {
   const colors = useColors();
   const styles = useStyles(makeStyles);
   const [name, setName] = useState(car.name);
@@ -52,7 +51,7 @@ function DeskPairing({ state }: { state: AppState }) {
   const styles = useStyles(makeStyles);
   const [ip, setIp] = useState('');
   const pair = async () => {
-    state.go({ tab: 'activity' });
+    state.go({ page: 'activity' });
     const car = await pairCar({ ssid: 'Desk car', passphrase: '' }, ip);
     await state.reloadCars(car?.id);
   };
@@ -85,9 +84,7 @@ export function CarsScreen({ state }: { state: AppState }) {
         tag={car.id === state.car?.id ? t('common.selected') : undefined} />
       <View style={styles.manage}><Button label={t('cars.manage')} kind="plain" onPress={() => setEditing(car.id)} /></View>
     </View>)}</View> : <Body muted>{t('cars.none')}</Body>}
-    <Button label={t('cars.pairAnother')} onPress={() => state.go({ tab: 'car', pairing: true })} />
-    <Row title={t('common.installNbt')} onPress={() => state.go({ tab: 'car', installer: true })} />
-    <LanguageRow />
+    <Button label={t('cars.pairAnother')} onPress={() => state.go({ tab: 'car', page: 'pairing' })} />
     {__DEV__ ? <>
       <Row title={t('car.development')} expanded={development} detail={t(development ? 'cars.hideDesk' : 'cars.showDesk')} onPress={() => setDevelopment(!development)} />
       {development ? <DeskPairing state={state} /> : null}
@@ -96,7 +93,7 @@ export function CarsScreen({ state }: { state: AppState }) {
   </ScrollView>;
 }
 const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
-  page: { padding: 24, paddingBottom: 40, gap: 24 },
+  page: { padding: 20, paddingBottom: 32, gap: 20 },
   input: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: Math.min(colors.corner, 12),
     paddingHorizontal: 16, minHeight: 48, fontSize: 16 },
   manage: { alignItems: 'flex-start' },

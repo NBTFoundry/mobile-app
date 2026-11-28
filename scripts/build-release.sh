@@ -44,7 +44,8 @@ version="$(node -p "require('./package.json').version")"
 # The installer core with the signed manager release embedded (NBT_MANAGER_RELEASE,
 # NBT_MANAGER_PUBLIC_KEY and the test application's variables, set by the kit build).
 scripts/build-installer-core.sh --release >/dev/null
-NBT_VERSION_CODE="$code" CI=1 yarn expo prebuild --platform android --clean --no-install >/dev/null
+# No over-the-air updates in a kit build: it runs the code it was built from.
+NBT_UPDATES=0 NBT_VERSION_CODE="$code" CI=1 yarn expo prebuild --platform android --clean --no-install >/dev/null
 # The config plugin signs release builds only from these variables (never with the
 # debug key); the password reaches Gradle through its environment, not the command line.
 apk="android/app/build/outputs/apk/release/app-release.apk"

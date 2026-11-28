@@ -1,6 +1,6 @@
 ---
 name: app-catalog
-description: The online application catalog and the phone's Get apps tab - list or withdraw an application, change the catalog's format on both sides, rebuild and check https://nbtfoundry.github.io (landing page included). Use when an app should appear in or leave Get apps, when the catalog or landing page changes, or when Get apps misbehaves.
+description: The online application catalog and the phone's Apps tab (what can be got and updated) - list or withdraw an application, change the catalog's format on both sides, rebuild and check https://nbtfoundry.github.io (landing page included). Use when an app should appear in or leave the catalog, when the catalog or landing page changes, or when the Apps tab's catalog part misbehaves.
 ---
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 # The online catalog
@@ -8,7 +8,7 @@ description: The online application catalog and the phone's Get apps tab - list 
 | Side | Files |
 | --- | --- |
 | `NBTFoundry/NBTFoundry.github.io` (checkout `../NBTFoundry.github.io`) | `apps.json` (the allowlist), `tools/build_catalog.py` (writes `catalog.json`), `tools/nbt_files.py` (verifies `.nbt`/`.nbtr`), `site/` (landing page; `site/apps.js` renders the app cards from `catalog.json` in the browser), `tools/render_site.py` (copies `site/` and `catalog.json`), `.github/workflows/pages.yml` |
-| Phone (this repository) | `src/store/catalog.ts` (parse, cache, `releaseFor`, `onlineUpdate`), `src/store/download.ts`, `src/screens/StoreScreen.tsx`, `tests/catalog.test.ts`, `tests/fixtures/catalog.json` |
+| Phone (this repository) | `src/store/catalog.ts` (parse, cache, `releaseFor`, `onlineUpdate`), `src/store/download.ts` and `downloads.ts`, `src/store/appList.ts`, `src/screens/AppsScreen.tsx`, `src/ui/appIcons.ts` (the catalog's icons, bundled: `yarn icons` when an application joins), `tests/catalog.test.ts`, `tests/fixtures/catalog.json` |
 
 The workflow runs on push, every 30 minutes and by hand. It lists, per app,
 the newest stable release and a newer pre-release (a `0.x` tag is one),

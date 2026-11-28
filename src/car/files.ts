@@ -50,7 +50,7 @@ export function uploadFile(car: CarRecord, app: string, picked: PickedFile, stop
     return onCarNetwork(car, async () => {
       const worker = await reachWorker(car, id, cancel);
       if (stop.stopped) throw new LinkError('stopped');
-      updateActivity(id, { detail: t('files.sending'), progress: 0 });
+      updateActivity(id, { detail: t('files.sending'), progress: 0, stage: 'transfer' });
       await sendFile(worker, app, picked.name, { uri: picked.uri, ...file }, (sent, total) => {
         updateActivity(id, { progress: total ? sent / total : 0 });
         progress?.(sent, total);

@@ -29,5 +29,14 @@ native module. Test fixtures do not establish compatibility with a car.
   and release-signing checks separately.
 - Debug builds may reach a desk car through the workstation (`setDeskIp`); keep
   that path unavailable in release builds.
+- Nothing goes online or to the car by itself. The catalog and the app's own
+  update (expo-updates, never checked on launch) follow a user action, or the
+  start-up choices in More, which are off by default. Diagnostics (Expo Observe)
+  are sent only after the user agreed; log no car, package or file data in them.
+  The privacy page (NBTFoundry.github.io `site/privacy.html`) and
+  `store/listing.md` must say what the app sends: change them with it.
+- An update between store builds (`yarn ota`) carries JavaScript only. Native
+  changes change `plugins/runtimeVersion.js`'s value by themselves and take a
+  store build; never pin the runtime version by hand (`docs/updates.md`).
 - Release builds use the dedicated external keystore and must match the
   committed certificate fingerprint. Preserve commit signing.

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-import { forgetCar, loadCars, rememberApps, renameCar, saveCar, type CarRecord } from '../src/store/cars';
+import { forgetCar, loadCars, rememberApps, rememberHealth, renameCar, saveCar, type CarRecord } from '../src/store/cars';
 /** Delayed car reads must preserve edits and respect a forgotten pairing. */
 const storage = new Map<string, string>();
 jest.mock('expo-secure-store', () => ({
@@ -54,4 +54,18 @@ it('keeps the theme the car showed last, and drops one it cannot read', async ()
   storage.set(`car.${car.id}`, JSON.stringify({ ...car, theme: 'rolls' }));
   expect((await loadCars()).cars[0]).toMatchObject({ name: 'My car' });
   expect((await loadCars()).cars[0]!.theme).toBeUndefined();
+});
+it('keeps what was read of the car’s health, part by part, and drops a part it cannot read', async () => {
+  await saveCar(car, true);
+  await rememberHealth(car.id, { selfTest: { time: 1_700_000_000_000, passed: 12, failed: 1, skipped: 2 } });
+  await rememberHealth(car.id, { crashes: { count: 3, seenAt: 1_700_000_100_000 } });
+  // An application read between the two leaves it.
+  await rememberApps(car.id, apps);
+  expect((await loadCars()).cars[0]!.health).toEqual({
+    selfTest: { time: 1_700_000_000_000, passed: 12, failed: 1, skipped: 2 }, crashes: { count: 3, seenAt: 1_700_000_100_000 } });
+  storage.set(`car.${car.id}`, JSON.stringify({ ...car,
+    health: { selfTest: { time: 'now', passed: 1, failed: 0, skipped: 0 }, crashes: { count: 2, seenAt: 5 } } }));
+  expect((await loadCars()).cars[0]!.health).toEqual({ crashes: { count: 2, seenAt: 5 } });
+  storage.set(`car.${car.id}`, JSON.stringify({ ...car, health: { crashes: { count: -1, seenAt: 5 } } }));
+  expect((await loadCars()).cars[0]!.health).toBeUndefined();
 });

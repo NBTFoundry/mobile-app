@@ -24,6 +24,15 @@ export type CarRecord = {
   manager?: CarManager | null;
   /** Read with the apps: the theme its screen shows; unset from a manager without `GET /v1/theme` (BMW's). */
   theme?: CarTheme;
+  /** What the phone read last of the car's health, for the Car tab (see `checkHealth`). */
+  health?: CarHealth;
+};
+
+/** `selfTest`: the car's last run, by its clock, and its counts; `crashes`: how many reports
+ * the car held when they were read. */
+export type CarHealth = {
+  selfTest?: { time: number; passed: number; failed: number; skipped: number };
+  crashes?: { count: number; seenAt: number };
 };
 
 type Index = { ids: string[]; selected?: string };
@@ -31,6 +40,22 @@ type Index = { ids: string[]; selected?: string };
 const INDEX = 'cars.index';
 const entry = (id: string) => `car.${id}`;
 const ID = /^[0-9a-f]{16}$/;
+
+const count = (value: unknown, max = 1000): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= max;
+const when = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+
+/** Stored health, part by part: one that is off is dropped. */
+export function checkHealth(raw: unknown): CarHealth | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const { selfTest: t, crashes: c } = raw as { selfTest?: Record<string, unknown>; crashes?: Record<string, unknown> };
+  const health: CarHealth = {};
+  if (t && typeof t === 'object' && when(t.time) && count(t.passed) && count(t.failed) && count(t.skipped)) {
+    health.selfTest = { time: t.time, passed: t.passed, failed: t.failed, skipped: t.skipped };
+  }
+  if (c && typeof c === 'object' && count(c.count) && when(c.seenAt)) health.crashes = { count: c.count, seenAt: c.seenAt };
+  return health.selfTest || health.crashes ? health : undefined;
+}
 
 function str(value: unknown, max: number): string | undefined {
   return typeof value === 'string' && value.length <= max ? value : undefined;
@@ -69,6 +94,8 @@ export function checkRecord(raw: unknown): CarRecord | undefined {
     }
   }
   if (isCarTheme(r.theme)) record.theme = r.theme;
+  const health = checkHealth(r.health);
+  if (health) record.health = health;
   return record;
 }
 
@@ -139,12 +166,13 @@ export function newCarId(): string {
 }
 
 /** Merge delayed results into the latest record, never recreating a forgotten car. */
-function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | 'appsSeenAt' | 'manager' | 'theme'>>): Promise<CarRecord | undefined> {
+function patchCar(id: string, patch: Partial<Pick<CarRecord, 'name' | 'apps' | 'appsSeenAt' | 'manager' | 'theme'>>
+  | ((current: CarRecord) => Partial<CarRecord>)): Promise<CarRecord | undefined> {
   return mutate(async () => {
     const { cars } = await loadCars();
     const current = cars.find(car => car.id === id);
     if (!current) return undefined;
-    const updated = { ...current, ...patch };
+    const updated = { ...current, ...(typeof patch === 'function' ? patch(current) : patch) };
     await SecureStore.setItemAsync(entry(id), JSON.stringify(updated));
     return updated;
   });
@@ -153,3 +181,6 @@ export const renameCar = (id: string, name: string) => patchCar(id, { name });
 /** `manager` or `theme` undefined: not read this time, the stored one stays. */
 export const rememberApps = (id: string, apps: CarApp[], manager?: CarManager | null, theme?: CarTheme) =>
   patchCar(id, { apps, appsSeenAt: Date.now(), ...(manager !== undefined ? { manager } : {}), ...(theme ? { theme } : {}) });
+/** Keeps one part of the car's health as just read; the other stays. */
+export const rememberHealth = (id: string, part: CarHealth) =>
+  patchCar(id, current => ({ health: { ...current.health, ...part } }));

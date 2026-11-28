@@ -67,6 +67,12 @@ class CarLinkModule : Module() {
       deskIp = ip
     }
 
+    /** This app as installed: its version name and code, for About. */
+    Function("appVersion") {
+      val info = context().packageManager.getPackageInfo(context().packageName, 0)
+      mapOf("name" to (info.versionName ?: ""), "code" to info.longVersionCode.toDouble())
+    }
+
     Function("randomHex") { bytes: Int ->
       val out = ByteArray(bytes.coerceIn(1, 32))
       java.security.SecureRandom().nextBytes(out)

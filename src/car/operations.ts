@@ -185,7 +185,9 @@ export function act<T>(carName: string, title: string, detail: string,
 
 export const follow = (id: number, cancel: Cancel): Follow => ({
   cancel, wait: realWait,
-  onStatus: status => updateActivity(id, { detail: describeStatus(status) }),
+  // The car checks or installs by itself; while it waits, the driver confirms at its screen.
+  onStatus: status => updateActivity(id, { detail: describeStatus(status),
+    stage: status.state === 'installing' || status.message === 'Checking the package' ? 'working' : 'confirm' }),
 });
 
 const phaseOf = (status: Status): ActivityPhase =>
@@ -249,7 +251,7 @@ export function pairCar(wifi: WifiCode, deskTarget?: string, onStarted?: (id: nu
         }
         if (!session) throw new LinkError('refused');
         const compare = t('op.compare');
-        const result = await pairPhone(session, name, key.publicKey, digits => updateActivity(id, { digits, detail: compare }), {
+        const result = await pairPhone(session, name, key.publicKey, digits => updateActivity(id, { digits, detail: compare, stage: 'confirm' }), {
           ...follow(id, cancel),
           onStatus: status => updateActivity(id, { detail: status.state === 'waiting' ? compare : describeStatus(status) }),
         }).catch(error => {
@@ -319,7 +321,9 @@ const MANAGER_RESTART_MS = 8000;
 /** The worker, once App Manager is open on the car: installs, removals and files need it. */
 export function reachWorker(car: CarRecord, id: number, cancel: Cancel): Promise<CarSession> {
   const { worker, door } = sessions(car);
-  return reachManager(worker, door, e => updateActivity(id, { detail: describeOpening(e) }), cancel, realWait);
+  // "Open App Manager on the car" is the driver's to do, like a confirmation.
+  return reachManager(worker, door, e => updateActivity(id, { detail: describeOpening(e),
+    stage: e.kind === 'by-hand' ? 'confirm' : 'connect' }), cancel, realWait);
 }
 
 export async function managerAction(car: CarRecord, id: number, cancel: Cancel,
@@ -338,7 +342,7 @@ export function install(car: CarRecord, entry: LibraryEntry,
     { app: appLabel(entry.info.app), version: entry.info.version });
   return act(car.name, title, t('common.joining'), (id, cancel) => onCarNetwork(car, () =>
     managerAction(car, id, cancel, worker => {
-      updateActivity(id, { detail: t('op.sending'), progress: 0 });
+      updateActivity(id, { detail: t('op.sending'), progress: 0, stage: 'transfer' });
       return installPackage(worker, { uri: packageFile(entry.sha256).uri, size: entry.size, sha256: entry.sha256 },
         (sent, total) => updateActivity(id, { progress: total ? sent / total : 0 }), follow(id, cancel));
     }).then(result => (manager && result.phase === 'done' ? afterManagerUpdate(car, id, cancel, result) : result)), id),

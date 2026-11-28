@@ -1,23 +1,33 @@
 // SPDX-License-Identifier: MPL-2.0
 /** The car's last self test (NBT Manager's Settings › Self test): what failed, what was skipped,
  * what passed, and the report shared as a text file. Read when the panel opens. */
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { fetchSelfTest, resultLabel, rowTitle, selfTestFile, type SelfTestRead } from '../car/selfTest';
 import { sortedRows } from '../protocol/selfTest';
-import type { CarRecord } from '../store/cars';
+import type { CarHealth, CarRecord } from '../store/cars';
 import { Body, Busy, Button, Label, Panel, Row, useColors } from '../ui/kit';
 import { formatDateTime, t } from '../i18n';
 import { share } from './LogView';
 
-export function SelfTestPanel({ car, onClose }: { car: CarRecord; onClose: () => void }) {
+/** `onRead`: a run was read, with its counts. */
+export function SelfTestPanel({ car, onClose, onRead }: {
+  car: CarRecord; onClose: () => void; onRead?: (run: NonNullable<CarHealth['selfTest']>) => void;
+}) {
   const colors = useColors();
   const [read, setRead] = useState<SelfTestRead>();
   const [round, setRound] = useState(0);
+  const tell = useEffectEvent((run: NonNullable<CarHealth['selfTest']>) => onRead?.(run));
   useEffect(() => {
     let live = true;
     void fetchSelfTest(car).then(result => {
-      if (live) setRead(result);
+      if (!live) return;
+      setRead(result);
+      const report = 'report' in result && !('none' in result.report) ? result.report : undefined;
+      if (report) {
+        const of = (kind: string) => report.rows.filter(row => row.result === kind).length;
+        tell({ time: report.time, passed: of('pass'), failed: of('fail'), skipped: of('skip') });
+      }
     });
     return () => {
       live = false;

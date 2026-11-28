@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
 import type { ExpoConfig } from 'expo/config';
+import { runtimeVersion } from './plugins/runtimeVersion';
+
+const PROJECT = 'c0c9d77a-d148-42f4-a01d-a84b3fee17c8';
 
 const config: ExpoConfig = {
   name: 'NBT Manager',
   slug: 'manager',
   owner: 'nbtfoundry',
-  version: '0.1.0',
+  version: '0.2.0',
   // Links from other apps: nbtmanager://pair?wifi=… (README, "Pairing from another app").
   scheme: 'nbtmanager',
   orientation: 'portrait',
@@ -30,7 +33,13 @@ const config: ExpoConfig = {
       'android.permission.USE_BIOMETRIC', 'android.permission.USE_FINGERPRINT'],
   },
   // The Expo project (expo.dev/accounts/nbtfoundry/projects/manager) that cloud builds use (eas.json).
-  extra: { eas: { projectId: 'c0c9d77a-d148-42f4-a01d-a84b3fee17c8' } },
+  extra: { eas: { projectId: PROJECT } },
+  // Updates between store builds (docs/updates.md): for the native side this commit builds, and
+  // never checked on their own (the user asks, src/store/appUpdate.ts). Kit builds
+  // (scripts/build-release.sh) turn them off: a test build runs the code it was built from.
+  runtimeVersion: runtimeVersion(__dirname),
+  updates: { url: `https://u.expo.dev/${PROJECT}`, enabled: process.env.NBT_UPDATES !== '0',
+    checkAutomatically: 'NEVER', fallbackToCacheTimeout: 0 },
   plugins: [
     ['expo-splash-screen', {
       image: './assets/splash-light.png', imageWidth: 160, backgroundColor: '#f6f7fa',
@@ -42,6 +51,8 @@ const config: ExpoConfig = {
     // Expo SDK 58's modules require compiling against 37, which changes no runtime behaviour.
     ['expo-build-properties', { android: { minSdkVersion: 29, compileSdkVersion: 37,
       targetSdkVersion: 36, buildArchs: ['arm64-v8a'] } }],
+    // Diagnostics (src/store/diagnostics.ts): nothing is collected until the user agrees.
+    ['expo-observe', { consent: 'not-granted' }],
     './plugins/withCarApp',
   ],
 };

@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/mobile-car.png" width="600"
-       alt="The Car tab in light and dark: the paired car and its installed applications, one with an update available">
+  <img src="docs/assets/mobile-apps.png" width="600"
+       alt="The Apps tab in light and dark: updates first, then the applications on the car, then more to get">
 </p>
 
 The phone side of NBT Manager. Pair once per car, then install, update and
@@ -28,14 +28,17 @@ uninstall applications on the car's head unit, change their settings and send
 them files (an application that takes files, such as games for an emulator) from
 the phone. Every install and uninstall is confirmed by the driver on the car;
 the phone never approves anything; files are data and go without a prompt, and
-the phone asks before it deletes one. **Get apps** downloads signed releases from
-the [NBTFoundry catalog](https://nbtfoundry.github.io); picking a local file still works. On a car
+the phone asks before it deletes one. **Apps** lists every application once, with its
+next step: download a signed release from the [NBTFoundry catalog](https://nbtfoundry.github.io),
+install it, update it; picking a local file still works (More › Downloads). On a car
 without NBT Manager, **Install NBT Manager on a car** installs it over a Wi-Fi ENET adapter.
 
 Expo SDK 58, React Native 0.88, Android 10 and later, application id
 `org.nbtfoundry.manager`. In English, French, German, Italian, Spanish, Chinese and
-Japanese, following the phone's language (English for any other); Language,
-on the Car tab or Your cars, chooses one ([docs/ui.md](docs/ui.md)).
+Japanese, following the phone's language (English for any other); More › Language
+chooses one ([docs/ui.md](docs/ui.md)). Small updates reach the app between store builds,
+when its user asks; diagnostics are sent only after its user agreed
+([docs/updates.md](docs/updates.md)).
 
 **Supported head units:** BMW NBT Evo (iDrive 6). Support for the earlier NBT
 may come later.
@@ -53,19 +56,21 @@ NBT are trademarks of BMW AG; QNX is a trademark of BlackBerry Limited.
 
 <table>
   <tr>
-    <td width="25%" align="center"><img src="docs/assets/mobile-install.webp" alt="Installing media-player: the request, the car's approval, then the Car tab lists it"><br>
+    <td width="20%" align="center"><img src="docs/assets/mobile-install.webp" alt="Installing media-player: the request, the car's approval, then the Apps tab lists it"><br>
       <sub>Install: requested on the phone, approved on the car</sub></td>
-    <td width="25%" align="center"><img src="docs/assets/mobile-library.png" alt="Library: signed packages kept on the phone"><br>
-      <sub>Library: packages kept on the phone for any car</sub></td>
-    <td width="25%" align="center"><img src="docs/assets/mobile-app.png" alt="doom's page: installed version, the update, and its settings"><br>
-      <sub>An application: update and live settings</sub></td>
-    <td width="25%" align="center"><img src="docs/assets/mobile-pairing.png" alt="Pairing: the six digits to compare with the car"><br>
+    <td width="20%" align="center"><img src="docs/assets/mobile-app.png" alt="Doom's page: the version on the car, the update to download, and rows for settings, files, about and troubleshooting"><br>
+      <sub>An application: its next step, the rest behind rows</sub></td>
+    <td width="20%" align="center"><img src="docs/assets/mobile-car.png" alt="The Car tab: the link to the car, NBT Manager, health and tools"><br>
+      <sub>Car: link, health, tools</sub></td>
+    <td width="20%" align="center"><img src="docs/assets/mobile-more.png" alt="More: language, appearance, theme, betas, diagnostics and what the app does when it opens"><br>
+      <sub>More: settings and About</sub></td>
+    <td width="20%" align="center"><img src="docs/assets/mobile-pairing.png" alt="Pairing: the six digits to compare with the car"><br>
       <sub>Pairing: the same six digits on phone and car</sub></td>
   </tr>
 </table>
 
 Captured from the debug build on an emulator against the desk car (below), with
-synthetic packages: `python3 scripts/capture_screens.py`.
+synthetic packages and the live catalog: `python3 scripts/capture_screens.py`.
 
 ## How it works
 
@@ -238,21 +243,26 @@ Play signs the app with its own key; EAS holds only the upload key. Version code
 are EAS's, from 1000; kit APKs keep their own key and the kit sequence, so a phone
 moves between a store build and a kit APK only by uninstalling (and pairing again).
 
+Between store builds, `yarn ota "What changed"` publishes the committed JavaScript as an
+update for the builds whose native side it matches; phones take it when their user asks.
+A native change takes a store build ([docs/updates.md](docs/updates.md)).
+
 ## Layout
 
 | Path | Contents |
 | --- | --- |
 | `src/protocol/` | Signing text, pairing code, reply and package parsers, session, action flows |
 | `src/car/` | Native link and signer, the action runner, user-facing messages |
-| `src/store/` | Cars (SecureStore), library (app storage), online catalog and downloads, activity |
-| `src/screens/`, `src/ui/` | Screens and shared components ([docs/ui.md](docs/ui.md)) |
+| `src/route.ts` | Where the app is: tab, page, application, section |
+| `src/store/` | Cars (SecureStore), downloaded packages (app storage), online catalog, the merged application list, preferences, activity, the app's own update, diagnostics |
+| `src/screens/`, `src/ui/` | Screens and shared components, icons, animations ([docs/ui.md](docs/ui.md)) |
 | `src/i18n/` | The texts in each language, the language shown and its detection |
 | `src/installer/` | Manager installer session, state, tools and log panels |
 | `modules/device-key/` | P-256 keys in the Android Keystore (Kotlin) |
 | `modules/car-link/` | Wi-Fi join, allow-listed HTTP on the car network, file hashing (Kotlin) |
 | `modules/car-install/` | The installer core through UniFFI; holds the adapter's Wi-Fi and mobile data (Kotlin) |
-| `plugins/withCarApp.ts` | Backup off, network security config, Wi-Fi permissions |
-| `scripts/` | Desk car, contract test, installer core, release build, README captures |
+| `plugins/` | `withCarApp.js`: backup off, network security config, Wi-Fi permissions; `runtimeVersion.js`: which builds an update reaches |
+| `scripts/` | Desk car, contract test, installer core, release build, README captures, application icons, Lottie animations, publishing an update |
 
 ## License
 

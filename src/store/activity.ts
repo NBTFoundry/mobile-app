@@ -3,6 +3,9 @@
 import { useSyncExternalStore } from 'react';
 
 export type ActivityPhase = 'running' | 'done' | 'failed' | 'refused';
+/** What a running action is at, for its picture: joining the car, sending or receiving,
+ * waiting for the driver at the car's screen, or the car working. */
+export type ActivityStage = 'connect' | 'transfer' | 'confirm' | 'working';
 
 export type Activity = {
   id: number;
@@ -11,6 +14,8 @@ export type Activity = {
   /** What is happening now, or the result. Plain display text from fixed messages. */
   detail: string;
   phase: ActivityPhase;
+  /** `connect` when unset. */
+  stage?: ActivityStage;
   progress?: number;
   digits?: string;
   startedAt: number;
