@@ -11,7 +11,7 @@ import { parsePairLink } from './protocol/pairLink';
 import { HOME, back, depth, screenKey, type Route, type Tab } from './route';
 import { refreshApps } from './car/operations';
 import { loadCars, selectCar, type CarRecord } from './store/cars';
-import { checkAppUpdate } from './store/appUpdate';
+import { followAppUpdates } from './store/appUpdate';
 import { fetchCatalog, loadCachedCatalog, type Catalog } from './store/catalog';
 import { bindLibrary } from './store/downloads';
 import { loadLibrary, type LibraryEntry } from './store/library';
@@ -33,6 +33,7 @@ import { LicensesScreen } from './screens/LicensesScreen';
 import { MoreScreen } from './screens/MoreScreen';
 import { PairScreen } from './screens/PairScreen';
 import { TabBar } from './screens/TabBar';
+import { UpdateBar } from './screens/UpdateBar';
 import { WhatsNewSheet } from './screens/WhatsNewSheet';
 
 export type { Route, Tab } from './route';
@@ -143,21 +144,20 @@ function App() {
   // Dialogs, the keyboard and the system bars follow the appearance chosen.
   useEffect(() => Appearance.setColorScheme(appearance === 'auto' ? 'unspecified' : appearance), [appearance]);
   const ready = preferencesReady && carsReady && libraryReady;
-  // What the app does when it opens (More): looking for new versions is on until turned off,
+  // What the app does when it opens (More): reading the catalog is on until turned off,
   // connecting to the car off until chosen; failures stay quiet.
   const opened = useEffectEvent(() => {
     const { autoConnect, autoCheck } = preferences();
     if (autoConnect && car) void refreshApps(car).then(() => reloadCars());
-    if (autoCheck) {
-      void checkAppUpdate(true);
-      void fetchCatalog().then(setCatalog, () => undefined);
-    }
+    if (autoCheck) void fetchCatalog().then(setCatalog, () => undefined);
   });
   useEffect(() => {
     if (!ready) return;
     markInteractive();
     opened();
   }, [ready, markInteractive]);
+  // The app's own update: looked for with no switch, downloaded, started the next time.
+  useEffect(() => (ready ? followAppUpdates() : undefined), [ready]);
 
   const state: AppState = {
     cars, car, library, libraryReady, setLibrary, catalog, setCatalog,
@@ -198,7 +198,7 @@ function App() {
       <Enter key={`${screenKey(route)}:${car?.id ?? ''}`} from={shown.from} style={styles.content}>{screen}</Enter>
       <WhatsNewSheet ready={ready} usedBefore={cars.length > 0 || library.length > 0} />
       {route.page === 'activity' || route.page === 'pairing' ? null
-        : <ActivityBar onOpen={() => state.go({ page: 'activity' })} />}
+        : <><UpdateBar /><ActivityBar onOpen={() => state.go({ page: 'activity' })} /></>}
       {paged ? null : <TabBar tab={route.tab} onTab={tab => show({ tab })} />}
     </SafeAreaView>
     </SafeAreaProvider>

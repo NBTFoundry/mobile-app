@@ -23,7 +23,7 @@ type Values = {
   appearance: Appearance;
   theme: ThemeChoice;
   /** When the app opens: read the selected car's applications (off until chosen), and look
-   * online for new versions of the applications and of this app (on until turned off). */
+   * online for new versions of the applications (on until turned off). */
   autoConnect: boolean;
   autoCheck: boolean;
   /** Unset: never changed, which is on. */

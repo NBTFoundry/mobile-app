@@ -28,9 +28,9 @@ Rules:
 - Effects: the lint rule `react-hooks/set-state-in-effect` refuses a
   synchronous `setState` in an effect: start the state from a `useState`
   initializer and set it only in promise callbacks.
-- Nothing goes to the car on its own, and only two things go online on their
-  own, each on until turned off in More: looking for new versions when the app
-  opens, and analytics. User-visible texts say "updates" and "analytics",
+- Nothing goes to the car on its own, and only three things go online on
+  their own: the app's own update (no switch), and the catalog when the app
+  opens and analytics, both on until turned off in More. User-visible texts say "updates" and "analytics",
   never Expo. Anything new the app sends goes in the privacy page and
   `store/listing.md` first (`AGENTS.md`).
 - A setting is a line of `preferences.ts` (validated when read, a default not

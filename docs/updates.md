@@ -10,8 +10,9 @@ texts, logic) without a new store build; it cannot change the native side.
 | --- | --- |
 | Which builds an update reaches | `plugins/runtimeVersion.js`: the app version and a hash of the native side (native dependencies, `modules/*/android`, `plugins/`, `assets/`, `app.config.ts`, the installer core's pins) |
 | Channels | `eas.json`: `production` (Play builds), `preview` (the preview APK) |
-| When a phone looks | When the app opens, until More › When the app opens › Check for new versions is turned off (from JavaScript: `checkAutomatically` stays `NEVER`); More › About › Check for an app update; with Apps › Check for new versions |
-| When it starts | The next time the app opens, or Restart the app now in About |
+| When a phone looks | By itself, with no switch: when the app opens, and when it comes back to the front an hour or more after the last look (`followAppUpdates`, from JavaScript: `checkAutomatically` stays `NEVER`). Also More › About › Check for an app update, and with Apps › Check for new versions |
+| What it does | Downloads the update in the background, then says so in a bar over the tabs (`UpdateBar`) and with a dot on More |
+| When it starts | The next time the app opens, or at once with Restart in the bar or in About |
 | Kit and debug builds | No updates (`NBT_UPDATES=0` in `scripts/build-release.sh`): they run the code they were built from |
 
 Publishing, from a clean commit on `main`:

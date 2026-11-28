@@ -37,7 +37,7 @@ Expo SDK 58, React Native 0.88, Android 10 and later, application id
 `org.nbtfoundry.manager`. In English, French, German, Italian, Spanish, Chinese and
 Japanese, following the phone's language (English for any other); More › Language
 chooses one ([docs/ui.md](docs/ui.md)). Small updates reach the app between store builds:
-it looks for them when it opens, unless turned off in More; analytics (start-up times, crashes) can be turned off in More
+it downloads them by itself and starts them the next time it opens; analytics (start-up times, crashes) can be turned off in More
 ([docs/updates.md](docs/updates.md)).
 
 **Supported head units:** BMW NBT Evo (iDrive 6). Support for the earlier NBT
@@ -244,8 +244,8 @@ are EAS's, from 1000; kit APKs keep their own key and the kit sequence, so a pho
 moves between a store build and a kit APK only by uninstalling (and pairing again).
 
 Between store builds, `yarn ota "What changed"` publishes the committed JavaScript as an
-update for the builds whose native side it matches; phones take it when the app opens (unless
-turned off in More) or when their user asks.
+update for the builds whose native side it matches; phones download it by themselves and start it the
+next time the app opens.
 A native change takes a store build ([docs/updates.md](docs/updates.md)).
 
 ## Layout

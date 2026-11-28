@@ -50,8 +50,8 @@ NBTFoundry is not affiliated with or endorsed by BMW AG, Toyota Motor Corporatio
     for Google's ML Kit (the QR scanner sends device information); the app's own start-up
     times are optional.
   - Device or other IDs: collected, not shared, purpose Analytics and App functionality: a
-    random id of the installation, sent to Expo with an app update check (when the app opens, unless turned off in More, or
-    when asked) and with analytics.
+    random id of the installation, sent to Expo with an app update check (when the app opens or comes back to the front,
+    always) and with analytics.
 - **Advertising ID:** no.
 - **Target audience:** 18 and over.
 - **Content rating:** utility; no user-generated content, no sharing of location, no purchases.
