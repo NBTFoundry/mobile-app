@@ -10,7 +10,10 @@ description: The online application catalog and the phone's Apps tab (what can b
 | `NBTFoundry/NBTFoundry.github.io` (checkout `../NBTFoundry.github.io`) | `apps.json` (the allowlist), `tools/build_catalog.py` (writes `catalog.json`), `tools/nbt_files.py` (verifies `.nbt`/`.nbtr`), `site/` (landing page; `site/apps.js` renders the app cards from `catalog.json` in the browser), `tools/render_site.py` (copies `site/` and `catalog.json`), `.github/workflows/pages.yml` |
 | Phone (this repository) | `src/store/catalog.ts` (parse, cache, `releaseFor`, `onlineUpdate`), `src/store/download.ts` and `downloads.ts`, `src/store/appList.ts`, `src/screens/AppsScreen.tsx`, `src/ui/appIcons.ts` (the catalog's icons, bundled: `yarn icons` when an application joins), `tests/catalog.test.ts`, `tests/fixtures/catalog.json` |
 
-The workflow runs on push, every 30 minutes and by hand. It lists, per app,
+The workflow runs on push, when a release run starts it (the manager's
+`update-catalog` action, last job of `release.yml` and `app-release.yml`, with
+the `CATALOG_TOKEN` of the repository's `catalog` environment), every 30
+minutes when GitHub's schedule allows, and by hand. It lists, per app,
 the newest stable release and a newer pre-release (a `0.x` tag is one),
 verifying every file against the manager's `release/*.pem` on its `main`.
 The phone downloads only `https://github.com/<repo>/releases/download/…`,
@@ -22,7 +25,8 @@ a picked file; the car verifies the signature.
 - **List an app:** add it to `apps.json` (fields: that repository's README),
   commit, push. It shows "Coming soon" until its first release.
 - **Withdraw a version:** its version in the app's `withdrawn`.
-- **Rebuild now:** `gh workflow run pages -R NBTFoundry/NBTFoundry.github.io`,
+- **Rebuild now** (a release edited by hand, a release run whose `catalog`
+  job warned or failed): `gh workflow run pages -R NBTFoundry/NBTFoundry.github.io`,
   then `curl -s https://nbtfoundry.github.io/catalog.json`. A release left out
   shows as a `::warning::` in the run's Catalog step.
 - **Locally:** `python3 -I -m unittest discover -s tests`, then
