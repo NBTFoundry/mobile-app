@@ -143,7 +143,8 @@ function App() {
   // Dialogs, the keyboard and the system bars follow the appearance chosen.
   useEffect(() => Appearance.setColorScheme(appearance === 'auto' ? 'unspecified' : appearance), [appearance]);
   const ready = preferencesReady && carsReady && libraryReady;
-  // What the user asked the app to do when it opens (More › Settings); failures stay quiet.
+  // What the app does when it opens (More): looking for new versions is on until turned off,
+  // connecting to the car off until chosen; failures stay quiet.
   const opened = useEffectEvent(() => {
     const { autoConnect, autoCheck } = preferences();
     if (autoConnect && car) void refreshApps(car).then(() => reloadCars());

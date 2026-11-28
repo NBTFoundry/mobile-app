@@ -3,7 +3,7 @@
  * something to tell: raise WHATS_NEW_ID and replace the items (i18n keys, seven languages). */
 import type { Key } from './i18n';
 
-export const WHATS_NEW_ID = 4;
+export const WHATS_NEW_ID = 5;
 export const WHATS_NEW_ITEMS: readonly Key[] = ['whatsNew.layout', 'whatsNew.settings', 'whatsNew.updates', 'whatsNew.diagnostics'];
 
 /** An older list seen: show this one. None seen: only for someone who used the app before

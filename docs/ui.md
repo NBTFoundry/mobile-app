@@ -37,7 +37,7 @@ flowchart TD
   Self test and Crash reports show what was read last (`CarRecord.health`). The car's name
   opens Your cars.
 - **More** (`MoreScreen`, `AboutCard`): Settings (language, appearance, theme, betas,
-  diagnostics), When the app opens (connect to the car, check for new versions; both off),
+  analytics), When the app opens (connect to the car, off; check for new versions, on),
   This phone (Activity, Downloads, Your cars, the installer), About (versions, the app's own
   update, links, Share details).
 - **Activity bar** (`ActivityBar`): over the tabs while an action runs (its picture, a line
@@ -62,10 +62,10 @@ flowchart TD
 - Progress is measured wherever there is something to measure: a download (the row's bar,
   the button filling), an install or a file being sent (the dialog's bar and percentage,
   the activity bar's line), the installer's steps.
-- Going online: never by itself. The catalog and the app's own update are read when the user
-  asks (Apps › Check for new versions or a pull on the list; More › About), or at start-up
-  when the user turned that on. Diagnostics are the exception: on until turned off in
-  More › Settings ([updates.md](updates.md)).
+- Going online: the catalog and the app's own update are read when the app opens, until
+  More › When the app opens turns that off, and when the user asks (Apps › Check for new
+  versions or a pull on the list; More › About). Analytics are on until turned off in
+  More › Settings ([updates.md](updates.md)). Nothing else goes online by itself.
 - The car: opening the app makes no connection. Reading its applications, an install, a
   setting or a tool page requests the network; Connect at start-up is the user's choice.
 - A package's details list its permissions as the car's review does: "Uses: …" and

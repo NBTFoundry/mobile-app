@@ -22,7 +22,8 @@ type Values = {
   betas: boolean;
   appearance: Appearance;
   theme: ThemeChoice;
-  /** When the app opens: read the selected car's applications, and look online for new versions. */
+  /** When the app opens: read the selected car's applications (off until chosen), and look
+   * online for new versions of the applications and of this app (on until turned off). */
   autoConnect: boolean;
   autoCheck: boolean;
   /** Unset: never changed, which is on. */
@@ -30,7 +31,7 @@ type Values = {
   whatsNew?: number;
 };
 
-const DEFAULTS: Values = { betas: false, appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: false };
+const DEFAULTS: Values = { betas: false, appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: true };
 let values: Values = DEFAULTS;
 const listeners = new Set<() => void>();
 
@@ -54,7 +55,7 @@ export async function loadPreferences(): Promise<void> {
       appearance: one(APPEARANCES, raw?.appearance) ?? values.appearance,
       theme: one(THEME_CHOICES, raw?.theme) ?? values.theme,
       autoConnect: raw?.autoConnect === true,
-      autoCheck: raw?.autoCheck === true,
+      autoCheck: typeof raw?.autoCheck === 'boolean' ? raw.autoCheck : values.autoCheck,
       diagnostics: typeof raw?.diagnostics === 'boolean' ? raw.diagnostics : values.diagnostics,
       whatsNew: typeof raw?.whatsNew === 'number' && Number.isSafeInteger(raw.whatsNew) ? raw.whatsNew : values.whatsNew,
     });
@@ -70,7 +71,7 @@ async function save(): Promise<boolean> {
     await file().write(JSON.stringify({ language: currentChoice(), betas, whatsNew, diagnostics,
       appearance: appearance === DEFAULTS.appearance ? undefined : appearance,
       theme: theme === DEFAULTS.theme ? undefined : theme,
-      autoConnect: autoConnect || undefined, autoCheck: autoCheck || undefined }));
+      autoConnect: autoConnect || undefined, autoCheck: autoCheck ? undefined : false }));
     return true;
   } catch {
     return false;

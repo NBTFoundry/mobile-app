@@ -44,13 +44,14 @@ NBTFoundry is not affiliated with or endorsed by BMW AG, Toyota Motor Corporatio
 - **App access:** "All functionality requires a car with a BMW NBT Evo head unit running NBT Manager; pairing needs the code shown on the car's screen. Without a car, Apps, More › Downloads and the settings can be opened: Apps downloads signed packages into Downloads. The packages are programs for the car's head unit (QNX); the phone stores and forwards them and never executes them."
 - **Data safety** (changed with 0.2.0: app updates and optional diagnostics through Expo):
   collects data: yes. Encrypted in transit: yes. Deletion request: no.
-  - App info and performance → Crash logs: collected, not shared, optional (Share diagnostics,
+  - App info and performance → Crash logs: collected, not shared, optional (Analytics,
     on by default, a switch in More › Settings), purpose Analytics.
   - App info and performance → Diagnostics: collected, not shared, purpose Analytics. Required
     for Google's ML Kit (the QR scanner sends device information); the app's own start-up
     times are optional.
   - Device or other IDs: collected, not shared, purpose Analytics and App functionality: a
-    random id of the installation, sent to Expo with an app update check and with diagnostics.
+    random id of the installation, sent to Expo with an app update check (when the app opens, unless turned off in More, or
+    when asked) and with analytics.
 - **Advertising ID:** no.
 - **Target audience:** 18 and over.
 - **Content rating:** utility; no user-generated content, no sharing of location, no purchases.

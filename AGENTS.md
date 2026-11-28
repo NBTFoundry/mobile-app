@@ -29,11 +29,12 @@ native module. Test fixtures do not establish compatibility with a car.
   and release-signing checks separately.
 - Debug builds may reach a desk car through the workstation (`setDeskIp`); keep
   that path unavailable in release builds.
-- Nothing goes online or to the car by itself. The catalog and the app's own
-  update (expo-updates, never checked on launch) follow a user action, or the
-  start-up choices in More, which are off by default. The one exception is
-  diagnostics (Expo Observe): on until the user turns them off in More; log no
-  car, package or file data in them.
+- Nothing goes to the car by itself, and the app goes online by itself for two
+  things only, each with a switch in More: looking for new versions when it
+  opens (the catalog and the app's own update, expo-updates) and analytics
+  (Expo Observe; log no car, package or file data in them). Both are on until
+  turned off. Connecting to the car when the app opens is off until chosen.
+  The app's texts say "updates" and "analytics", never Expo.
   The privacy page (NBTFoundry.github.io `site/privacy.html`) and
   `store/listing.md` must say what the app sends: change them with it.
 - An update between store builds (`yarn ota`) carries JavaScript only. Native

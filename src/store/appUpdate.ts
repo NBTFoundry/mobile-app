@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 /** Updates of this app between store builds (expo-updates, docs/updates.md): its screens and
- * texts, never its native side. Nothing is checked on its own: the user asks (About), or reads
- * the catalog (Apps), which goes online anyway. A downloaded update starts with the app the
+ * texts, never its native side. Checked when the app opens (More turns that off), when the user
+ * asks (About), or with the catalog (Apps), which goes online anyway. A downloaded update starts with the app the
  * next time, or at once from About. */
 import * as Updates from 'expo-updates';
 import { useSyncExternalStore } from 'react';

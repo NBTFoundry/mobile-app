@@ -36,8 +36,8 @@ without NBT Manager, **Install NBT Manager on a car** installs it over a Wi-Fi E
 Expo SDK 58, React Native 0.88, Android 10 and later, application id
 `org.nbtfoundry.manager`. In English, French, German, Italian, Spanish, Chinese and
 Japanese, following the phone's language (English for any other); More › Language
-chooses one ([docs/ui.md](docs/ui.md)). Small updates reach the app between store builds,
-when its user asks; diagnostics (start-up times, crashes) can be turned off in More
+chooses one ([docs/ui.md](docs/ui.md)). Small updates reach the app between store builds:
+it looks for them when it opens, unless turned off in More; analytics (start-up times, crashes) can be turned off in More
 ([docs/updates.md](docs/updates.md)).
 
 **Supported head units:** BMW NBT Evo (iDrive 6). Support for the earlier NBT
@@ -62,7 +62,7 @@ NBT are trademarks of BMW AG; QNX is a trademark of BlackBerry Limited.
       <sub>An application: its next step, the rest behind rows</sub></td>
     <td width="20%" align="center"><img src="docs/assets/mobile-car.png" alt="The Car tab: the link to the car, NBT Manager, health and tools"><br>
       <sub>Car: link, health, tools</sub></td>
-    <td width="20%" align="center"><img src="docs/assets/mobile-more.png" alt="More: language, appearance, theme, betas, diagnostics and what the app does when it opens"><br>
+    <td width="20%" align="center"><img src="docs/assets/mobile-more.png" alt="More: language, appearance, theme, betas, analytics and what the app does when it opens"><br>
       <sub>More: settings and About</sub></td>
     <td width="20%" align="center"><img src="docs/assets/mobile-pairing.png" alt="Pairing: the six digits to compare with the car"><br>
       <sub>Pairing: the same six digits on phone and car</sub></td>
@@ -244,7 +244,8 @@ are EAS's, from 1000; kit APKs keep their own key and the kit sequence, so a pho
 moves between a store build and a kit APK only by uninstalling (and pairing again).
 
 Between store builds, `yarn ota "What changed"` publishes the committed JavaScript as an
-update for the builds whose native side it matches; phones take it when their user asks.
+update for the builds whose native side it matches; phones take it when the app opens (unless
+turned off in More) or when their user asks.
 A native change takes a store build ([docs/updates.md](docs/updates.md)).
 
 ## Layout

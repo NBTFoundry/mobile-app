@@ -135,21 +135,22 @@ describe('languages', () => {
   it('keeps the appearance, the theme and the start-up choices; a default is not written', async () => {
     await chooseAppearance('dark');
     await chooseTheme('supra');
-    await chooseAutoCheck(true);
+    await chooseAutoCheck(false);
     expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual(
-      { language: 'auto', betas: false, appearance: 'dark', theme: 'supra', autoCheck: true });
+      { language: 'auto', betas: false, appearance: 'dark', theme: 'supra', autoCheck: false });
     await chooseAppearance('auto');
     await chooseTheme('car');
-    await chooseAutoCheck(false);
+    await chooseAutoCheck(true);
     expect(JSON.parse(files.get('doc/preferences.json')!)).toEqual({ language: 'auto', betas: false });
-    // A saved value this app does not know leaves the default; nothing is on unless it says true.
-    files.set('doc/preferences.json', '{"appearance":"sepia","theme":"rolls","autoConnect":"yes","diagnostics":1}');
+    // A saved value this app does not know leaves the default: connecting off, looking for new versions on.
+    files.set('doc/preferences.json', '{"appearance":"sepia","theme":"rolls","autoConnect":"yes","autoCheck":0,"diagnostics":1}');
     await loadPreferences();
-    expect(preferences()).toMatchObject({ appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: false });
+    expect(preferences()).toMatchObject({ appearance: 'auto', theme: 'car', autoConnect: false, autoCheck: true });
     expect(preferences().diagnostics).toBeUndefined();
-    files.set('doc/preferences.json', '{"appearance":"light","theme":"mini","autoConnect":true,"diagnostics":false}');
+    files.set('doc/preferences.json', '{"appearance":"light","theme":"mini","autoConnect":true,"autoCheck":false,"diagnostics":false}');
     await loadPreferences();
-    expect(preferences()).toMatchObject({ appearance: 'light', theme: 'mini', autoConnect: true, diagnostics: false });
+    expect(preferences()).toMatchObject({ appearance: 'light', theme: 'mini', autoConnect: true, autoCheck: false, diagnostics: false });
+    await chooseAutoCheck(true);
     await chooseAppearance('auto');
     await chooseTheme('car');
   });

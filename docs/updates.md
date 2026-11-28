@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
-# Updates between store builds, and diagnostics
+# Updates between store builds, and analytics
 
 ## App updates (expo-updates)
 
@@ -10,7 +10,7 @@ texts, logic) without a new store build; it cannot change the native side.
 | --- | --- |
 | Which builds an update reaches | `plugins/runtimeVersion.js`: the app version and a hash of the native side (native dependencies, `modules/*/android`, `plugins/`, `assets/`, `app.config.ts`, the installer core's pins) |
 | Channels | `eas.json`: `production` (Play builds), `preview` (the preview APK) |
-| When a phone looks | Never by itself (`checkAutomatically: NEVER`): More › About › Check for an app update, with Apps › Check for new versions, or at start-up when the user turned that on |
+| When a phone looks | When the app opens, until More › When the app opens › Check for new versions is turned off (from JavaScript: `checkAutomatically` stays `NEVER`); More › About › Check for an app update; with Apps › Check for new versions |
 | When it starts | The next time the app opens, or Restart the app now in About |
 | Kit and debug builds | No updates (`NBT_UPDATES=0` in `scripts/build-release.sh`): they run the code they were built from |
 
@@ -29,13 +29,14 @@ yarn ota "What changed" preview
 - Each check sends Expo the runtime, the channel and a random id of the installation
   (`EAS-Client-ID`); the privacy page says so.
 
-## Diagnostics (Expo Observe)
+## Analytics (Expo Observe)
 
 Start-up times, unhandled errors and crashes, sent to Expo with the same installation id.
 
-- On from the first launch (`consent: 'granted'`, `app.config.ts`); More › Settings › Share
-  diagnostics turns them off (`src/store/diagnostics.ts`), which also deletes what was not
+- On from the first launch (`consent: 'granted'`, `app.config.ts`); More › Settings ›
+  Analytics turns them off (`src/store/diagnostics.ts`), which also deletes what was not
   sent. "What's new" and the privacy page say so.
 - Nothing about the car, packages or files is logged: no custom events, no network traces.
 - Read them in the Expo dashboard's Observe tab, or `npx eas-cli observe:metrics-summary`.
+- The app's own texts never name Expo: users see "updates" and "analytics".
 - Source maps go up with store builds (`uploadSourceMaps`) and with `yarn ota`.
