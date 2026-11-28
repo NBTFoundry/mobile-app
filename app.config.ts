@@ -8,7 +8,7 @@ const config: ExpoConfig = {
   name: 'NBT Manager',
   slug: 'manager',
   owner: 'nbtfoundry',
-  version: '0.2.0',
+  version: '0.2.1',
   // Links from other apps: nbtmanager://pair?wifi=… (README, "Pairing from another app").
   scheme: 'nbtmanager',
   orientation: 'portrait',
