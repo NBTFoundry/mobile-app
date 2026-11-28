@@ -8,7 +8,7 @@ texts, logic) without a new store build; it cannot change the native side.
 
 | What | Where |
 | --- | --- |
-| Which builds an update reaches | `plugins/runtimeVersion.js`: the app version and a hash of the native side (native dependencies, `modules/*/android`, `plugins/`, `assets/`, `app.config.ts`, the installer core's pins) |
+| Which builds an update reaches | `plugins/runtimeVersion.js`: the app version and a hash of the native side (native dependencies, `modules/*/android`, `plugins/`, `assets/`, `app.config.ts`, the installer core's pins); iOS has its own, with `modules/*/ios` instead |
 | Channels | `eas.json`: `production` (Play builds), `preview` (the preview APK) |
 | When a phone looks | By itself, with no switch: when the app opens, and when it comes back to the front an hour or more after the last look (`followAppUpdates`, from JavaScript: `checkAutomatically` stays `NEVER`). Also More › About › Check for an app update, and with Apps › Check for new versions |
 | What it does | Downloads the update in the background, then says so in a bar over the tabs (`UpdateBar`) and with a dot on More |

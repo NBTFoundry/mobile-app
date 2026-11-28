@@ -32,6 +32,15 @@ const config: ExpoConfig = {
       'android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.VIBRATE',
       'android.permission.USE_BIOMETRIC', 'android.permission.USE_FINGERPRINT'],
   },
+  // Planned (docs/ios.md): `platforms` leaves it out, so nothing builds it yet.
+  ios: {
+    bundleIdentifier: 'org.nbtfoundry.manager',
+    supportsTablet: false,
+    runtimeVersion: runtimeVersion(__dirname, 'ios'),
+    infoPlist: { NSLocalNetworkUsageDescription: 'Reach your car over its Wi-Fi.' },
+    // Joining the car's Wi-Fi: a capability of the Apple Developer Program.
+    entitlements: { 'com.apple.developer.networking.HotspotConfiguration': true },
+  },
   // The Expo project (expo.dev/accounts/nbtfoundry/projects/manager) that cloud builds use (eas.json).
   extra: { eas: { projectId: PROJECT } },
   // Updates between store builds (docs/updates.md): for the native side this commit builds, and
@@ -45,7 +54,8 @@ const config: ExpoConfig = {
       image: './assets/splash-light.png', imageWidth: 160, backgroundColor: '#f6f7fa',
       dark: { image: './assets/splash-dark.png', backgroundColor: '#111318' },
     }],
-    ['expo-camera', { cameraPermission: 'Scan the Wi-Fi code on your car.', recordAudioAndroid: false }],
+    ['expo-camera', { cameraPermission: 'Scan the Wi-Fi code on your car.', recordAudioAndroid: false,
+      microphonePermission: false }],
     'expo-secure-store',
     // Target 36, not 37: Android 17 puts local addresses behind ACCESS_LOCAL_NETWORK.
     // Expo SDK 58's modules require compiling against 37, which changes no runtime behaviour.

@@ -44,6 +44,19 @@ it('changes with native code, a native dependency, the installer core’s pins a
   expect(seen.size).toBe(5);
 });
 
+it('is each platform’s own: the other’s native code does not move it', () => {
+  const android = runtimeVersion(copy);
+  const ios = runtimeVersion(copy, 'ios');
+  expect(ios).not.toBe(android);
+  mkdirSync(join(copy, 'modules/car-link/ios'));
+  writeFileSync(join(copy, 'modules/car-link/ios/Module.swift'), 'class Module {}');
+  expect(runtimeVersion(copy)).toBe(android);
+  expect(runtimeVersion(copy, 'ios')).not.toBe(ios);
+  const withSwift = runtimeVersion(copy, 'ios');
+  writeFileSync(join(copy, 'modules/car-link/android/src/Module.kt'), 'class Module2');
+  expect(runtimeVersion(copy, 'ios')).toBe(withSwift);
+});
+
 it('stays for what an update can carry: a module’s TypeScript, development tools, generated files', () => {
   const before = runtimeVersion(copy);
   writeFileSync(join(copy, 'modules/car-link/index.ts'), 'export const changed = 1;');

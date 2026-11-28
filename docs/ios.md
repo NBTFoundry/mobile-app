@@ -43,13 +43,10 @@ Then, in this order: `ios` in `platforms`, a simulator build, a build on an iPho
   encryption (the installer core carries SSH): the account owner's answers.
 - An application's package picked from Files, a log shared: check both on a device.
 
-## Branch `ios`
-
-The configuration, kept off `main` because it changes the runtime version (after it, `yarn
-ota` reaches no build until the next store build): merge it with a store build.
+## In place
 
 - `app.config.ts`: the `ios` block (bundle identifier `org.nbtfoundry.manager`, the local
-  network text, the Hotspot Configuration entitlement).
+  network text, the Hotspot Configuration entitlement), unused until `platforms` names iOS.
 - `plugins/runtimeVersion.js`: a runtime version per platform, so that Swift work does not
   cut Android phones off from updates.
-- `eas.json`: a `simulator` build profile.
+- `eas.json`: the `simulator` build profile (`npx eas-cli build -p ios --profile simulator`).
